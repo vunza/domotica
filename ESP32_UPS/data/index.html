@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <!--<title>Painel de Controlo UPS</title>-->
+  <tibtn_tmrse></tibtn_tmrse>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+
+  <div class="topnav">
+    <h2>Painel de Controlo UPS</h2>
+  </div>
+
+  <div class="content">
+
+    <div class="cards">
+
+      <div class="card">
+        <p class="p_parametros"><div id="div_tensao" class="tensao"></div>%VOLT% V</p>
+        <!--<p><span class="reading"><span id="volt"></span>%VOLT% V</span></p>-->        
+      </div>
+
+      <div class="card">
+        <p class="p_parametros"><div id="div_temperatura" class="temperatura"></div>%TEMP% &deg;C</p>
+        <!--<p><span class="reading"><span id="temp"></span>%TEMP% &deg;C</span></p>-->        
+      </div>
+
+      <div class="card">
+        <p class="p_parametros"><div id="div_humidade" class="humidade"></div>%HUMI% &percnt;</p>
+        <!--<p><span class="reading"><span id="hum"></span>%HUMI% &percnt;</span></p>-->      
+      </div>
+
+      <div class="card">
+        <p class="p_parametros"><div id="div_pressao" class="pressao"></div>%PRES% hPa</p>
+        <!--<p><span class="reading"><span id="pres"></span>%PRES% hPa</span></p>-->       
+      </div>
+
+    </div>
+
+  </div>
+
+  <script type="text/javascript" src="script.js"></script>
+
+</body>
+
+</html>

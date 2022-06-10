@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <tibtn_tmrse></tibtn_tmrse>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <header>
+    </header>
+
+    <div id="div_header">
+        <div id="div_menu" onclick="" class="svg_menu_refresh menu_refresh"></div>
+        <h2>Painel de Controlo</h2>
+        <div id="div_refresh" onclick="actualizarPagina()" class="svg_menu_refresh menu_refresh"></div>
+    </div>
+
+    <!------------------------------------- DISPOSITIVOS ------------------------------------->
+    <div id="div_geral">
+
+        <div id="192.168.5.2" class="div_grupos" style="margin-top: 8px;">
+            <a onclick="togglePIN(this)" href="#">
+                <div class="svg_item images"></div>
+            </a>
+            <p id="ESP-DCF508-p1" class="p_nome_item">2</p>
+            <div onclick="exibirElemento(this, 'div_cfg')" class="p_edit svg_div_cfg"></div>
+        </div>
+
+        <div id="192.168.5.3" class="div_grupos" style="margin-top: 8px;">
+            <a onclick="togglePIN(this)" href="#">
+                <div class="svg_item images"></div>
+            </a>
+            <p id="ESP-DCF508-p1" class="p_nome_item">3</p>
+            <div onclick="exibirElemento(this, 'div_cfg')" class="p_edit svg_div_cfg"></div>
+        </div>
+
+        <div id="192.168.5.4" class="div_grupos" style="margin-top: 8px;">
+            <a onclick="togglePIN(this)" href="#">
+                <div class="svg_item images"></div>
+            </a>
+            <p id="ESP-DCF508-p1" class="p_nome_item">4</p>
+            <div onclick="exibirElemento(this, 'div_cfg')" class="p_edit svg_div_cfg"></div>
+        </div>
+
+        <div id="192.168.5.5" class="div_grupos" style="margin-top: 8px;">
+            <a onclick="togglePIN(this)" href="#">
+                <div class="svg_item images"></div>
+            </a>
+            <p id="ESP-DCF508-p1" class="p_nome_item">5</p>
+            <div onclick="exibirElemento(this, 'div_cfg')" class="p_edit svg_div_cfg"></div>
+        </div>        
+      
+    </div>
+    <!------------------------------------- DISPOSITIVOS ------------------------------------->
+
+
+
+    <!------------------------------------- CONFIGURAÇÕES ------------------------------------->
+
+    <div id="div_cfg">
+
+        <div id="div_set_name">
+            <fieldset>
+                <legend>Alterar Nome:</legend>
+                <input type="text" id="txt_nome" autocomplete="off" />
+                <div class="svg_div_save_name" id="div_save_name" onclick="alterarNomeDevice();"></div>
+            </fieldset>
+        </div>
+
+        <div id="div_separador_cfg_top"></div>
+
+        <div id="div_tmr">
+
+            <label><input type="radio" value="1" name="select_timer" /><span>1</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="2" name="select_timer" /><span>2</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="3" name="select_timer" /><span>3</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="4" name="select_timer" /><span>4</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="5" name="select_timer" /><span>5</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="6" name="select_timer" /><span>6</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="7" name="select_timer" /><span>7</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="8" name="select_timer" /><span>8</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="9" name="select_timer" /><span>9</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="10" name="select_timer" /><span>10</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="11" name="select_timer" /><span>11</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="12" name="select_timer" /><span>12</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="13" name="select_timer" /><span>13</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="14" name="select_timer" /><span>14</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="15" name="select_timer" /><span>15</span>
+                <p></p>
+            </label>
+            <label><input type="radio" value="16" name="select_timer" /><span>16</span>
+                <p></p>
+            </label>
+
+        </div>
+
+
+        <div id="div_activar">
+            <label for="activar">Activar</label>
+            <input type="checkbox" id="chk_activar" name="activar" />
+        </div>
+
+
+        <div id="div_comando">
+            <label for="select_out">Saída:</label>
+            <select id="select_saida" name="select_out">
+                <option value="opt_1">1</option>
+                <!--<option value="opt_2">2</option>-->
+            </select>&#160;
+
+            <label for="select_action">Acção:</label>
+            <select id="select_accao" name="select_action">
+                <option value="opt_off">Desligar</option>
+                <option value="opt_on">Ligar</option>
+            </select>
+        </div>
+
+
+        <div id="div_hora">
+            <label class="hora" for="appt-time">Hora: </label>
+            <input class="hora" id="time_hora" type="time" name="appt-time" value="00:00">
+            <p id="hora_actual">Hora</p>
+        </div>
+
+        <div id="div_semana">
+            <label><input id="0" type="checkbox" name="sel_week_day" /><span>D</span>
+                <p></p>
+            </label>
+            <label><input id="1" type="checkbox" name="sel_week_day" /><span>S</span>
+                <p></p>
+            </label>
+            <label><input id="2" type="checkbox" name="sel_week_day" /><span>T</span>
+                <p></p>
+            </label>
+            <label><input id="3" type="checkbox" name="sel_week_day" /><span>Q</span>
+                <p></p>
+            </label>
+            <label><input id="4" type="checkbox" name="sel_week_day" /><span>Q</span>
+                <p></p>
+            </label>
+            <label><input id="5" type="checkbox" name="sel_week_day" /><span>S</span>
+                <p></p>
+            </label>
+            <label><input id="6" type="checkbox" name="sel_week_day" /><span>S</span>
+                <p></p>
+            </label>
+
+        </div>
+
+        <div id="div_separador_cfg_botton"></div>
+
+        <button id="btn_guardar_cfg" class="btn_cfg" onclick="guardarConfigs();">Guardar</button>
+
+        <button id="btn_fechar_cfg" class="btn_cfg" onclick="ocultarElemento('div_cfg');">Fechar</button>
+
+    </div>
+    <!------------------------------------- CONFIGURAÇÕES ------------------------------------->
+
+
+
+    <footer>
+    </footer>
+
+    <script type="text/javascript" src="script.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+html {
+    font-family: Arial;
+    display: block;
+    text-align: center;
+  }
+
+  p {
+    font-size: 1.2rem;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  .topnav {
+    overflow: hidden;
+    background-color: #50B8B4;
+    color: white;
+    font-size: 1rem;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+
+  /*.p_parametros{
+   
+  }*/
+
+  .card {
+    background-color: white;
+    box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
+    height: 65px;    
+  }
+
+  .cards {
+    max-width: 800px;
+    margin: 0 auto;
+    /*display: grid;*/
+    grid-gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .reading {
+    font-size: 1.4rem;
+  }
+
+  .tensao {
+    position: relative;
+    top: 20px;
+    left: 100px;
+    width: 24px;
+    height: 24px;  
+    fill: #059e8a;
+  }
+
+  .temperatura {
+    position: relative;
+    top: 20px;
+    left: 100px;
+    width: 24px;
+    height: 24px;  
+    fill: #059e8a;
+  }
+
+  .humidade {
+    position: relative;
+    top: 15px;
+    left: 100px;
+    width: 24px;
+    height: 24px;  
+    fill: #00add6;
+  }
+
+  .pressao {
+    position: relative;
+    top: 15px;
+    left: 100px;
+    width: 20px;
+    height: 20px;  
+    fill: #e1e437;
+  }
+
+  
