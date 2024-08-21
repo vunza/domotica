@@ -1,0 +1,15 @@
+#btn{
+    width: 80px;
+    height: 40px;
+    color: aliceblue;
+    cursor: pointer;
+    background: rgb(34, 13, 13);
+}
+
+#div_btn{
+    display: block;
+    position: relative;
+    margin: auto;
+    align-items: center;
+    border: 1px solid red;
+}

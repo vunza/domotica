@@ -1,0 +1,39 @@
+1 - Enviar, atraves do bridge tasmota-espnow, mensagem para ligarse/desligarse a rede wifi;
+2 - Web log level 2 ?
+3 - Console logging level - 2 ???
+- Abrir Web console
+- Limpar localStorage
+
+- Actualizar data e hora do tasmota, na ausencia de Internert
+- Rever logica para actualizar a data e hora do toggle
+- Rever logica para definir tipos em dispositivos zigbee
+- Desactivar OTA, habilitado para efeitos de debug
+- Exibir no campo"Historico" a hoara, do timer activado, mais proxima da execucao
+- Ao ligar dispositivo zigbee voltar no estado anterior
+- Limitar numero de timers zigbee
+
+// TODO: Rvere atribuicao do tipo
+
+
+- A receber resposta de ZbStatus1, guardar no array short_id, ao receber resposta de ZbStatus3 actualizar no array zb_device_id, reachable, enviar PRT/PRZ
+
+- Eliminar linhas de código desnecessárias. 
+- Rever lógica para aumentar potência de transmissão.
+- Ordenar items na webbrowser.
+- Inserir dados da conexão (ip, porta, etc.) manualmente, nos clientes JS (browser).
+- Rever "undefined" nos campos nome e data das card view correspondentes aos devices.
+- Importar/Exportar configurações gerais (formato JSON).
+- ESP Srvidor deve Monitorar e reconectar-se ao servidoe Node.js (Internet).
+- Rever lógica de emparelhamento, quando os dispositivos (servidor e clientes) ligam ao mesmo tempo.
+- Guardar, no servidor, lista de mac's dos devices a medida que se conectam/emparelham.
+- Aertar quando localstorage não tiver configurações guardads.
+- Clientes Web checar e reconectar-se ao servidor ESP automaticamente.
+- Colocar os botões/cardview num estado indeterminado ao arrancar (quando o cliente web iniciaiza).
+- Fazer com que a indidponibilidade do servidor ESP não bloqueia a interface web.
+- Tornar a página web responsive (Às telas de telemóveis).
+- Rever a funcionalidade do botão Actualizar do menu inferior.
+- Actualizar devs autmatiamente, quando um dev faz pareamento ou repareamento.
+- JSON enviado por Javascript hega com caracteres a mais ou incompleto
+- Rever habilitar modo OTA por software nos HUB IR
+- Limpar configurações do device em tempo de execução.
+- Consulta do IP do dispositivo

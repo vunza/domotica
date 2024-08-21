@@ -1,0 +1,97 @@
+https://thonny.org/
+https://micropython.org/download/
+
+$ sudo apt -y install python3-pip
+$ sudo apt install esptool
+
+$ python3 -m esptool --port /dev/ttyUSB0 erase_flash
+$ esptool.py --port /dev/ttyUSB0 erase_flash
+$ python3 -m esptool --port /dev/ttyUSB0 flash_id -- mostra especificações do chip (espressif)
+
+
+ESP32:
+======
+python3 -m esptool --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 esp32_generico.bin 
+
+
+ESP8266 (FLASH = 4MB):
+======================
+$ python3 -m esptool --port /dev/ttyUSB0 --baud 115200 write_flash -fs 4MB -fm dout 0x0 esp8266_1mb.bin
+
+
+ESP8266 (FLASH = 1MB):
+======================
+python3 -m esptool --port /dev/ttyUSB0 --baud 115200 write_flash -fs 1MB -fm dout 0x0 esp8266_1mb.bin
+
+
+ESP8266 (FLASH = 512KB):
+======================
+python3 -m esptool --port /dev/ttyUSB0 --baud 115200 write_flash -fs 512KB -fm dout 0x0 esp8266_512K.bin
+
+=========
+mpfshell:
+=========
+$ mpfshell -o ttyUSB0
+mpfs [/]> ls
+mpfs [/]> put main.py
+mpfs [/]> rm main.py
+mpfs [/]> CTRL+C
+
+=========
+mpremote:
+=========
+$ /home/wnr/.local/bin/mpremote
+$ /home/wnr/.local/bin/mpremote rm :main.py
+$ /home/wnr/.local/bin/mpremote cp main.py :main.py
+$ /home/wnr/.local/bin/mpremote mkdir data :
+$ CTRL+X
+
+=======
+rshell:
+=======
+$ /home/wnr/.local/bin/rshell -p /dev/ttyUSB0
+$ ls /pyboard
+$ rm /pyboard/main.py
+$ cp main.py /pyboard/main.py
+$ exit
+
+
+
+
+import machine
+pin0 = machine.Pin(2, machine.Pin.OUT) #open GPIO0 in output mode
+import time
+
+while True:
+    time.sleep(0.5)
+    pin0.on()
+    time.sleep(0.5)
+    pin0.off()
+
+
+
+import network
+
+import esp
+esp.osdebug(None)
+
+import gc
+gc.collect()
+
+# MODO STA
+sta_if = network.WLAN(network.STA_IF)
+sta_if.active(True)
+sta_if.scan()                             
+sta_if.connect("TPLINK", "gregorio@2012") 
+sta_if.isconnected()  
+
+
+# MODO AP 
+ap = network.WLAN(network.AP_IF)
+ap.active(True)
+ap.config(essid='ESP12E', password='123456789')
+
+while ap.active() == False:
+  pass
+
+

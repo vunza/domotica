@@ -1,0 +1,17 @@
+CMD: zbstatus
+RESULT = {"ZbStatus1":[{"Device":"0x0AD7","Name":"Gabinete Laboratorio"},{"Device":"0xEB5D","Name":"Corredor Hall"}]}
+
+
+CMD: ZbStatus3 0x0AD7
+RESULT = {"ZbStatus3":[{"Device":"0x0AD7","Name":"Gabinete Laboratorio","IEEEAddr":"0x28DBA7FFFE1AF100","Endpoints":[1],"Config":["O01"],"Power":1,"Reachable":true,"LastSeen":104,"LastSeenEpoch":1721065206,"LinkQuality":98}]}
+
+
+CMD: zbping 0x0AD7
+RESULT = {"ZbPing":{"Device":"0x0AD7","IEEEAddr":"0x28DBA7FFFE1AF100","Name":"Gabinete Laboratorio"}}
+
+
+CMD: Power ON/OFF
+SENSOR = {"ZbReceived":{"0x0AD7":{"Device":"0x0AD7","Name":"Gabinete Laboratorio","Power":0,"Endpoint":1,"LinkQuality":87}}}
+
+
+

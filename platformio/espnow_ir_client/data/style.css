@@ -1,0 +1,214 @@
+  * {
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+
+    /* Impede Seleccção e Copia */
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  body {
+    background-color: lightskyblue;
+  }
+   
+  
+  /*----------------------------------- div_geral ----------------------------------*/
+  #div_geral{
+    position:fixed; 
+    top: 0px;   
+    width: 100%;    
+    height: 100%;
+	  overflow: auto;   
+    background: lightskyblue;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));      
+  }
+  
+
+.btn_save{  
+  display: inline;   
+  width: 106px;
+  height: 50px;  
+  margin-right: 0px;
+  cursor: pointer; 
+  background: #47c266;
+  color: white;
+  font-size: 18px;
+}
+
+.btn_close{  
+  display: inline;  
+  margin-left: 10px;
+  width: 106px;
+  height: 50px;  
+  cursor: pointer; 
+  background-color: rgb(206, 90, 90);
+  color: white;
+  font-size: 18px;
+}
+
+.div_wrapper{
+  display: inline-flex;
+}
+
+
+
+  /*----------------------- CONFIGURAÇÔES --------------------------*/
+
+  .div_dlg{
+    display: block;
+    position: relative;  
+    width: 255px;
+    height: 115px;
+    top: 50px;
+    margin: auto;
+    background-color: rgb(100, 100, 100);
+    border: solid 2px whitesmoke;
+    color: white;  
+  }
+  
+  
+  fieldset{
+    position: absolute; 
+    width: 95%;    
+    padding: 5px;
+    margin: 5px;
+    height: 100px;
+  }
+  
+  fieldset > input{  
+    position: relative;
+    width: 225px; 
+    margin-bottom: 5px;
+    padding-right: 8px;
+    font-size: 18px;
+    text-align: center;
+    text-decoration: none;
+  }
+
+
+ 
+
+/************************************* MENSAGEM FEEDBACK *****************************************/
+.back_btn{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  background-color: rgb(20, 20, 20);
+  border-radius: 50%;
+}
+
+#div-msg-feedback-back{
+	width: 100%;
+	height: 100%;	
+	position: absolute;
+	cursor: wait; 
+	background-color: rgba(0,0,0,0.8); 	
+	z-index: 2;
+	display: block;	
+}
+
+#div-msg-feedback-wrapper{
+	position: absolute; 
+	width: 350px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+	background:rgba(50,50,50,0.9); 
+	color:white; 
+	border-radius:5px 5px 5px 5px; 
+	border:2px solid lightgray; 
+	text-align:center; 
+	padding:15px 15px 15px 15px;
+	z-index: 2;	
+}
+
+#div-msg-feedback-header{
+	width: 100%; 
+	border-radius: 5px 5px 0px 0px; 
+	padding: 5px; 
+	background-color:#3367D6; 
+	position: absolute; 
+	left:0px; top:0px; 
+	color: white;
+}
+
+#div-msg-feedback-header i {
+	float:left; 
+	padding:3px;	
+}
+
+#div-msg-feedback {
+	font-family:arial; 
+	padding-top: 10px;
+	font-weight: bold;
+}
+
+
+/*********************** WRAPPER BUTTONS *****************************************/
+
+#div_sair_ota{
+  position: relative;
+  display: flex;
+  margin-left: 25px;
+  cursor: pointer;
+}
+
+
+#div_guardar_nome{
+  position: relative;
+  display:flex;   
+  margin-left: 30px;
+  cursor: pointer;
+}
+
+#div_limpar_dispositivo{
+  position: relative;
+  display:flex; 
+  cursor: pointer;
+  margin-left: 30px;
+}
+
+
+#div_wrapper_save_ota{  
+  position: relative;  
+  margin-top: 5px;
+  display: inline-flex;
+  justify-content:center;
+  width: 100%;   
+}
+
+
+.elegante_ota{
+  position: relative;
+  display: none;
+  cursor: pointer; 
+  top: 350px;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  background-color: rgb(117, 114, 114);
+  border-radius: 50%;
+}
+
+
+#content{
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 95%; 
+  margin: auto;
+}
