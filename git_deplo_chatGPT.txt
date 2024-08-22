@@ -1,5 +1,5 @@
-gthb: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
-ngrk:2JoQhkfvo79uLY0rsfBqJryrisc_7MjiQPGH4zw1khzv31FDr
+gthb=[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]
+ngrk=[2JoQhkfvo79uLY0rsfBqJryrisc_7MjiQPGH4zw1khzv31FDr]
 
 
 
