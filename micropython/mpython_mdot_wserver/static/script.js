@@ -45,6 +45,7 @@ const aparelhos = {
     RAD:"Sistema de Som"
 };
 
+    
 
 ///////////////////
 // Evento onload //
@@ -58,6 +59,18 @@ window.addEventListener("load", (event) => {
     socket.onopen = function(e) {  console.log("[socket] socket.onopen "); };
     socket.onerror = function(e) {  console.log("[socket] socket.onerror "); };
     socket.onmessage = function(e) { console.log("[socket] " + e.data);  };*/
+
+    var socket = new WebSocket('ws://192.168.0.238:8484/ws');
+
+    socket.onopen = function () {
+        const timestamp = Date.now();
+        socket.send(timestamp); // Send the message 'Ping'
+    };
+
+    socket.addEventListener('message', function (event) {       
+        console.log(`Servidor: ${event.data}`);        
+    });
+
 
 });
 
@@ -131,7 +144,7 @@ async function CriarDevice(Id) {
         </div>`;
         
         
-    if(tipo == 1){ // LAMPADA
+    /*if(tipo == 1){ // LAMPADA
         container.innerHTML += `<div id=${Id + 100} oncontextmenu="clickDireito(${Id});" class="grid_container">
                 
         <div id=${Id} class="card card1" style="display: block;">
@@ -282,7 +295,7 @@ async function CriarDevice(Id) {
 
         </div>
         </div>`;
-    }
+    }*/
 
 }// Fim de CriarDevice()
 
