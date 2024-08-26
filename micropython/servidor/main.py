@@ -5,6 +5,17 @@ import uasyncio
 import ujson
 
 
+# ESP32C3 - LED = GPIO8
+# ESP32S2 - LED = GPIO5
+# ESP32S3_zero - RGB LED - GPIO21
+led = Pin(15, Pin.OUT)
+async def piscar_led():    
+    while True:
+        await uasyncio.sleep(5)
+        led.value(not led.value())      
+        
+uasyncio.create_task(piscar_led())
+
 datajson = {}  # Dicionário vazio
 
 app = Microdot()
@@ -18,15 +29,13 @@ async def handle_websocket(request, ws: WebSocket):
 
     try:
         while True:
-            message = await ws.receive()
-            print(message)
-            #led.value(not led.value())
-            #datajson['Estado'] = led.value()
-            #datajson['Id'] = message
-            print(f'Recebido: {message}')
-            for client in connected_clients:                
-                #json_data = str(json.dumps(datajson))
-                await client.send(message)
+            message = await ws.receive()            
+            datajson['Estado'] = led.value()
+            datajson['Id'] = message
+            json_data = str(ujson.dumps(datajson))
+            #print(f'Recebido: {message}')
+            for client in connected_clients:                          
+                await client.send(json_data)
     except Exception as e:
         print(f'Erro: {e}')
     finally:
