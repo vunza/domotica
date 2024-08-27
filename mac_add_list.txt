@@ -1,0 +1,2 @@
+ESP32S2 -- 806599fb3d62 -- client
+ESP32s3 -- 34b7da531c18 -- server

@@ -15,6 +15,7 @@ class Rede:
         sta = network.WLAN(network.STA_IF)
         sta.active(False)
         sta.active(True)
+        sta.disconnect()  # Disconnect from last connected WiFi SSID
         sta.config(txpower=_txpower)
          
         if sta.isconnected():

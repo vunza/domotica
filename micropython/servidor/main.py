@@ -6,7 +6,7 @@ import ujson
 
 
 # ESP32C3 - LED = GPIO8
-# ESP32S2 - LED = GPIO5
+# ESP32S2 - LED = GPIO15
 # ESP32S3_zero - RGB LED - GPIO21
 led = Pin(15, Pin.OUT)
 async def piscar_led():    
