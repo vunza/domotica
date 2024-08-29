@@ -8,20 +8,17 @@ import uasyncio, ujson, espnow
 # ESP32S2 - LED = GPIO15
 # ESP32S3_zero - RGB LED - GPIO21
 led = Pin(8, Pin.OUT)
-'''async def piscar_led():    
-    while True:
-        await uasyncio.sleep(5)
-        led.value(not led.value())      
-        
-uasyncio.create_task(piscar_led())'''
+
+print('Canal atual:', canal_wifi)
+
 
 ###########
 # ESP-NOW #
 ###########
-espnow = espnow.ESPNow()     
-espnow.active(True)
+e = espnow.ESPNow()     
+e.active(True)
 peer_mac = b'\x80\x65\x99\xfb\x3d\x62'   # MAC ESP2S2 Client
-espnow.add_peer(peer_mac)
+e.add_peer(peer_mac)
 
 ######################
 # Variaveis/Objectos #
@@ -31,6 +28,21 @@ app = Microdot()
 connected_clients = []
 
 
+########################
+# RECEBE DADOS ESP-NOW #
+########################
+def recv_cb(e):
+    while True:  # Read out all messages waiting in the buffer
+        mac, msg = e.irecv(100)  # Don't wait if no messages left
+        print(mac, msg)
+        if mac is None:
+            return
+        elif msg == b'ASK_PAIRING':
+            led.value(not led.value())
+
+e.irq(recv_cb)
+
+
 ##########################
 # ENVIO DE DADOS ESP-NOW #
 ##########################
@@ -38,17 +50,17 @@ async def send_task():
     while True:
         msg = b'walk'
         try:
-            espnow.send(peer_mac, msg, True)
+            e.send(peer_mac, msg, True)
             led.value(not led.value())
         except OSError as err:
             print("Erro ao enviar mensagem:", err)        
         await uasyncio.sleep(5)  
 
-uasyncio.create_task(send_task())      
+#uasyncio.create_task(send_task())      
         
 
 def envia_dados():
-    espnow.send(peer_mac, "walk", True)
+    e.send(peer_mac, "walk", True)
     led.value(not led.value()) 
         
         
