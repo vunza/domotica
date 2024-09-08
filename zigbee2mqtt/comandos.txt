@@ -1,0 +1,13 @@
+
+ALTERAR O ESTADO DO DEVICE:
+===========================
+Topico: zigbee2mqtt/[nome-do-device]/set 
+Payload: {"state": "ON"}|{"state": "OFF"}|{"state": "TOGGLE"}
+
+
+OBTER ESTADO DO DEVICE:
+=======================
+Topico: zigbee2mqtt/[nome-do-device]/get 
+Payload: {"state": ""}
+
+RESPOSTA: Corredor = {"backlight_mode":"normal","linkquality":116,"power_on_behavior":"off","state":"ON"}
