@@ -15,15 +15,16 @@ import wifi as wf
 
 potencia_tx = 10
 
-newmac = b'\x12\xb2\x03\x04\x05\xb1'
+newmac = b'\x02\x00\x00\x00\x00\x01'
+
 
 # Conectar-se a Rede WiFi
 sta = wf.Rede(rede, senha, newmac)
 sta.conectar_wifi(potencia_tx)
 canal_wifi = sta.wifi_ch
 
-# Criar AP
 '''
+# Criar AP
 ap = wf.Rede('ESP32', '123456789', newmac)
 hidden = False
 canal = 1

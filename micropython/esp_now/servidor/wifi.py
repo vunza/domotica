@@ -52,7 +52,7 @@ class Rede:
 
         while ap.active() == False:
             print("Criando a Rede: %s" % self.ssid)
-            pass
+            time.sleep(1)
             
         print('SSID: %s\nIP %s' % (self.ssid, ap.ifconfig()[0]))
         print('Novo endereço MAC:', ap.config('mac'))
