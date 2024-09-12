@@ -10,7 +10,7 @@
     {
         "id": "0beaa6996a1f29f5",
         "type": "tab",
-        "label": "Flow 1",
+        "label": "Dashboard",
         "disabled": false,
         "info": "",
         "env": []
@@ -45,14 +45,6 @@
         "willMsg": {},
         "userProps": "",
         "sessionExpiry": ""
-    },
-    {
-        "id": "a26992e957991ffb",
-        "type": "ui_tab",
-        "name": "Home",
-        "icon": "dashboard",
-        "disabled": false,
-        "hidden": false
     },
     {
         "id": "3ac1d7ddd2d026c3",
@@ -153,20 +145,9 @@
         }
     },
     {
-        "id": "e9d1c394cd994c01",
-        "type": "ui_group",
-        "name": "Sala",
-        "tab": "63a501c8f9a7995a",
-        "order": 1,
-        "disp": true,
-        "width": "6",
-        "collapse": true,
-        "className": ""
-    },
-    {
         "id": "63a501c8f9a7995a",
         "type": "ui_tab",
-        "name": "Principal",
+        "name": "Testes",
         "icon": "dashboard",
         "disabled": false,
         "hidden": false
@@ -248,8 +229,8 @@
     {
         "id": "2b8b535d0f438db2",
         "type": "ui_group",
-        "name": "Cozinha",
-        "tab": "63a501c8f9a7995a",
+        "name": "Iluminação",
+        "tab": "412b279c821be93e",
         "order": 2,
         "disp": true,
         "width": "6",
@@ -274,7 +255,7 @@
     {
         "id": "542f751e15337c46",
         "type": "websocket-listener",
-        "path": "/ws/echo",
+        "path": "/ws/ui",
         "wholemsg": "false"
     },
     {
@@ -284,9 +265,30 @@
         "wholemsg": "false"
     },
     {
+        "id": "25c1a189950c0bad",
+        "type": "ui_group",
+        "name": "Corredor",
+        "tab": "63a501c8f9a7995a",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "412b279c821be93e",
+        "type": "ui_tab",
+        "name": "Dashboard",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    },
+    {
         "id": "fbd2a4dcc8173b77",
         "type": "aedes broker",
         "z": "f39d3e21592fb58a",
+        "d": true,
         "name": "mqtt_broker",
         "mqtt_port": 1883,
         "mqtt_ws_bind": "port",
@@ -303,7 +305,8 @@
         "wires": [
             [],
             []
-        ]
+        ],
+        "info": "Servidor MQTT"
     },
     {
         "id": "f9978ed6cb2d3e72",
@@ -349,7 +352,7 @@
         "type": "ui_button",
         "z": "f39d3e21592fb58a",
         "name": "",
-        "group": "e9d1c394cd994c01",
+        "group": "25c1a189950c0bad",
         "order": 0,
         "width": 0,
         "height": 0,
@@ -379,7 +382,7 @@
         "name": "",
         "label": "Corredor Hall",
         "tooltip": "",
-        "group": "e9d1c394cd994c01",
+        "group": "25c1a189950c0bad",
         "order": 1,
         "width": 0,
         "height": 0,
@@ -422,8 +425,7 @@
         "y": 80,
         "wires": [
             [
-                "269f8c6fa5d42e12",
-                "15904f1f83081a97"
+                "269f8c6fa5d42e12"
             ]
         ]
     },
@@ -471,7 +473,7 @@
         "type": "ui_button",
         "z": "f39d3e21592fb58a",
         "name": "",
-        "group": "e9d1c394cd994c01",
+        "group": "25c1a189950c0bad",
         "order": 0,
         "width": 0,
         "height": 0,
@@ -501,7 +503,7 @@
         "name": "",
         "label": "Laboratorio",
         "tooltip": "",
-        "group": "e9d1c394cd994c01",
+        "group": "25c1a189950c0bad",
         "order": 1,
         "width": 0,
         "height": 0,
@@ -622,7 +624,8 @@
         "broker": "d9285f121fa355e0",
         "x": 480,
         "y": 140,
-        "wires": []
+        "wires": [],
+        "info": "Solicita estado do dispositivo, cada X tempo, para actualizar o estado do Botao."
     },
     {
         "id": "1c351fe8dbd62657",
@@ -640,34 +643,15 @@
         "broker": "d9285f121fa355e0",
         "x": 500,
         "y": 420,
-        "wires": []
-    },
-    {
-        "id": "15904f1f83081a97",
-        "type": "ui_template",
-        "z": "f39d3e21592fb58a",
-        "group": "2b8b535d0f438db2",
-        "name": "",
-        "order": 4,
-        "width": 0,
-        "height": 0,
-        "format": "<!DOCTYPE html>\n<html>\n\n<head>\n    <style>\n        #cards_container {\n            display: block;\n            grid-gap: 0.7rem;\n            height: 100%;\n            overflow: auto;\n        }\n      \n        .nr-dashboard-template{\n            height:calc(90vh - 100px);\n            //border:1px solid blue;\n        }\n\n        .card {\n            transition: 0.3s;\n            border-radius: 5px;\n            border: 1px solid rgba(140, 140, 140, .5);\n            background-color: #3a3b3c;\n            margin: 0px auto 10px auto;\n            text-align: center;\n            width: 100%;\n            /* Ajusta a largura da div para 100% da largura do seu contêiner pai */\n            max-width: 450px;\n            /* Define um limite máximo para a largura da div */\n            box-sizing: border-box;\n            /* Inclui padding e borda no cálculo da largura */\n            padding: 5px;\n            /* Padding opcional */\n            cursor: pointer;\n        }\n\n        .div_img {\n            width: 30px;\n            margin: auto;\n            border-radius: 50%;\n            padding: 5px;\n            border: 1px solid rgba(140, 140, 140, .5);\n            box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);\n        }\n    </style>    \n</head>\n\n<body>\n    <p>Texto</p>\n    <p>{{msg.payload.state}}</p>\n    <!-- DIV que contem os Dispositivos -->\n    <div id=\"cards_container\"></div>\n    <!-- DIV que contem os Dispositivos -->\n\n    <!-- Opcional: Adicionar algum script para interatividade -->\n    <script>\n        const img_lampada = '<svg fill=\"lightgray\" viewBox=\"-80 0 512 512\" ><path d=\"M96.06 454.35c.01 6.29 1.87 12.45 5.36 17.69l17.09 25.69a31.99 31.99 0 0 0 26.64 14.28h61.71a31.99 31.99 0 0 0 26.64-14.28l17.09-25.69a31.989 31.989 0 0 0 5.36-17.69l.04-38.35H96.01l.05 38.35zM0 176c0 44.37 16.45 84.85 43.56 115.78 16.52 18.85 42.36 58.23 52.21 91.45.04.26.07.52.11.78h160.24c.04-.26.07-.51.11-.78 9.85-33.22 35.69-72.6 52.21-91.45C335.55 260.85 352 220.37 352 176 352 78.61 272.91-.3 175.45 0 73.44.31 0 82.97 0 176zm176-80c-44.11 0-80 35.89-80 80 0 8.84-7.16 16-16 16s-16-7.16-16-16c0-61.76 50.24-112 112-112 8.84 0 16 7.16 16 16s-7.16 16-16 16z\"/></svg>';\n\n        let nome = \"[Nome]\";\n\n        let cards_container = document.getElementById('cards_container');\n        \n        // Função para criar uma nova <div> com conteúdo\n        function criarDiv(Id) {  \n\n            var novaDiv = document.createElement('div');\n\n            cards_container.innerHTML += `\n            <div id=${Id + 100} class=\"card\">\n                <div class=\"div_img\" id=${Id} onclick=\"handleClick(this.id);\">${img_lampada}</div>  \n                <div class=\"div_nome\" id=\"div_nome\">${nome}</div>    \n                <div class=\"div_nome\" id=\"div_nome\">${nome}</div>                        \n            </div>`;\n           \n            //cards_container.appendChild(novaDiv);\n        }\n\n        for(var cont = 0; cont < 10; cont++){\n            criarDiv(cont);\n        }\n\n        var socket = new WebSocket(\"/ws/echo\"); \n            \n         function handleClick(Id) {                     \n            var newMsg1 = [\n                {id:Id},\n                {state:\"TOGGLE\"}\n            ];\n          \n            if (socket.readyState === WebSocket.OPEN) {\n                socket.send(JSON.stringify(newMsg1));\n            }    \n        }\n\n                \n    </script>\n</body>\n\n</html>",
-        "storeOutMessages": true,
-        "fwdInMessages": true,
-        "resendOnRefresh": true,
-        "templateScope": "local",
-        "className": "",
-        "x": 640,
-        "y": 40,
-        "wires": [
-            []
-        ]
+        "wires": [],
+        "info": "Solicita estado do dispositivo, cada X tempo, para actualizar o estado do Botao."
     },
     {
         "id": "0b5fdfaadf780e88",
         "type": "websocket in",
         "z": "f39d3e21592fb58a",
-        "name": "websocket",
+        "d": true,
+        "name": "ServidorWS_Rx",
         "server": "542f751e15337c46",
         "client": "",
         "x": 620,
@@ -676,13 +660,15 @@
             [
                 "83a7777023dd9026"
             ]
-        ]
+        ],
+        "info": "Servidor WebSocket (nó para receber dados dos clientes)."
     },
     {
         "id": "83a7777023dd9026",
         "type": "function",
         "z": "f39d3e21592fb58a",
-        "name": "function 3",
+        "d": true,
+        "name": "func_devs",
         "func": "\nmsg.payload = JSON.parse(msg.payload);\nvar elementos = [];\nconst id = msg.payload[0].id;\nvar array_json = msg.payload;\nvar total_obj_json = array_json.length;\n\nfor(var cont = 0; cont < total_obj_json; cont++){\n    if(cont == id){\n        msg.payload = msg.payload[1];\n        elementos[cont] = msg;\n    }\n    else{\n         elementos[cont] = null\n    }   \n}\n\nreturn elementos;\n\n",
         "outputs": 2,
         "timeout": 0,
@@ -690,7 +676,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 800,
+        "x": 810,
         "y": 260,
         "wires": [
             [
@@ -699,6 +685,308 @@
             [
                 "0a1d9a0f4a6dba7d"
             ]
+        ],
+        "info": "Reencaminha payload, _**{\"state\":\"TOGGLE\"}**_, aos dispositivos correspondentes."
+    },
+    {
+        "id": "93d46ef6af82411a",
+        "type": "websocket out",
+        "z": "f39d3e21592fb58a",
+        "d": true,
+        "name": "ServidorWS_Tx",
+        "server": "542f751e15337c46",
+        "client": "",
+        "x": 380,
+        "y": 260,
+        "wires": [],
+        "info": "Servidor WebSocket (nó para enviar dados aos clientes)."
+    },
+    {
+        "id": "1038e34232cd3302",
+        "type": "inject",
+        "z": "f39d3e21592fb58a",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 260,
+        "wires": [
+            [
+                "93d46ef6af82411a"
+            ]
         ]
+    },
+    {
+        "id": "65b0b39179ae8e87",
+        "type": "aedes broker",
+        "z": "0beaa6996a1f29f5",
+        "name": "mqtt_broker",
+        "mqtt_port": 1883,
+        "mqtt_ws_bind": "port",
+        "mqtt_ws_port": "",
+        "mqtt_ws_path": "",
+        "cert": "",
+        "key": "",
+        "certname": "",
+        "keyname": "",
+        "dburl": "",
+        "usetls": false,
+        "x": 130,
+        "y": 80,
+        "wires": [
+            [],
+            []
+        ],
+        "info": "Servidor MQTT"
+    },
+    {
+        "id": "eb0cd5ea8ebc6328",
+        "type": "mqtt in",
+        "z": "0beaa6996a1f29f5",
+        "name": "SubCrredor",
+        "topic": "zigbee2mqtt/0xa4c138e342bdfb48",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "d9285f121fa355e0",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 310,
+        "y": 80,
+        "wires": [
+            [
+                "8151acae913eb6a0"
+            ]
+        ]
+    },
+    {
+        "id": "922dc88a03285b62",
+        "type": "mqtt out",
+        "z": "0beaa6996a1f29f5",
+        "name": "PubCorredor",
+        "topic": "zigbee2mqtt/0xa4c138e342bdfb48/set",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "d9285f121fa355e0",
+        "x": 870,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "8151acae913eb6a0",
+        "type": "function",
+        "z": "0beaa6996a1f29f5",
+        "name": "criapayload",
+        "func": "\n\nif (msg.payload.state === \"ON\") {\n    msg.payload = {\"state\": \"ON\"};\n} else if (msg.payload.state === \"OFF\") {\n    msg.payload = {\"state\": \"OFF\"};;\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 80,
+        "wires": [
+            [
+                "039cc20dd878b1c0"
+            ]
+        ]
+    },
+    {
+        "id": "60e51bfb3ea05fc0",
+        "type": "mqtt in",
+        "z": "0beaa6996a1f29f5",
+        "name": "SubLaboratorio",
+        "topic": "zigbee2mqtt/0x28dba7fffe1af100",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "d9285f121fa355e0",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 400,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ea967754b10f50a6",
+        "type": "mqtt out",
+        "z": "0beaa6996a1f29f5",
+        "name": "PubLaboratorio",
+        "topic": "zigbee2mqtt/0x28dba7fffe1af100/set",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "d9285f121fa355e0",
+        "x": 820,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "039cc20dd878b1c0",
+        "type": "ui_template",
+        "z": "0beaa6996a1f29f5",
+        "group": "2b8b535d0f438db2",
+        "name": "",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "format": "<!DOCTYPE html>\n<html>\n\n<head>    \n    <style>\n        #cards_container {\n        display: block;\n        grid-gap: 0.7rem;\n        height: 100%;\n        overflow: auto;\n        }\n        \n        .nr-dashboard-template{\n        height:calc(90vh - 100px);\n        //border:1px solid blue;\n        }\n        \n        .card {\n        transition: 0.3s;\n        border-radius: 5px;\n        border: 1px solid rgba(140, 140, 140, .5);\n        background-color: #3a3b3c;\n        margin: 0px auto 10px auto;\n        text-align: center;\n        width: 100%;\n        /* Ajusta a largura da div para 100% da largura do seu contêiner pai */\n        max-width: 450px;\n        /* Define um limite máximo para a largura da div */\n        box-sizing: border-box;\n        /* Inclui padding e borda no cálculo da largura */\n        padding: 5px;\n        /* Padding opcional */\n        cursor: pointer;\n        }\n        \n        .div_img {\n        width: 30px;\n        margin: auto;\n        border-radius: 50%;\n        padding: 5px;\n        border: 1px solid rgba(140, 140, 140, .5);\n        box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);\n        }\n    </style>    \n</head>\n\n<body>    \n    <p>{{msg.payload.state}}</p>\n    <!-- DIV que contem os Dispositivos -->\n    <div id=\"cards_container\"></div>\n    <!-- DIV que contem os Dispositivos -->\n\n    <!-- Opcional: Adicionar algum script para interatividade -->\n    <script>\n        const img_lampada = '<svg fill=\"lightgray\" viewBox=\"-80 0 512 512\" ><path d=\"M96.06 454.35c.01 6.29 1.87 12.45 5.36 17.69l17.09 25.69a31.99 31.99 0 0 0 26.64 14.28h61.71a31.99 31.99 0 0 0 26.64-14.28l17.09-25.69a31.989 31.989 0 0 0 5.36-17.69l.04-38.35H96.01l.05 38.35zM0 176c0 44.37 16.45 84.85 43.56 115.78 16.52 18.85 42.36 58.23 52.21 91.45.04.26.07.52.11.78h160.24c.04-.26.07-.51.11-.78 9.85-33.22 35.69-72.6 52.21-91.45C335.55 260.85 352 220.37 352 176 352 78.61 272.91-.3 175.45 0 73.44.31 0 82.97 0 176zm176-80c-44.11 0-80 35.89-80 80 0 8.84-7.16 16-16 16s-16-7.16-16-16c0-61.76 50.24-112 112-112 8.84 0 16 7.16 16 16s-7.16 16-16 16z\"/></svg>';\n\n        let nome = \"[Nome]\";\n\n        let cards_container = document.getElementById('cards_container');\n        \n        // Função para criar uma nova <div> com conteúdo\n        function criarDiv(Id) {  \n\n            var novaDiv = document.createElement('div');\n\n            cards_container.innerHTML += `\n            <div id=${Id + 100} class=\"card\">\n                <div class=\"div_img\" id=${Id} onclick=\"handleClick(this.id);\">${img_lampada}</div>  \n                <div class=\"div_nome\" id=\"div_nome\">${nome}</div>    \n                <div class=\"div_nome\" id=\"div_nome\">${nome}</div>                        \n            </div>`;\n           \n            //cards_container.appendChild(novaDiv);\n        }\n\n        for(var cont = 0; cont < 4; cont++){\n            criarDiv(cont);\n        }\n\n        var socket = new WebSocket(\"ws://192.168.0.3:1880/ws/ui\");\n        \n            \n         function handleClick(Id) {                     \n            var newMsg1 = [\n                {id:Id},\n                {state:\"TOGGLE\"}\n            ];\n\n            if (socket.readyState === WebSocket.OPEN) {\n                socket.send(JSON.stringify(newMsg1));\n            } \n        }\n\n                \n    </script>\n</body>\n\n</html>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 680,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "14cc11d01a92614e",
+        "type": "websocket in",
+        "z": "0beaa6996a1f29f5",
+        "name": "ServidorWS_Rx",
+        "server": "542f751e15337c46",
+        "client": "",
+        "x": 640,
+        "y": 260,
+        "wires": [
+            [
+                "760f84d8729e2efa"
+            ]
+        ],
+        "info": "Servidor WebSocket (nó para receber dados dos clientes)."
+    },
+    {
+        "id": "760f84d8729e2efa",
+        "type": "function",
+        "z": "0beaa6996a1f29f5",
+        "name": "func_devs",
+        "func": "\nmsg.payload = JSON.parse(msg.payload);\nvar elementos = [];\nconst id = msg.payload[0].id;\nvar array_json = msg.payload;\nvar total_obj_json = array_json.length;\n\nfor(var cont = 0; cont < total_obj_json; cont++){\n    if(cont == id){\n        msg.payload = msg.payload[1];\n        elementos[cont] = msg;\n    }\n    else{\n         elementos[cont] = null\n    }   \n}\n\nreturn elementos;\n\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 260,
+        "wires": [
+            [
+                "922dc88a03285b62"
+            ],
+            [
+                "ea967754b10f50a6"
+            ]
+        ],
+        "info": "Reencaminha payload, _**{\"state\":\"TOGGLE\"}**_, aos dispositivos correspondentes."
+    },
+    {
+        "id": "7057422addc06595",
+        "type": "websocket out",
+        "z": "0beaa6996a1f29f5",
+        "name": "ServidorWS_Tx",
+        "server": "542f751e15337c46",
+        "client": "",
+        "x": 400,
+        "y": 260,
+        "wires": [],
+        "info": "Servidor WebSocket (nó para enviar dados aos clientes)."
+    },
+    {
+        "id": "10939352affb4eae",
+        "type": "inject",
+        "z": "0beaa6996a1f29f5",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 200,
+        "y": 260,
+        "wires": [
+            [
+                "7057422addc06595"
+            ]
+        ]
+    },
+    {
+        "id": "07348d0343252ffb",
+        "type": "mqtt in",
+        "z": "0beaa6996a1f29f5",
+        "name": "SubTodos",
+        "topic": "zigbee2mqtt/#",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "d9285f121fa355e0",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 300,
+        "y": 160,
+        "wires": [
+            [
+                "f7ccc367c6c2dc4f"
+            ]
+        ]
+    },
+    {
+        "id": "f7ccc367c6c2dc4f",
+        "type": "debug",
+        "z": "0beaa6996a1f29f5",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 160,
+        "wires": []
     }
 ]
