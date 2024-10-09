@@ -11,3 +11,8 @@ Topico: zigbee2mqtt/[nome-do-device]/get
 Payload: {"state": ""}
 
 RESPOSTA: Corredor = {"backlight_mode":"normal","linkquality":116,"power_on_behavior":"off","state":"ON"}
+
+
+
+
+test -w /dev/ttyUSB0 && echo success || echo failure

@@ -1,0 +1,38 @@
+frontend:
+  port: 8080
+mqtt:
+  server: mqtt://localhost:1883
+  base_topic: zigbee2mqtt
+  qos: 0
+  keepalive: 300
+serial:
+  port: /dev/ttyUSB0
+  adapter: ezsp
+advanced:
+  homeassistant_legacy_entity_attributes: false
+  transmit_power: 20
+  channel: 15
+  log_level: error
+  legacy_api: false
+  legacy_availability_payload: false
+devices:
+  '0x28dba7fffe1af100':
+    friendly_name: Laboratório
+    availability: true
+    check_interval: 60000
+    filtered_attributes:
+      - backlight_mode
+      - linkquality
+      - power_on_behavior
+      - update
+  '0xa4c138e342bdfb48':
+    friendly_name: Corredor Hall
+    availability: true
+    check_interval: 60000
+    filtered_attributes:
+      - backlight_mode
+      - linkquality
+      - power_on_behavior
+device_options:
+  legacy: false
+permit_join: true
