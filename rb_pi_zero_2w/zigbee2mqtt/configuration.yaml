@@ -35,4 +35,4 @@ devices:
       - power_on_behavior
 device_options:
   legacy: false
-permit_join: true
+permit_join: false
