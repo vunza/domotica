@@ -24,61 +24,57 @@ window.addEventListener('DOMContentLoaded', function () {
 
     // Limpar select option da Acção
     document.getElementById('select_accao').selectedIndex = -1;
-    
+
     // Conectar-se ao servidor MQTT   
     client_mqtt.on('connect', () => {
-        console.log('Conectado ao Broker');
+        //console.log('Conectado ao Broker');
         client_mqtt.subscribe('zigbee2mqtt/#', (err) => {
             if (!err) {
-                console.log('Subscrito no tópico:');
+                //console.log('Subscrito no tópico:');
             }
         });
     });
+    
 
     // Processar mensgens vindas do Servidor MQTT
     client_mqtt.on('message', (topic, message) => { 
         
-        if (topic.includes('zigbee2mqtt/0x')) {
-
-            // Inspeccionar JSON
-            let parsedMessage;
-            try {
-                parsedMessage = JSON.parse(message.toString());
-            } catch (error) {
-                console.error('Erro ao converter a mensagem para JSON:', error);
-                return;
-            }
-
-            const msg = parsedMessage;
-
-            if(msg.state != 'online' && !topic.includes('availability')&& topic.includes('zigbee2mqtt/0x') && msg != 'TOGGLE' && msg.state != 'TOGGLE' && !topic.includes('bridge') && !topic.includes('Cordinator') && !topic.includes('get')){
-                
-                // Obter nome do device
-                const parts = (topic).split('/');
-                const ieeeAddress = parts[1];
-                const dev_estado = msg;             
-                processDevicesState(`{ Id: ${ieeeAddress}, Estado: ${dev_estado} }`, "DEVICES_STATE");
-                console.log(parsedMessage, topic);
-            }
-          
-            
-        }
+        // Actualiza estado dos devices 
+        updateDevState(topic, message);
         
         // Preenche array de dispositivos
-        const devs = processDevicesArray(message, topic);
-
+        const listaDevs = processDevicesArray(message, topic);        
+        
         // Exibir dispositivos no DOM
-        putDevices2DOM(devs);     
+        putDevices2DOM(listaDevs);     
         
         // Processar Timers do dispositivos
-        processDevicesTimers(message, topic);
+        processDevicesTimers(message, topic);        
 
-        // Processar Estado do dispositivos
-        processDevicesState(message, topic);
+    });    
+   
+    aaa();
 
+}); // window.addEventListener('DOMContentLoaded', function () 
+
+
+
+
+function aaa(){    
+    
+    deviceList.forEach((item) => {
+        setTimeout(() => {
+            const topic = 'zigbee2mqtt/' + item.ieeeAddress + '/get';
+            const payload = '{"state":""}';            
+            client_mqtt.publish(topic, payload);
+            console.log(topic);
+        }, 1000); 
     });
+}
 
-});
+
+
+
 
 
 //////////////////////////////
@@ -149,56 +145,39 @@ function putDevices2DOM(devicesArray) {
 //////////////////////////////////
 // Processar Estado dos devices //
 //////////////////////////////////
-function processDevicesState(message, topic) {
-   
-    // Inspeccionar JSON
-    let parsedMessage;    
+function processDevicesState(msg) {    
+  
+    let estado = null;
+    let devId = null;
 
-    try {
-        parsedMessage = JSON.parse(message.toString());
-    } catch (error) {
-        console.error('Erro ao converter a mensagem para JSON:', error);
-        return;
+    if (msg.Estado.state) {
+        estado = msg.Estado.state;
+        devId = `${msg.Id}1`;
+        setDevState(devId, devId, estado);
     }
-    
-    
-    if (topic == 'DEVICES_STATE' && typeof parsedMessage === 'object' && parsedMessage !== null && !Array.isArray(parsedMessage)) {
 
-        msg = parsedMessage;
-        
-        let estado = null;
-        let devId = null;
-
-        if (msg.Estado.state) {
-            estado = msg.Estado.state;
-            devId = `${msg.Id}1`;
-            setDevState(devId, devId, estado);
-        }
-
-        if (msg.Estado.state_left) {
-            estado = msg.Estado.state_left;
-            devId = `${msg.Id}1`;
-            setDevState(devId, devId, estado);
-        }
-
-        if (msg.Estado.state_center) {
-            estado = msg.Estado.state_center;
-            devId = `${msg.Id}2`;
-            setDevState(devId, devId, estado);
-        }
-
-        if (msg.Estado.state_right && msg.Estado.state_center) {
-            estado = msg.Estado.state_right;
-            devId = `${msg.Id}3`;
-            setDevState(devId, devId, estado);
-        }
-        else if (msg.Estado.state_right && !msg.Estado.state_center) {
-            estado = msg.Estado.state_right;
-            devId = `${msg.Id}2`;
-            setDevState(devId, devId, estado);
-        }
-
+    if (msg.Estado.state_left) {
+        estado = msg.Estado.state_left;
+        devId = `${msg.Id}1`;
+        setDevState(devId, devId, estado);
     }
+
+    if (msg.Estado.state_center) {
+        estado = msg.Estado.state_center;
+        devId = `${msg.Id}2`;
+        setDevState(devId, devId, estado);
+    }
+
+    if (msg.Estado.state_right && msg.Estado.state_center) {
+        estado = msg.Estado.state_right;
+        devId = `${msg.Id}3`;
+        setDevState(devId, devId, estado);
+    }
+    else if (msg.Estado.state_right && !msg.Estado.state_center) {
+        estado = msg.Estado.state_right;
+        devId = `${msg.Id}2`;
+        setDevState(devId, devId, estado);
+    }    
 
 } //processDevicesState()
 
@@ -308,13 +287,41 @@ function processDevicesTimers(message, topic) {
 
 
 
-/////////////////////////////////
-// Conectar-se ao Servior MQTT //
-/////////////////////////////////
-function sendMessage() {
-    const msg = '{"state":"TOGGLE"}';
-    client_mqtt.publish('zigbee2mqtt/0xa4c138e342bdfb48/set', msg);
-    console.log(`Mensagem enviada: ${msg}`);
+//////////////////////////////////
+// Actualiza estado dos devices //
+//////////////////////////////////
+function updateDevState(topic, message) {
+    if (topic.includes('zigbee2mqtt/0x')) {
+
+        // Inspeccionar JSON
+        let parsedMessage;
+        try {
+            parsedMessage = JSON.parse(message.toString());
+        } catch (error) {
+            console.error('Erro ao converter a mensagem para JSON:', error);
+            return;
+        }
+
+        const msg = parsedMessage;
+
+        if(msg.state != 'online' && !topic.includes('availability')&& topic.includes('zigbee2mqtt/0x') && msg != 'TOGGLE' && msg.state != 'TOGGLE' && !topic.includes('bridge') && !topic.includes('Cordinator') && !topic.includes('get')){
+            
+            // Obter nome do device
+            const parts = (topic).split('/');
+            const ieeeAddress = parts[1];
+            const dev_estado = msg;             
+            
+            const data = { 
+                Id: ieeeAddress, 
+                Estado: dev_estado
+            };
+
+            // Actualiza estado dos dispositivos
+            processDevicesState(data);
+        }
+      
+        
+    }
 } 
 
 
@@ -353,9 +360,9 @@ function obter_data_hora() {
 ////////////////////////////////////////
 // Solicita o estado dos dispositivos //
 ////////////////////////////////////////
-var mensagem = {
-    getdevstate: ""
-};
+//var mensagem = {
+//    getdevstate: ""
+//};
 
 //scope.send({ payload: JSON.stringify(mensagem) });// Enviar os dados ao fluxo/flow
 
@@ -814,18 +821,12 @@ document.getElementById('div_guardar_tmrs').addEventListener('click', function (
 /////////////////////////
 // Alterar cor lampada //
 /////////////////////////
-function alterar_cor_lamp(Id, Cor) {
-    // Alterar propriedade 'fill' do svg com id = svg_lamp  dentro da div con id = Id          
-    //$(`#${Id}  #svg_lamp path`).css("fill", Cor);
-
+function alterar_cor_lamp(Id, Cor) {    
     const svgElement = document.getElementById(Id);                
-    const pathElement = svgElement.querySelector('#svg_lamp path');  
-    console.log(Cor);               
+    const pathElement = svgElement.querySelector('#svg_lamp path');               
     if (pathElement) {                    
         pathElement.style.fill = Cor;                       
     }
-
-    //document.querySelector(`#${Id} #svg_lamp path`).style.fill = Cor;
 }
 
 
