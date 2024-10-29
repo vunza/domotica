@@ -82,7 +82,7 @@
             <table id="tbl_cmd">
                 <tr>
                     <td>
-                        <label id="lbl_activar" for="activar">Activado:</label>
+                        <div id="lbl_activar" >Activado:</div>
                     </td>
                     <td class="esquerda">
                         <input type="checkbox" id="chk_activar" name="activar" />
@@ -100,7 +100,7 @@
                 </tr>-->
                 <tr>
                     <td>
-                        <label for="select_action">Acção: </label>
+                        <div class="hora" for="select_action">Acção: </div>
                     </td>
                     <td class="esquerda">
                         <select id="select_accao" name="select_action">
@@ -111,10 +111,10 @@
                 </tr>
                 <tr>
                     <td>
-                        <label class="hora" for="appt-time">Hora: </label>
+                        <div class="hora">Hora: </div>
                     </td>
-                    <td class="esquerda">
-                        <input class="hora" id="time_hora" type="time" name="appt-time" value="--:-- --">
+                    <td class="esquerda">                        
+                        <input class="hora" id="time_hora" type="time" name="appt_time" value="00:00 AM">
                     </td>
                 </tr>
                 <tfoot>

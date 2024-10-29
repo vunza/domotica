@@ -34,45 +34,58 @@ window.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
-    
+
 
     // Processar mensgens vindas do Servidor MQTT
-    client_mqtt.on('message', (topic, message) => { 
-        
+    client_mqtt.on('message', (topic, message) => {
+
         // Actualiza estado dos devices 
         updateDevState(topic, message);
-        
-        // Preenche array de dispositivos
-        const listaDevs = processDevicesArray(message, topic);        
-        
-        // Exibir dispositivos no DOM
-        putDevices2DOM(listaDevs);     
-        
-        // Processar Timers do dispositivos
-        processDevicesTimers(message, topic);        
 
-    });    
-   
-    aaa();
+        // Preenche array de dispositivos
+        const listaDevs = processDevicesArray(message, topic);
+
+
+        // Exibir dispositivos no DOM
+        putDevices2DOM(listaDevs);
+
+        // Processar Timers do dispositivos
+        processDevicesTimers(message, topic);
+
+    });
+
+
+    // Intervalo para verificar o array
+    let intervalo = setInterval(() => {
+        if (deviceList.length > 0) {
+            clearInterval(intervalo);
+            ask_dev_state();
+        }
+    }, 500);
+
 
 }); // window.addEventListener('DOMContentLoaded', function () 
 
 
+////////////////////////////////////
+// Solicitar estado dos elementos //
+////////////////////////////////////
+function ask_dev_state() {
 
-
-function aaa(){    
-    
     deviceList.forEach((item) => {
+        // String original
+        let id_aterado = item.ieeeAddress;
+        // Remove o último caractere
+        let id_org = id_aterado.slice(0, -1);
+
         setTimeout(() => {
-            const topic = 'zigbee2mqtt/' + item.ieeeAddress + '/get';
-            const payload = '{"state":""}';            
-            client_mqtt.publish(topic, payload);
-            console.log(topic);
-        }, 1000); 
+            const topic = 'zigbee2mqtt/' + id_org + '/get';
+            const payload = '{"state":""}';
+            client_mqtt.publish(topic, payload);           
+        }, 1000);
     });
+
 }
-
-
 
 
 
@@ -81,9 +94,9 @@ function aaa(){
 // Processar Topico devices //
 //////////////////////////////
 function processDevicesArray(message, topic) {
-    
+
     // Inspeccionar JSON
-    let parsedMessage;       
+    let parsedMessage;
     try {
         parsedMessage = JSON.parse(message.toString());
     } catch (error) {
@@ -93,25 +106,25 @@ function processDevicesArray(message, topic) {
 
     // Tratar mensagem    
     if (Array.isArray(parsedMessage) && topic == 'zigbee2mqtt/bridge/devices') {
-            
+
         var devices = parsedMessage;
 
         for (var key in devices) {
             if (devices.hasOwnProperty(key)) {
-                
+
                 var device = devices[key];
-                
-                if(device.friendly_name != 'Coordinator'){
+
+                if (device.friendly_name != 'Coordinator') {
 
                     let totalGangs = Object.keys(device.endpoints).length;
 
                     for (var cont = 0; cont < totalGangs; cont++) {
                         deviceList.push({
                             ieeeAddress: `${device.ieee_address}${cont + 1}`,
-                            friendlyName: device.friendly_name,                    
+                            friendlyName: device.friendly_name,
                         });
                     }
-                }        
+                }
             }
         }
     }
@@ -145,8 +158,8 @@ function putDevices2DOM(devicesArray) {
 //////////////////////////////////
 // Processar Estado dos devices //
 //////////////////////////////////
-function processDevicesState(msg) {    
-  
+function processDevicesState(msg) {
+
     let estado = null;
     let devId = null;
 
@@ -177,7 +190,7 @@ function processDevicesState(msg) {
         estado = msg.Estado.state_right;
         devId = `${msg.Id}2`;
         setDevState(devId, devId, estado);
-    }    
+    }
 
 } //processDevicesState()
 
@@ -189,7 +202,7 @@ function processDevicesState(msg) {
 function processDevicesTimers(message, topic) {
 
     // Inspeccionar JSON
-    let parsedMessage;    
+    let parsedMessage;
 
     try {
         parsedMessage = JSON.parse(message.toString());
@@ -197,7 +210,7 @@ function processDevicesTimers(message, topic) {
         console.error('Erro ao converter a mensagem para JSON:', error);
         return;
     }
-    
+
     if (topic == 'GET_DEV_TIMER') {
 
         // Obter, do objecto JSON, os elementos do Timer
@@ -278,7 +291,7 @@ function processDevicesTimers(message, topic) {
 
         for (let cont = 0; cont < timersarray.length; cont++) {
             let Nome = timersarray[cont].name;
-            let Id = Nome.replace(/-.*/, "");            
+            let Id = Nome.replace(/-.*/, "");
         }
     }
 
@@ -304,25 +317,25 @@ function updateDevState(topic, message) {
 
         const msg = parsedMessage;
 
-        if(msg.state != 'online' && !topic.includes('availability')&& topic.includes('zigbee2mqtt/0x') && msg != 'TOGGLE' && msg.state != 'TOGGLE' && !topic.includes('bridge') && !topic.includes('Cordinator') && !topic.includes('get')){
-            
+        if (msg.state != 'online' && !topic.includes('availability') && topic.includes('zigbee2mqtt/0x') && msg != 'TOGGLE' && msg.state != 'TOGGLE' && !topic.includes('bridge') && !topic.includes('Cordinator') && !topic.includes('get')) {
+
             // Obter nome do device
             const parts = (topic).split('/');
             const ieeeAddress = parts[1];
-            const dev_estado = msg;             
-            
-            const data = { 
-                Id: ieeeAddress, 
+            const dev_estado = msg;
+
+            const data = {
+                Id: ieeeAddress,
                 Estado: dev_estado
             };
 
             // Actualiza estado dos dispositivos
             processDevicesState(data);
         }
-      
-        
+
+
     }
-} 
+}
 
 
 //////////////////////////////////////////////////////
@@ -365,7 +378,6 @@ function obter_data_hora() {
 //};
 
 //scope.send({ payload: JSON.stringify(mensagem) });// Enviar os dados ao fluxo/flow
-
 
 
 ////////////////////////
@@ -437,7 +449,7 @@ function cronToNextDate(cronExpr) {
 ////////////////////////////////
 // Alterar estado dos devices //
 ////////////////////////////////
-function setDevState(devId, devName, devState) {   
+function setDevState(devId, devName, devState) {
     // Actualiza o nome do Dispositivo
     document.getElementById(devId + 'devName').innerHTML = devName;
     // Seleciona o elemento pelo ID
@@ -546,10 +558,11 @@ function criar_device(device) {
         div.id = device.Id + 'devCardWrapper';
         div.classList.add("grid_container");
         cards_container.appendChild(div);
+        //div.style.backgroundColor = '#000000';
         //console.log(device.Id);
         var menu_contexto = document.getElementById(device.Id + 'contextMenu');
 
-
+        
         /////////////////////////////////////////////////////////////
         // Cria um Array vazio para os Timeres de cada Dispositivo //
         /////////////////////////////////////////////////////////////
@@ -658,10 +671,10 @@ function criar_device(device) {
         /////////////////////////////////////////////////////////
         var divimg = document.getElementById(device.Id + 'devImage');
         divimg.addEventListener("click", function () {
-            
+
             let texto = device.Id;
             let lastchar = texto[texto.length - 1];
-            let ieeaddr = texto.slice(0, -1);          
+            let ieeaddr = texto.slice(0, -1);
 
             client_mqtt.publish(`zigbee2mqtt/${ieeaddr}/${lastchar}/set`, '{"state":"TOGGLE"}');
         });
@@ -821,11 +834,11 @@ document.getElementById('div_guardar_tmrs').addEventListener('click', function (
 /////////////////////////
 // Alterar cor lampada //
 /////////////////////////
-function alterar_cor_lamp(Id, Cor) {    
-    const svgElement = document.getElementById(Id);                
-    const pathElement = svgElement.querySelector('#svg_lamp path');               
-    if (pathElement) {                    
-        pathElement.style.fill = Cor;                       
+function alterar_cor_lamp(Id, Cor) {
+    const svgElement = document.getElementById(Id);
+    const pathElement = svgElement.querySelector('#svg_lamp path');
+    if (pathElement) {
+        pathElement.style.fill = Cor;
     }
 }
 
@@ -861,7 +874,7 @@ function resetElementosTimers() {
     document.getElementById("chk_activar").checked = false;
     //document.getElementById('select_saida').selectedIndex = -1;
     document.getElementById('select_accao').selectedIndex = -1;
-    document.getElementById("time_hora").value = "--:-- --";
+    document.getElementById("time_hora").value = "00:00 AM";
 
 } // Fim de resetElementos()
 
