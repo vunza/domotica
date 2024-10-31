@@ -9,14 +9,13 @@ let arrays_tmrs = {};
 let total_gangs = 1;
 var deviceList = [];
 const porta_ws_mqtt = 8091;
-const servidor_mqtt = '192.168.0.5';
-const client_mqtt = mqtt.connect(`ws://${servidor_mqtt}:${porta_ws_mqtt}`);
-
+const client_mqtt = mqtt.connect(`ws://${location.host}:${porta_ws_mqtt}`);
 
 //////////////////////
 // Documento pronto //
 //////////////////////
 window.addEventListener('DOMContentLoaded', function () {
+
     window.addEventListener('contextmenu', event => {
         // Nao exibir o menu contexto do click direito
         event.preventDefault();
@@ -63,8 +62,8 @@ window.addEventListener('DOMContentLoaded', function () {
         }
     }, 500);
 
-
 }); // window.addEventListener('DOMContentLoaded', function () 
+
 
 
 ////////////////////////////////////
