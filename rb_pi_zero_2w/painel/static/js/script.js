@@ -64,7 +64,6 @@ window.addEventListener('DOMContentLoaded', function () {
 
 }); // window.addEventListener('DOMContentLoaded', function () 
 
-if(deviceList.length > 0) enviarDados(deviceList);
 
 
 function enviarDados(dados) {    
@@ -133,7 +132,7 @@ function processDevicesArray(message, topic) {
                 if (device.friendly_name != 'Coordinator') {
 
                     let totalGangs = Object.keys(device.endpoints).length;
-
+                    
                     for (var cont = 0; cont < totalGangs; cont++) {
                         deviceList.push({
                             ieeeAddress: `${device.ieee_address}${cont + 1}`,
@@ -148,6 +147,10 @@ function processDevicesArray(message, topic) {
     return deviceList;
 
 } //processDevicesArray()
+
+
+
+
 
 
 
@@ -691,7 +694,7 @@ function criar_device(device) {
             let texto = device.Id;
             let lastchar = texto[texto.length - 1];
             let ieeaddr = texto.slice(0, -1);
-            
+            enviarDados(ieeaddr)
             client_mqtt.publish(`zigbee2mqtt/${ieeaddr}/${lastchar}/set`, '{"state":"TOGGLE"}');
         });
        
