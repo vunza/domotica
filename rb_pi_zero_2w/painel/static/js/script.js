@@ -24,6 +24,11 @@ window.addEventListener('DOMContentLoaded', function () {
     // Limpar select option da Acção
     document.getElementById('select_accao').selectedIndex = -1;
 
+
+    // Solicita lista dos dispositivos
+    tx_data2python('DEVS_LIST');
+   
+
     // Conectar-se ao servidor MQTT   
     client_mqtt.on('connect', () => {
         //console.log('Conectado ao Broker');
@@ -65,19 +70,23 @@ window.addEventListener('DOMContentLoaded', function () {
 }); // window.addEventListener('DOMContentLoaded', function () 
 
 
+////////////////////////////////////////////////////
+// Tx/Rx dados para/do Servidor http Flask/Python //
+////////////////////////////////////////////////////
+function tx_data2python(cmnd) { 
 
-function enviarDados(dados) {    
-    fetch('/receber_dados', {        
+    fetch('/tx_rx__dados', {        
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'dados=' + encodeURIComponent(dados),
+        body: `comando=${encodeURIComponent(cmnd)}`,
     }).then(response => response.text()).then(data => {
-        console.log('Resposta do servidor:', data);
+        console.log(data);
     }).catch(error => {
         console.error('Erro:', error);
     });
+
 }
 
 
@@ -694,7 +703,7 @@ function criar_device(device) {
             let texto = device.Id;
             let lastchar = texto[texto.length - 1];
             let ieeaddr = texto.slice(0, -1);
-            enviarDados(ieeaddr)
+          
             client_mqtt.publish(`zigbee2mqtt/${ieeaddr}/${lastchar}/set`, '{"state":"TOGGLE"}');
         });
        
