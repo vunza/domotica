@@ -2,6 +2,7 @@ import json, os
 import paho.mqtt.client as mqtt
 
 device_list = []
+device_state = []
 arquive_path = 'static/json/lista_dispositivos.json'
 client = None
 #mqtt_msg = None
@@ -20,7 +21,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     # mqtt_msg = (f"{msg.topic}: {msg.payload.decode()}")  
     #mqtt_msg = msg    
-    get_devs_array(msg)
+    get_mqtt_messages(msg)
 
 
 ###################################################
@@ -63,7 +64,7 @@ def ler_dados_json(nome_arquivo):
 ######################
 # Obter dispositivos #
 ######################
-def get_devs_array(mensagem):  
+def get_mqtt_messages(mensagem):  
     if(mensagem.topic == "zigbee2mqtt/bridge/devices"):        
         devices = mensagem.payload.decode()
         devs_json = json.loads(devices)
@@ -79,9 +80,56 @@ def get_devs_array(mensagem):
                         "friendlyName": device["friendly_name"]
                     }) 
 
+                    # Cria array dosestados dos dispositivos
+                    ieee2check = f"{device['ieee_address']}{cont + 1}"
+                    ieee_existe = any(obj['ieeeAddress'] == ieee2check for obj in device_state)
+                    if(ieee_existe == False):
+                            device_state.append({
+                                "ieeeAddress": f"{device['ieee_address']}{cont + 1}",
+                                "deviceState": ""
+                            })  
+
+
+
+
         # Actualiza a lista de dispositivos
-        update_lista_dispositivos(arquive_path, device_list)    
-                      
+        update_lista_dispositivos(arquive_path, device_list)  
+
+    elif(mensagem.topic != "zigbee2mqtt/bridge/devices" and ('zigbee2mqtt/0x' in mensagem.topic) and ('TOGGLE' not in mensagem.payload.decode()) and ('get' not in mensagem.topic) and ('availability' not in mensagem.topic)  and ('Cordinator' not in mensagem.topic) and ('online' not in mensagem.topic) and ('TOGGLE' not in mensagem.topic)):    
+        '''
+            topico, payload => zigbee2mqtt/0xa4c138e342bdfb48, {"state":"OFF"}
+            topico, payload => zigbee2mqtt/0xa4c138164da7cfb7 {"state_left":"OFF","state_right":"ON"}
+        '''
+        guardar_estado_devs(mensagem.topic, mensagem.payload)
+
+
+
+##################################
+# Guarda estado dos dispositivos #
+##################################
+def guardar_estado_devs(topico, payload):
+    substring = topico.split('/')[-1]
+    #print(substring)
+    #zigbee2mqtt/0xa4c138e342bdfb48 {"state":"ON"}
+    for cont in range(3):
+        ieee2check = f"{substring}{cont + 1}"
+        estado = ''
+        for device in device_state:
+            if device['ieeeAddress'] == ieee2check:    
+                objecto = json.loads(payload)   
+                if "state" in objecto:   
+                    estado = objecto["state"]  
+                elif "state_left" in objecto:   
+                    estado = objecto["state_left"]   
+                elif "state_center" in objecto:   
+                    estado = objecto["state_center"] 
+                elif "state_right" in objecto:   
+                    estado = objecto["state_right"]   
+
+                device['deviceState'] = estado
+    
+    #print(device_state)
+
 
 
 ###########################

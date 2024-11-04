@@ -6,7 +6,6 @@
 var ieeeaddress = null;
 var timer_index = null;
 let arrays_tmrs = {};
-let total_gangs = 1;
 var deviceList = [];
 const porta_ws_mqtt = 8091;
 const client_mqtt = mqtt.connect(`ws://${location.host}:${porta_ws_mqtt}`);
@@ -26,7 +25,8 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
     // Solicita lista dos dispositivos
-    tx_data2python('DEVS_LIST');
+    tx_data2python('DEVS_LIST');    
+    
    
 
     // Conectar-se ao servidor MQTT   
@@ -46,11 +46,7 @@ window.addEventListener('DOMContentLoaded', function () {
         // Actualiza estado dos devices 
         updateDevState(topic, message);
 
-        // Preenche array de dispositivos
-        const listaDevs = processDevicesArray(message, topic);
-
-        // Exibir dispositivos no DOM
-        putDevices2DOM(listaDevs);
+        //tx_data2python('DEVS_STATE');
 
         // Processar Timers do dispositivos
         processDevicesTimers(message, topic);
@@ -63,6 +59,8 @@ window.addEventListener('DOMContentLoaded', function () {
         if (deviceList.length > 0) {
             clearInterval(intervalo);
             ask_dev_state();
+            // Solicita o estado dos dispositivos 
+            //tx_data2python('DEVS_STATE');           
         }
     }, 500);    
    
@@ -82,7 +80,18 @@ function tx_data2python(cmnd) {
         },
         body: `comando=${encodeURIComponent(cmnd)}`,
     }).then(response => response.text()).then(data => {
-        console.log(data);
+
+        
+        if(cmnd == 'DEVS_LIST'){
+            // Processa resposta do comando 'DEVS_LIST'
+            deviceList = JSON.parse(data);
+            putDevices2DOM(deviceList);
+        }
+        else if(cmnd == 'DEVS_STATE'){
+            // Processa resposta do comando 'DEVS_STATE' 
+            console.log(data);           
+        }
+        
     }).catch(error => {
         console.error('Erro:', error);
     });
@@ -98,12 +107,12 @@ function ask_dev_state() {
 
     deviceList.forEach((item) => {
         // String original
-        let id_aterado = item.ieeeAddress;
+        let id_alterado = item.ieeeAddress;
         // Remove o último caractere
-        let id_org = id_aterado.slice(0, -1);
+        let id_orig = id_alterado.slice(0, -1);
 
         setTimeout(() => {
-            const topic = 'zigbee2mqtt/' + id_org + '/get';
+            const topic = 'zigbee2mqtt/' + id_orig + '/get';
             const payload = '{"state":""}';
             client_mqtt.publish(topic, payload);           
         }, 1000);
@@ -115,58 +124,9 @@ function ask_dev_state() {
 
 
 //////////////////////////////
-// Processar Topico devices //
-//////////////////////////////
-function processDevicesArray(message, topic) {
-
-    // Inspeccionar JSON
-    let parsedMessage;
-    try {
-        parsedMessage = JSON.parse(message.toString());
-    } catch (error) {
-        console.error('Erro ao converter a mensagem para JSON:', error);
-        return;
-    }
-
-    // Tratar mensagem    
-    if (Array.isArray(parsedMessage) && topic == 'zigbee2mqtt/bridge/devices') {
-
-        var devices = parsedMessage;
-
-        for (var key in devices) {
-            if (devices.hasOwnProperty(key)) {
-
-                var device = devices[key];
-
-                if (device.friendly_name != 'Coordinator') {
-
-                    let totalGangs = Object.keys(device.endpoints).length;
-                    
-                    for (var cont = 0; cont < totalGangs; cont++) {
-                        deviceList.push({
-                            ieeeAddress: `${device.ieee_address}${cont + 1}`,
-                            friendlyName: device.friendly_name,
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    return deviceList;
-
-} //processDevicesArray()
-
-
-
-
-
-
-
-//////////////////////////////
 // Create devices from array //
 //////////////////////////////
-function putDevices2DOM(devicesArray) {
+function putDevices2DOM(devicesArray) {    
     // Criar Dispositivos
     const msg = devicesArray;
     for (let cont = 0; cont < msg.length; cont++) {
@@ -181,6 +141,8 @@ function putDevices2DOM(devicesArray) {
         }
     }
 }
+
+
 
 
 //////////////////////////////////
@@ -397,15 +359,6 @@ function obter_data_hora() {
 } // Fim de obter_data_hora()
 
 
-
-////////////////////////////////////////
-// Solicita o estado dos dispositivos //
-////////////////////////////////////////
-//var mensagem = {
-//    getdevstate: ""
-//};
-
-//scope.send({ payload: JSON.stringify(mensagem) });// Enviar os dados ao fluxo/flow
 
 
 ////////////////////////
