@@ -1,4 +1,5 @@
 # import json
+import asyncio
 from flask import Flask, request, render_template
 from modulos.init_mqtt import client, arquive_path, ler_dados_json, device_list, device_state
 
@@ -14,13 +15,16 @@ client.connect("localhost", 1883, 60)
 #################################
 # Obter estado dos dispositivos #
 #################################
-def ask_dev_state(): 
+async def ask_dev_state(): 
     for device in device_list: 
-        id_orig = device[:-1]
-        topic = (F"zigbee2mqtt/${id_orig}/get")
+        id_orig = device["ieeeAddress"][:-1]
+        topic = (F"zigbee2mqtt/{id_orig}/get")
         payload = '{"state":""}'
         client.publish(topic, payload)
-       
+        print('STT...')
+        await asyncio.sleep(1/2)
+
+      
 
 
 #####################
@@ -28,6 +32,7 @@ def ask_dev_state():
 #####################
 @app.route('/')
 def index():
+    asyncio.run( ask_dev_state() ) 
     return render_template('index.html')
 
 
@@ -37,14 +42,18 @@ def index():
 @app.route('/tx_rx__dados', methods=['POST'])
 def receber_dados():
     cmnd = request.form['comando']
-    if(cmnd == 'DEVS_LIST'):
+    if(cmnd == 'DEVS_LIST'):        
         # Retorna, ao browser, a lista dos dispositivos
         return ler_dados_json(arquive_path)
-    elif(cmnd == 'DEVS_STATE'):
-        #return ler_dados_json(arquive_path)
-        print(device_state)
+    elif(cmnd == 'DEVS_STATE'):              
         # Retorna, ao browser, o estado dos dispositivos
         return device_state
+    elif( '{"state":"TOGGLE"}' in cmnd):
+        msg = cmnd.split(", ", 1)
+        client.publish(msg[0], msg[1]) 
+        #print(device_state)       
+        return device_state
+    
 
 
 if __name__ == '__main__':

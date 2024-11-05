@@ -86,9 +86,11 @@ def get_mqtt_messages(mensagem):
                     if(ieee_existe == False):
                             device_state.append({
                                 "ieeeAddress": f"{device['ieee_address']}{cont + 1}",
+                                "friendlyName": f"{device['friendly_name']}",
                                 "deviceState": ""
                             })  
-
+                
+                #print(device_state)
 
 
 
@@ -111,24 +113,23 @@ def guardar_estado_devs(topico, payload):
     substring = topico.split('/')[-1]
     #print(substring)
     #zigbee2mqtt/0xa4c138e342bdfb48 {"state":"ON"}
-    for cont in range(3):
-        ieee2check = f"{substring}{cont + 1}"
-        estado = ''
-        for device in device_state:
-            if device['ieeeAddress'] == ieee2check:    
-                objecto = json.loads(payload)   
-                if "state" in objecto:   
-                    estado = objecto["state"]  
-                elif "state_left" in objecto:   
-                    estado = objecto["state_left"]   
-                elif "state_center" in objecto:   
-                    estado = objecto["state_center"] 
-                elif "state_right" in objecto:   
-                    estado = objecto["state_right"]   
+    #zigbee2mqtt/0xa4c138164da7cfb72 {"state_left":"OFF","state_right":"ON"}
+    for cont in range(len(device_state)):
+        objecto = json.loads(payload) 
+        device = device_state[cont]
+        if( substring in device['ieeeAddress'] and "state" in objecto):
+            device['deviceState'] = objecto["state"]
+        elif (f"{substring}{1}" == device['ieeeAddress'] and "state_left" in objecto):  
+            device['deviceState'] = objecto["state_left"]  
+        elif (f"{substring}{2}" == device['ieeeAddress'] and "state_center" not in objecto):
+            device['deviceState'] = objecto["state_right"]  
+        elif (f"{substring}{2}" == device['ieeeAddress'] and "state_center" in objecto):
+            device['deviceState'] = objecto["state_center"]   
+        elif (f"{substring}{3}" == device['ieeeAddress'] and "state_center" in objecto):
+            device['deviceState'] = objecto["state_right"]      
 
-                device['deviceState'] = estado
-    
     #print(device_state)
+
 
 
 

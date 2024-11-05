@@ -7,8 +7,8 @@ var ieeeaddress = null;
 var timer_index = null;
 let arrays_tmrs = {};
 var deviceList = [];
-const porta_ws_mqtt = 8091;
-const client_mqtt = mqtt.connect(`ws://${location.host}:${porta_ws_mqtt}`);
+//const porta_ws_mqtt = 8091;
+//const client_mqtt = mqtt.connect(`ws://${location.host}:${porta_ws_mqtt}`);
 
 //////////////////////
 // Documento pronto //
@@ -25,47 +25,18 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
     // Solicita lista dos dispositivos
-    tx_data2python('DEVS_LIST');    
+    tx_data2python('DEVS_LIST');      
     
-   
-
-    // Conectar-se ao servidor MQTT   
-    client_mqtt.on('connect', () => {
-        //console.log('Conectado ao Broker');
-        client_mqtt.subscribe('zigbee2mqtt/#', (err) => {
-            if (!err) {
-                //console.log('Subscrito no tópico:');
-            }
-        });
-    });
-
-
-    // Processar mensgens vindas do Servidor MQTT
-    client_mqtt.on('message', (topic, message) => {
-
-        // Actualiza estado dos devices 
-        updateDevState(topic, message);
-
-        //tx_data2python('DEVS_STATE');
-
-        // Processar Timers do dispositivos
-        processDevicesTimers(message, topic);
-
-    });
-
-
-    // Intervalo para verificar o array
-    let intervalo = setInterval(() => {
-        if (deviceList.length > 0) {
-            clearInterval(intervalo);
-            ask_dev_state();
-            // Solicita o estado dos dispositivos 
-            //tx_data2python('DEVS_STATE');           
-        }
-    }, 500);    
-   
-
 }); // window.addEventListener('DOMContentLoaded', function () 
+
+
+
+//////////////////////////////////////////////////////
+// Solicita estado dos dispositivos cada X segundos //
+//////////////////////////////////////////////////////
+let intervalo = setInterval(function() {
+    tx_data2python('DEVS_STATE');    
+}, 1000);
 
 
 ////////////////////////////////////////////////////
@@ -80,16 +51,39 @@ function tx_data2python(cmnd) {
         },
         body: `comando=${encodeURIComponent(cmnd)}`,
     }).then(response => response.text()).then(data => {
-
         
         if(cmnd == 'DEVS_LIST'){
             // Processa resposta do comando 'DEVS_LIST'
             deviceList = JSON.parse(data);
-            putDevices2DOM(deviceList);
+            putDevices2DOM(deviceList);            
         }
-        else if(cmnd == 'DEVS_STATE'){
-            // Processa resposta do comando 'DEVS_STATE' 
-            console.log(data);           
+        else if(cmnd == 'DEVS_STATE' || cmnd.includes('{"state":"TOGGLE"}')){
+            /*            
+                data = 
+                    [
+                        {'ieeeAddress': '0x28dba7fffe1af1001', 'friendlyName': '0x28dba7fffe1af100', 'deviceState': 'ON'}, 				
+                        {'ieeeAddress': '0xa4c138164da7cfb71', 'friendlyName': '0xa4c138164da7cfb7', 'deviceState': 'OFF'}, 				
+                        {'ieeeAddress': '0xa4c138164da7cfb72', 'friendlyName': '0xa4c138164da7cfb7', 'deviceState': 'OFF'}, 			 	
+                        {'ieeeAddress': '0xa4c138e342bdfb481', 'friendlyName': '0xa4c138e342bdfb48', 'deviceState': 'OFF'}
+                    ]            
+            */
+
+            // Processa resposta do comando 'DEVS_STATE'             
+            
+            let objson = null; 
+            try { // Inspeccionar JSON
+                objson = JSON.parse(data);
+            } catch (error) {
+                console.error('Erro ao converter a mensagem para JSON:', error);
+                return;
+            }
+            for(let cont = 0; cont < objson.length; cont++){
+                const devId = objson[cont].ieeeAddress;
+                const devName = objson[cont].friendlyName;
+                //const devName = objson[cont].ieeeAddress;
+                const devState = objson[cont].deviceState;                
+                setDevState(devId, devName, devState);                
+            }                    
         }
         
     }).catch(error => {
@@ -100,32 +94,21 @@ function tx_data2python(cmnd) {
 
 
 
-////////////////////////////////////
-// Solicitar estado dos elementos //
-////////////////////////////////////
-function ask_dev_state() {
-
-    deviceList.forEach((item) => {
-        // String original
-        let id_alterado = item.ieeeAddress;
-        // Remove o último caractere
-        let id_orig = id_alterado.slice(0, -1);
-
-        setTimeout(() => {
-            const topic = 'zigbee2mqtt/' + id_orig + '/get';
-            const payload = '{"state":""}';
-            client_mqtt.publish(topic, payload);           
-        }, 1000);
-    });
-
-}
 
 
-
-
-//////////////////////////////
+///////////////////////////////
 // Create devices from array //
-//////////////////////////////
+///////////////////////////////
+/*
+
+    devicesArray =  [
+                        {"friendlyName": "0x28dba7fffe1af100", "ieeeAddress": "0x28dba7fffe1af1001"},
+                        {"friendlyName": "0xa4c138164da7cfb7","ieeeAddress": "0xa4c138164da7cfb71"},
+                        {"friendlyName": "0xa4c138164da7cfb7","ieeeAddress": "0xa4c138164da7cfb72"},
+                        {"friendlyName": "0xa4c138e342bdfb48","ieeeAddress": "0xa4c138e342bdfb481"}
+                    ]
+
+*/
 function putDevices2DOM(devicesArray) {    
     // Criar Dispositivos
     const msg = devicesArray;
@@ -143,46 +126,6 @@ function putDevices2DOM(devicesArray) {
 }
 
 
-
-
-//////////////////////////////////
-// Processar Estado dos devices //
-//////////////////////////////////
-function processDevicesState(msg) {
-
-    let estado = null;
-    let devId = null;
-
-    if (msg.Estado.state) {
-        estado = msg.Estado.state;
-        devId = `${msg.Id}1`;
-        setDevState(devId, devId, estado);
-    }
-
-    if (msg.Estado.state_left) {
-        estado = msg.Estado.state_left;
-        devId = `${msg.Id}1`;
-        setDevState(devId, devId, estado);
-    }
-
-    if (msg.Estado.state_center) {
-        estado = msg.Estado.state_center;
-        devId = `${msg.Id}2`;
-        setDevState(devId, devId, estado);
-    }
-
-    if (msg.Estado.state_right && msg.Estado.state_center) {
-        estado = msg.Estado.state_right;
-        devId = `${msg.Id}3`;
-        setDevState(devId, devId, estado);
-    }
-    else if (msg.Estado.state_right && !msg.Estado.state_center) {
-        estado = msg.Estado.state_right;
-        devId = `${msg.Id}2`;
-        setDevState(devId, devId, estado);
-    }
-
-} //processDevicesState()
 
 
 
@@ -277,8 +220,6 @@ function processDevicesTimers(message, topic) {
             arrays_tmrs[Id].push(Expressao);
         }
 
-
-
         for (let cont = 0; cont < timersarray.length; cont++) {
             let Nome = timersarray[cont].name;
             let Id = Nome.replace(/-.*/, "");
@@ -289,43 +230,6 @@ function processDevicesTimers(message, topic) {
 
 
 
-
-//////////////////////////////////
-// Actualiza estado dos devices //
-//////////////////////////////////
-function updateDevState(topic, message) {
-    if (topic.includes('zigbee2mqtt/0x')) {
-
-        // Inspeccionar JSON
-        let parsedMessage;
-        try {
-            parsedMessage = JSON.parse(message.toString());
-        } catch (error) {
-            console.error('Erro ao converter a mensagem para JSON:', error);
-            return;
-        }
-
-        const msg = parsedMessage;
-
-        if (msg.state != 'online' && !topic.includes('availability') && topic.includes('zigbee2mqtt/0x') && msg != 'TOGGLE' && msg.state != 'TOGGLE' && !topic.includes('bridge') && !topic.includes('Cordinator') && !topic.includes('get')) {
-
-            // Obter nome do device
-            const parts = (topic).split('/');
-            const ieeeAddress = parts[1];
-            const dev_estado = msg;
-
-            const data = {
-                Id: ieeeAddress,
-                Estado: dev_estado
-            };
-
-            // Actualiza estado dos dispositivos
-            processDevicesState(data);
-        }
-
-
-    }
-}
 
 
 //////////////////////////////////////////////////////
@@ -656,8 +560,14 @@ function criar_device(device) {
             let texto = device.Id;
             let lastchar = texto[texto.length - 1];
             let ieeaddr = texto.slice(0, -1);
-          
-            client_mqtt.publish(`zigbee2mqtt/${ieeaddr}/${lastchar}/set`, '{"state":"TOGGLE"}');
+            
+            /*
+                X = [1|2|3]
+                comnado = zigbee2mqtt/0xa4c138164da7cfb7/X/set, {"state":"TOGGLE"}
+            */
+            const comnado = `zigbee2mqtt/${ieeaddr}/${lastchar}/set, {"state":"TOGGLE"}`;
+            tx_data2python(comnado)
+            
         });
        
 
