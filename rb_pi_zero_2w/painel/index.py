@@ -1,7 +1,8 @@
 # import json
 import asyncio
 from flask import Flask, request, render_template
-from modulos.init_mqtt import client, arquive_path, ler_dados_json, device_list, device_state
+from modulos.init_mqtt import client, arquive_path, device_list, device_state
+from modulos.init_mqtt import ler_dados_json, renomear_devs
 
 
 app = Flask(__name__)
@@ -20,8 +21,7 @@ async def ask_dev_state():
         id_orig = device["ieeeAddress"][:-1]
         topic = (F"zigbee2mqtt/{id_orig}/get")
         payload = '{"state":""}'
-        client.publish(topic, payload)
-        print('STT...')
+        client.publish(topic, payload)        
         await asyncio.sleep(1/2)
 
       
@@ -52,6 +52,9 @@ def receber_dados():
         msg = cmnd.split(", ", 1)
         client.publish(msg[0], msg[1]) 
         #print(device_state)       
+        return device_state
+    elif( '{"from":' in cmnd and '"to":' in cmnd):       
+        renomear_devs(cmnd)       
         return device_state
     
 

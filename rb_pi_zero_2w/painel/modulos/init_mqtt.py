@@ -75,24 +75,39 @@ def get_mqtt_messages(mensagem):
                 # Cria lista de devices (p/ devs simple) e subdevices (p/ devs duplo..)
                 total_gangs = len(device.get('endpoints'))
                 for cont in range(total_gangs):
+
+                    # Actualiza os nomes dos disopositivos
+                    ieee_address_procurado = f"{device['ieee_address']}{cont + 1}"
+                    # Encontrar o valor de friendlyName
+                    dispositivos = ler_dados_json(arquive_path)
+                    friendly_name = next((d['friendlyName'] for d in dispositivos if d['ieeeAddress'] == ieee_address_procurado), None)
+
+                    # Exibir o resultado
+                    if friendly_name:
+                        pass
+                    else: 
+                        friendly_name = device["friendly_name"]
+
                     device_list.append({
                         "ieeeAddress": f"{device['ieee_address']}{cont + 1}",
-                        "friendlyName": device["friendly_name"]
+                        #"friendlyName": device["friendly_name"]
+                        "friendlyName": friendly_name
                     }) 
 
-                    # Cria array dosestados dos dispositivos
+                  
+                    # Cria array dos estados dos dispositivos
                     ieee2check = f"{device['ieee_address']}{cont + 1}"
+                    
                     ieee_existe = any(obj['ieeeAddress'] == ieee2check for obj in device_state)
                     if(ieee_existe == False):
-                            device_state.append({
-                                "ieeeAddress": f"{device['ieee_address']}{cont + 1}",
-                                "friendlyName": f"{device['friendly_name']}",
-                                "deviceState": ""
-                            })  
+                        device_state.append({
+                            "ieeeAddress": f"{device['ieee_address']}{cont + 1}",
+                            #"friendlyName": f"{device['friendly_name']}",
+                            "friendlyName": friendly_name,
+                            "deviceState": ""
+                        })  
                 
                 #print(device_state)
-
-
 
         # Actualiza a lista de dispositivos
         update_lista_dispositivos(arquive_path, device_list)  
@@ -129,6 +144,36 @@ def guardar_estado_devs(topico, payload):
             device['deviceState'] = objecto["state_right"]      
 
     #print(device_state)
+
+
+
+########################
+# Renomea dispositivos #
+########################
+def renomear_devs(payload):
+    # payload = {"from":"0xa4c138164da7cfb72", "to": "aaa"}   
+    dados = json.loads(payload)
+    valor_from = dados["from"]
+    valor_to = dados["to"]
+
+    dispositivos = ler_dados_json(arquive_path)
+
+    # Actualiza array dos dispositivos
+    for cont in range(len(dispositivos)):
+        device = dispositivos[cont]
+        if( valor_from in device['ieeeAddress']):
+            device['friendlyName'] = valor_to
+
+            # Actualiza array de estados dos dispositivos
+            for cont in range(len(device_state)):
+                dev = device_state[cont]
+                if( valor_from in dev['ieeeAddress']):
+                    dev['friendlyName'] = valor_to    
+
+    # Actualiza a lista de dispositivos
+    salvar_dados_json(arquive_path, dispositivos)
+
+
 
 
 

@@ -34,7 +34,10 @@ window.addEventListener('DOMContentLoaded', function () {
 //////////////////////////////////////////////////////
 // Solicita estado dos dispositivos cada X segundos //
 //////////////////////////////////////////////////////
+// Solicita o estado dos dispositivos
+var contador = 0
 let intervalo = setInterval(function() {
+    if(contador++ >= 5) clearInterval(intervalo);
     tx_data2python('DEVS_STATE');    
 }, 1000);
 
@@ -55,7 +58,8 @@ function tx_data2python(cmnd) {
         if(cmnd == 'DEVS_LIST'){
             // Processa resposta do comando 'DEVS_LIST'
             deviceList = JSON.parse(data);
-            putDevices2DOM(deviceList);            
+            putDevices2DOM(deviceList);  
+            tx_data2python('DEVS_STATE');          
         }
         else if(cmnd == 'DEVS_STATE' || cmnd.includes('{"state":"TOGGLE"}')){
             /*            
@@ -227,8 +231,6 @@ function processDevicesTimers(message, topic) {
     }
 
 } //processDevicesTimers()
-
-
 
 
 
@@ -476,13 +478,9 @@ function criar_device(device) {
                 // Validar o novo nome
                 if (novo_nome == null || novo_nome == '' | novo_nome.lenght <= 0) return;
 
-                // Dados a serem enviados para o fluxo/flow
-                var mensagem = {
-                    topico: 'zigbee2mqtt/bridge/request/device/rename',
-                    carga: `{"from":"${rnm_dev.innerHTML}", "to": "${novo_nome}"}`
-                };
-                // Enviar os dados ao fluxo/flow
-                //scope.send({ payload: JSON.stringify(mensagem) });
+                // Envia, para o Backend Python, comando para renomear dispositivo
+                const comando = `{"from":"${device.Id}", "to": "${novo_nome}"}`;
+                tx_data2python(comando);                
             });
 
 
@@ -493,6 +491,13 @@ function criar_device(device) {
 
                 // Adicionar Evento contexmenu ns div cfg
                 add_contextmenu_event();
+
+                // Solicita o estado dos dispositivos
+                var contador = 0
+                let intervalo = setInterval(function() {
+                    if(contador++ >= 10) clearInterval(intervalo);
+                    tx_data2python('DEVS_STATE');    
+                }, 500);
             });
 
         });
@@ -567,7 +572,14 @@ function criar_device(device) {
             */
             const comnado = `zigbee2mqtt/${ieeaddr}/${lastchar}/set, {"state":"TOGGLE"}`;
             tx_data2python(comnado)
-            
+
+            // Solicita o estado dos dispositivos
+            var contador = 0
+            let intervalo = setInterval(function() {
+                if(contador++ >= 10) clearInterval(intervalo);
+                tx_data2python('DEVS_STATE');    
+            }, 500);
+                       
         });
        
 
