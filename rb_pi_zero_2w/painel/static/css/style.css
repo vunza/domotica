@@ -65,8 +65,8 @@ body {
     height: 70px;
     box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
     border: 1px solid rgba(140, 140, 140, .5);
-    background-color: #FFFFFF;
-    background-color: rgb(100, 100, 100);
+    /*background-color: #FFFFFF;*/
+    background-color: rgb(87, 86, 86);
     color: black;
     transition: 0.3s;
     border-radius: 5px;

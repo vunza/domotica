@@ -1,16 +1,34 @@
-# import json
-import asyncio
-from flask import Flask, request, render_template
+import json, asyncio, time
+from flask import Flask, request, render_template, Response, stream_with_context
 from modulos.init_mqtt import client, arquive_path, device_list, device_state
 from modulos.init_mqtt import ler_dados_json, renomear_devs
 
-
 app = Flask(__name__)
+
 
 ########################################################################
 # Conectando ao broker (substitua pelo endereço e porta do seu broker) #
 ########################################################################
 client.connect("localhost", 1883, 60)
+
+
+
+######################################################
+# Enviar dados, cada X segundos, para todos clientes #
+######################################################
+''' Função para enviar dados a cada X segundos '''
+def generate_data():
+    while True:
+        time.sleep(5)  # Intervalo de 5 segundos
+        #yield f"data: Atualização do servidor em {time.ctime()}\n\n"  
+        jsonobj = json.dumps(device_state)   
+        yield f"data: {jsonobj}\n\n"
+
+''' Endpoint de SSE para os clientes se conectarem '''
+@app.route('/events') 
+def events():
+    return Response(stream_with_context(generate_data()), content_type='text/event-stream')
+    
 
 
 #################################
@@ -51,7 +69,7 @@ def receber_dados():
     elif( '{"state":"TOGGLE"}' in cmnd):
         msg = cmnd.split(", ", 1)
         client.publish(msg[0], msg[1]) 
-        #print(device_state)       
+        #print(device_state)         
         return device_state
     elif( '{"from":' in cmnd and '"to":' in cmnd):       
         renomear_devs(cmnd)       

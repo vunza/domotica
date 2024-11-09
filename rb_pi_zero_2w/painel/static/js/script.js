@@ -7,6 +7,10 @@ var ieeeaddress = null;
 var timer_index = null;
 let arrays_tmrs = {};
 var deviceList = [];
+var reconnect_time = 1000; // Tempo em milisegundos
+const http_prot = window.location.protocol; // Guarda http:/https:
+const ws_port = 8080;
+var rename_device = false;
 //const porta_ws_mqtt = 8091;
 //const client_mqtt = mqtt.connect(`ws://${location.host}:${porta_ws_mqtt}`);
 
@@ -25,21 +29,54 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
     // Solicita lista dos dispositivos
-    tx_data2python('DEVS_LIST');      
+    tx_data2python('DEVS_LIST'); 
+    
     
 }); // window.addEventListener('DOMContentLoaded', function () 
 
 
 
-//////////////////////////////////////////////////////
-// Solicita estado dos dispositivos cada X segundos //
-//////////////////////////////////////////////////////
-// Solicita o estado dos dispositivos
-var contador = 0
-let intervalo = setInterval(function() {
-    if(contador++ >= 5) clearInterval(intervalo);
-    tx_data2python('DEVS_STATE');    
-}, 1000);
+/////////////////////////////////////////////////////////////
+// Receber dados, periodicamente, do servidor Python/Flask //
+/////////////////////////////////////////////////////////////
+const eventSource = new EventSource('/events'); // Conectar-se ao servidor SSE
+
+eventSource.onmessage = function(event) { // Receber mensagens do servidor
+    
+    let objson = null; 
+
+    // Inspeccionar JSON
+    try {
+        objson = JSON.parse(event.data);
+    } catch (error) {
+        console.error('Erro ao converter a mensagem para JSON:', error);
+        return;
+    }
+
+    /*
+    
+        objson = [
+            {"ieeeAddress": "0x28dba7fffe1af1001", "friendlyName": "Laboratório1", "deviceState": "ON"}, 
+            {"ieeeAddress": "0xa4c138164da7cfb71", "friendlyName": "Laboratório2", "deviceState": "OFF"}, 
+            {"ieeeAddress": "0xa4c138164da7cfb72", "friendlyName": "Laboratório3", "deviceState": "OFF"}, 
+            {"ieeeAddress": "0xa4c138e342bdfb481", "friendlyName": "Corredor", "deviceState": "ON"}
+        ]
+    
+    */
+
+    // Actualiza estado dos dispositivos
+    if(rename_device == false){// Se o dlg renomear nao esta activo
+        for(let cont = 0; cont < objson.length; cont++){
+            const devId = objson[cont].ieeeAddress;
+            const devName = objson[cont].friendlyName;
+            //const devName = objson[cont].ieeeAddress;
+            const devState = objson[cont].deviceState;                
+            setDevState(devId, devName, devState);                
+        }
+    }
+    
+};
+
 
 
 ////////////////////////////////////////////////////
@@ -71,7 +108,7 @@ function tx_data2python(cmnd) {
                         {'ieeeAddress': '0xa4c138e342bdfb481', 'friendlyName': '0xa4c138e342bdfb48', 'deviceState': 'OFF'}
                     ]            
             */
-
+                   
             // Processa resposta do comando 'DEVS_STATE'             
             
             let objson = null; 
@@ -336,7 +373,7 @@ function cronToNextDate(cronExpr) {
 ////////////////////////////////
 // Alterar estado dos devices //
 ////////////////////////////////
-function setDevState(devId, devName, devState) {
+function setDevState(devId, devName, devState) {     
     // Actualiza o nome do Dispositivo
     document.getElementById(devId + 'devName').innerHTML = devName;
     // Seleciona o elemento pelo ID
@@ -461,7 +498,9 @@ function criar_device(device) {
         // Evento Click no elemento <a> para renomear dispositivo //
         ////////////////////////////////////////////////////////////
         document.getElementById(device.Id + 'renameDev').addEventListener('click', function (event) {
-
+            
+            rename_device = true;
+            
             // Alterar propriedades da Card
             const rnm_dev = document.getElementById(device.Id + 'devName');
             const div_card = document.getElementById(device.Id + 'devCard');
@@ -480,7 +519,8 @@ function criar_device(device) {
 
                 // Envia, para o Backend Python, comando para renomear dispositivo
                 const comando = `{"from":"${device.Id}", "to": "${novo_nome}"}`;
-                tx_data2python(comando);                
+                tx_data2python(comando);  
+
             });
 
 
@@ -492,15 +532,19 @@ function criar_device(device) {
                 // Adicionar Evento contexmenu ns div cfg
                 add_contextmenu_event();
 
-                // Solicita o estado dos dispositivos
-                var contador = 0
-                let intervalo = setInterval(function() {
-                    if(contador++ >= 10) clearInterval(intervalo);
-                    tx_data2python('DEVS_STATE');    
-                }, 500);
-            });
+                // Solicitar estado dos dispositivos
+                rename_device = false;
+                solicita_estado_devs(200, 5);
 
-        });
+                // Repor o event listener de clique a div da imagem 
+                var divimg = document.getElementById(device.Id + 'devImage');
+                divimg.addEventListener("click", function () {
+                    aux_click_device(device.Id);                             
+                });
+
+            });//  document.getElementById('div_wrapper_sair')
+
+        }); // Evento Click no elemento <a> para renomear dispositivo
 
 
 
@@ -562,23 +606,7 @@ function criar_device(device) {
         var divimg = document.getElementById(device.Id + 'devImage');
         divimg.addEventListener("click", function () {
 
-            let texto = device.Id;
-            let lastchar = texto[texto.length - 1];
-            let ieeaddr = texto.slice(0, -1);
-            
-            /*
-                X = [1|2|3]
-                comnado = zigbee2mqtt/0xa4c138164da7cfb7/X/set, {"state":"TOGGLE"}
-            */
-            const comnado = `zigbee2mqtt/${ieeaddr}/${lastchar}/set, {"state":"TOGGLE"}`;
-            tx_data2python(comnado)
-
-            // Solicita o estado dos dispositivos
-            var contador = 0
-            let intervalo = setInterval(function() {
-                if(contador++ >= 10) clearInterval(intervalo);
-                tx_data2python('DEVS_STATE');    
-            }, 500);
+            aux_click_device(device.Id);         
                        
         });
        
@@ -588,10 +616,41 @@ function criar_device(device) {
 
     }// FIM do if (device instanceof Dispositivo)
 
-    //scope.send({ payload: JSON.stringify(mensagem) });// Enviar os dados ao fluxo/flow
-
+   
 }// FIM de function criar_device(device)
 
+
+/////////////////////////////////////
+// Auxiliar click nos dispositivos //
+/////////////////////////////////////
+function aux_click_device(deviceId){
+    let texto = deviceId;
+    let lastchar = texto[texto.length - 1];
+    let ieeaddr = texto.slice(0, -1);
+            
+    /*
+        X = [1|2|3]
+        comnado = zigbee2mqtt/0xa4c138164da7cfb7/X/set, {"state":"TOGGLE"}
+    */
+    const comnado = `zigbee2mqtt/${ieeaddr}/${lastchar}/set, {"state":"TOGGLE"}`;
+    tx_data2python(comnado);              
+    
+    // Solicitar estado dos dispositivos
+    solicita_estado_devs(200, 5);          
+}
+
+
+
+//////////////////////////////////////
+// Solicita estado dos dispositivos //
+//////////////////////////////////////
+function solicita_estado_devs(millisegundos, contar_vezes){
+    let contador = 0;
+    const intervalo = setInterval(() => {
+        if(contador++ >= contar_vezes) clearInterval(intervalo);
+            tx_data2python('DEVS_STATE');
+        }, millisegundos);  
+}
 
 
 
