@@ -1,0 +1,151 @@
+  * {
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+
+    /* Impede Seleccção e Copia */
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  body {
+    background-color: lightskyblue;
+  }
+   
+  
+.btn_save{   
+  width: 225px;
+  height: 35px;  
+  margin-right: 0px;
+  cursor: pointer; 
+  /*background: #47c266;*/
+  background-color: rgb(206, 90, 90);
+  color: white;
+  font-size: 18px;
+}
+
+.btn_close{  
+  display: none;  
+  width: 108px;
+  height: 35px;  
+  cursor: pointer; 
+  background-color: rgb(206, 90, 90);
+  color: white;
+  font-size: 18px;
+}
+
+.div_wrapper{
+  display: inline-flex;
+}
+
+
+
+  /*----------------------- CONFIGURAÇÔES --------------------------*/
+
+.div_dlg{
+  display: block;
+  position: relative;  
+  width: 255px;
+  height: 115px;
+  top: 50px;
+  margin: auto;
+  background-color: rgb(100, 100, 100);
+  border: solid 2px whitesmoke;
+  color: white;  
+}
+
+
+fieldset{
+  position: absolute; 
+  width: 95%;    
+  padding: 5px;
+  margin: 5px;
+  height: 100px;
+}
+
+fieldset > input{  
+  position: relative;
+  width: 225px; 
+  margin-bottom: 5px;
+  padding-right: 8px;
+  font-size: 18px;
+  text-align: center;
+  text-decoration: none;
+}
+
+ 
+
+/************************************* MENSAGEM FEEDBACK *****************************************/
+/*********************** WRAPPER BUTTONS *****************************************/
+.back_btn{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  background-color: rgb(20, 20, 20);
+  border-radius: 50%;
+}
+
+#div_sair_ota{
+  position: relative;
+  display: flex;
+  margin-left: 25px;
+  cursor: pointer;
+}
+
+
+#div_guardar_nome{
+  position: relative;
+  display:flex;   
+  margin-left: 30px;
+  cursor: pointer;
+}
+
+#div_limpar_dispositivo{
+  position: relative;
+  display:flex; 
+  cursor: pointer;
+  margin-left: 30px;
+}
+
+
+#div_wrapper_save_ota{  
+  position: relative;  
+  margin-top: 5px;
+  display: inline-flex;
+  justify-content:center;
+  width: 100%;   
+}
+
+.elegante_ota{
+  position: relative;
+  display: none;
+  cursor: pointer; 
+  top: 350px;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  background-color: rgb(117, 114, 114);
+  border-radius: 50%;
+}
+
+
+#content{
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 95%; 
+  margin: auto;
+}
