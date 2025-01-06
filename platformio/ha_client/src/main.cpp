@@ -35,28 +35,38 @@ const char* mqtt_topic = "esp8266/sensor"; // Tópico MQTT
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-uint16_t cont = 0;
 
-// Função de Conexão Wi-Fi
-void setupWiFi() {
+#define PIN_LED 2
+
+void setup_wifi() {
   delay(10);
   Serial.println("Conectando ao WiFi...");
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
+    delay(500);
     Serial.print(".");
   }
-  Serial.println("Conectado!");
+  Serial.println("\nWiFi conectado!");
 }
 
-// Função de Conexão MQTT
+void callback(char* topic, byte* payload, unsigned int length) {
+  // Função de callback para mensagens recebidas
+  Serial.print("Mensagem recebida em: ");
+  Serial.println(topic);
+}
+
 void reconnect() {
   while (!client.connected()) {
-    Serial.print("Conectando ao MQTT...");
-    if (client.connect("ESP8266Client", mqtt_user, mqtt_password)) {
+    Serial.println("Conectando ao MQTT...");
+    if (client.connect("ESP8266", mqtt_user, mqtt_password)) {
       Serial.println("Conectado!");
+      
+      // Publica o dispositivo para o autodiscovery
+      client.publish("homeassistant/switch/esp8266_switch/config",
+                     "{\"name\": \"teste_switch\", \"command_topic\": \"homeassistant/switch/esp8266_switch/set\", \"state_topic\": \"homeassistant/switch/esp8266_switch/state\"}",
+                     true);
     } else {
-      Serial.print("Falha, rc=");
+      Serial.print("Falha ao conectar. Erro: ");
       Serial.print(client.state());
       delay(5000);
     }
@@ -65,8 +75,12 @@ void reconnect() {
 
 void setup() {
   Serial.begin(115200);
-  setupWiFi();
+
+  pinMode(PIN_LED, OUTPUT);
+
+  setup_wifi();
   client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
 }
 
 void loop() {
@@ -74,17 +88,10 @@ void loop() {
     reconnect();
   }
   client.loop();
-
-  // Publica dados no MQTT  
-  char msg[50];
-  snprintf(msg, 50, "%d", cont++);
-  client.publish(mqtt_topic, msg);
-  if(cont >= 1000) cont = 0;
-
-  delay(2000);
+  
+  // Simulação de estado
+  digitalWrite(PIN_LED, !digitalRead(PIN_LED));
+  uint8_t state = !digitalRead(PIN_LED); 
+  client.publish("homeassistant/switch/esp8266_switch/state", state ? "ON" : "OFF");
+  delay(5000);
 }
-
-
-
-
-
