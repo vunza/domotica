@@ -95,3 +95,4 @@ void loop() {
   client.publish("homeassistant/switch/esp8266_switch/state", state ? "ON" : "OFF");
   delay(5000);
 }
+
