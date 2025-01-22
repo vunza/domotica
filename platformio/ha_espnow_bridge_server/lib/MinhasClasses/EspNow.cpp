@@ -13,14 +13,18 @@
 #endif
 
 uint8_t WIFI_CH = 0;
+char SERVER_MAC[6];
+
 #if defined(ESP32) 
-  esp_now_peer_info_t peerInfo;  
+  esp_now_peer_info_t broadcastPeer, peerInfo;    
 #endif
 
+
 // Construtor
-EspNow::EspNow(){
+EspNow::EspNow(const uint8_t *mac){
 
   WIFI_CH = WiFi.channel();   
+  memcpy(SERVER_MAC, mac, sizeof(SERVER_MAC));
 
   // Init ESP-NOW
   if (esp_now_init() != 0) {
@@ -33,15 +37,9 @@ EspNow::EspNow(){
 
   // ESP-NOW
   #if defined(ESP8266) 
-    esp_now_set_self_role(ESP_NOW_ROLE_COMBO);        
-  #endif
-
-  #if defined(ESP32) 
-    //Force espnow to use a specific channel
-    esp_wifi_set_promiscuous(true);
-    esp_wifi_set_channel(WIFI_CH, WIFI_SECOND_CHAN_NONE);
-    esp_wifi_set_promiscuous(false);
-  #endif  
+    esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);   
+  #elif defined(ESP32)     
+  #endif 
 
   esp_now_register_send_cb(callback_tx_esp_now);
   esp_now_register_recv_cb(callback_rx_esp_now);
@@ -57,19 +55,30 @@ EspNow::EspNow(){
 //////////////////////////////////////////
 #if defined(ESP8266) 
   void callback_tx_esp_now(uint8_t *mac_addr, uint8_t status) { 
-    
+    /*Serial.print("Last Packet Send Status: ");
+    if (status == 0){
+      Serial.println("Delivery success");
+    }
+    else{
+      Serial.println("Delivery fail");
+    }*/
   }
 #endif
-
-
 //////////////////////////////////////////
 // Callback, ESP-NOW, when data is sent //
 //////////////////////////////////////////
 #if defined(ESP32) 
   void callback_tx_esp_now(const uint8_t *mac_addr, esp_now_send_status_t status) {    
-     
+    /*Serial.print("Last Packet Send Status: ");
+    if (status == 0){
+      Serial.println("Delivery success");
+    }
+    else{
+      Serial.println("Delivery fail");
+    }*/
   }  
 #endif
+
 
 
 //////////////////////////////////////////////
@@ -77,39 +86,48 @@ EspNow::EspNow(){
 //////////////////////////////////////////////
 #if defined(ESP8266) 
   void callback_rx_esp_now(uint8_t * mac, uint8_t *incomingData, uint8_t len) { // Para ESP8266
-  
-    imprimeln( (const char*) incomingData);   
-
-    char macStr[18];
-    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    imprimeln(macStr);
+    
+    EmparelharDispositivos(mac, incomingData);
+    
+    /*Pairing pld = {};   
+    memcpy(&pld, incomingData, sizeof(pld));   
 
     bool exists = esp_now_is_peer_exist(mac);
 
-    if( !exists ){
-      esp_now_add_peer(mac, ESP_NOW_ROLE_SLAVE, WiFi.channel(), NULL, 0);
+    // Emparelha dispositivo requerente e envia resposta
+    if( !exists && strcmp(pld.comando, "PAIRING_REQUEST") == 0){
+      //ESP_NOW_ROLE_SLAVE
+      uint8_t result = esp_now_add_peer(mac, ESP_NOW_ROLE_COMBO, WiFi.channel(), NULL, 0); 
+      if (result != 0) {
+        imprimeln(F("Failed to add peer"));
+        return;
+      }   
+
+      strcpy(pld.comando, "PAIRING_CONFIRM");
+      pld.canal_wifi = WiFi.channel();
+      memcpy(&pld.mac, SERVER_MAC, sizeof(SERVER_MAC));
+      esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
     }
     else{
-      uint8_t data[] = "PAIRING_ANSWER";
-      esp_now_send(mac, data, sizeof(data));
-    }
-       
+      strcpy(pld.comando, "PAIRING_CONFIRM");
+      pld.canal_wifi = WiFi.channel();
+      memcpy(&pld.mac, SERVER_MAC, sizeof(SERVER_MAC));
+      esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
+    } */    
   
   }// end callback_rx_esp_now(...)
 #elif defined(ESP32) 
   void callback_rx_esp_now(const uint8_t * mac, const uint8_t *incomingData, int len){ 
    
-    //imprimeln( (const char*) incomingData);    
-    char macStr[18];
-    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    imprimeln(macStr);  
+   EmparelharDispositivos(mac, incomingData);
+
+    /*Pairing pld = {};   
+    memcpy(&pld, incomingData, sizeof(pld));
 
     bool exists = esp_now_is_peer_exist(mac);
 
     // Add receiver's MAC address  
-    if( !exists ){
+    if( !exists  && strcmp(pld.comando, "PAIRING_REQUEST") == 0){
       memcpy(peerInfo.peer_addr, mac, 6);
       peerInfo.channel = WiFi.channel();
       peerInfo.encrypt = false;
@@ -117,13 +135,74 @@ EspNow::EspNow(){
         Serial.println("Failed to add peer");
         return;
       }
+
+      strcpy(pld.comando, "PAIRING_CONFIRM");
+      pld.canal_wifi = WiFi.channel();
+      memcpy(&pld.mac, SERVER_MAC, sizeof(SERVER_MAC));
+      esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
     }  
     else{
-      uint8_t data[] = "Hello, ESP-NOW!";
-      esp_err_t result = esp_now_send(mac, data, sizeof(data));
-    }    
-    
+      strcpy(pld.comando, "PAIRING_CONFIRM");
+      pld.canal_wifi = WiFi.channel();
+      memcpy(&pld.mac, SERVER_MAC, sizeof(SERVER_MAC));
+      esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
+    }*/
+
   }// end callback_rx_esp_now(...)
 #endif
+
+
   
+
+////////////////////////////
+// Emparelha dispositivos //
+////////////////////////////
+#if defined(ESP8266) 
+void EmparelharDispositivos(uint8_t * mac, uint8_t* incomingData){
+#elif defined(ESP32) 
+void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
+#endif
+
+  /*char macStr[18];
+    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+    //imprimeln(macStr);
+    //imprimeln( (const char*) incomingData); */ 
+
+    Pairing pld = {};   
+    memcpy(&pld, incomingData, sizeof(pld));
+    bool exists = esp_now_is_peer_exist(mac);
+ 
+    // Emparelha dispositivo requerente e envia resposta
+    if( !exists && strcmp(pld.comando, "PAIRING_REQUEST") == 0){
+      
+      #if defined(ESP8266) 
+        uint8_t result = esp_now_add_peer(mac, ESP_NOW_ROLE_COMBO, WiFi.channel(), NULL, 0); 
+        if (result != 0) {
+          imprimeln(F("Failed to add peer"));
+          return;
+        }   
+      #elif defined(ESP32) 
+        memcpy(peerInfo.peer_addr, mac, 6);
+        peerInfo.channel = WiFi.channel();
+        peerInfo.encrypt = false;
+        if (esp_now_add_peer(&peerInfo) != ESP_OK) {
+          Serial.println("Failed to add peer");
+          return;
+        }
+      #endif
+
+      strcpy(pld.comando, "PAIRING_CONFIRM");
+      pld.canal_wifi = WiFi.channel();
+      memcpy(&pld.mac, SERVER_MAC, sizeof(SERVER_MAC));
+      esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
+    }
+    else{
+      strcpy(pld.comando, "PAIRING_CONFIRM");
+      pld.canal_wifi = WiFi.channel();
+      memcpy(&pld.mac, SERVER_MAC, sizeof(SERVER_MAC));
+      esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
+    }      
+}
 

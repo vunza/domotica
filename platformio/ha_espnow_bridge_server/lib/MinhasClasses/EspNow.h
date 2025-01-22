@@ -12,13 +12,17 @@
   #include <esp_now.h>  
 #endif
 
-
+typedef struct Pairing{
+  char comando[16]; 
+  uint8_t canal_wifi;
+  uint8_t mac[6];
+}Pairing;
  
 class EspNow {
   public:
-    EspNow();  
+    EspNow(const uint8_t *mac);      
        
-  private:
+  private:   
      
   protected:
 };
@@ -30,11 +34,14 @@ class EspNow {
 #if defined(ESP8266) 
   void callback_tx_esp_now(uint8_t *mac_addr, uint8_t status); 
   void callback_rx_esp_now(uint8_t * mac, uint8_t *incomingData, uint8_t len);
+  void EmparelharDispositivos(uint8_t * mac, uint8_t* incomingData);
 #elif defined(ESP32) 
   void callback_tx_esp_now(const uint8_t *mac_addr, esp_now_send_status_t status);
   void callback_rx_esp_now(const uint8_t * mac, const uint8_t *incomingData, int len);
+  void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData);
 #endif
 
-void ResponderEmparelhamento();
+//void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData);
+
 
 #endif // ESPNOW_H

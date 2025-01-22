@@ -13,10 +13,18 @@
 #endif
 
 
+
+typedef struct Pairing{
+  char comando[16]; 
+  uint8_t canal_wifi;
+  uint8_t mac[6];
+}Pairing;
+
+
  
 class EspNow {
   public:
-    EspNow();  
+    EspNow();     
        
   private:
      
@@ -35,6 +43,6 @@ class EspNow {
   void callback_rx_esp_now(const uint8_t * mac, const uint8_t *incomingData, int len);
 #endif
 
-void SolicitarEmparelhamento(uint8_t wifi_channel);
+boolean SolicitarEmparelhamento(uint8_t wifi_channel);
 
 #endif // ESPNOW_H

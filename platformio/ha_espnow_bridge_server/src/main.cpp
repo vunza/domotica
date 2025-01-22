@@ -45,17 +45,24 @@ void setup() {
   #endif 
 
   // Criar AP 
-  /*RedeWifi ap_obj("ESP12E", "123456789", "WIFI_AP");
-  ap_obj.AlterarMacAP(macAP);
-  ap_obj.CriaRedeWifi("");*/
+  //RedeWifi ap_obj("ESPNOW", "123456789", "WIFI_AP");
+  //ap_obj.AlterarMacAP(macAP);
+  //ap_obj.CriaRedeWifi("");
+  
 
   // Conectar-se a WiFi
+#if defined(ESP8266) 
   RedeWifi sta_obj(ssid, password, "WIFI_STA");     //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
   sta_obj.AlterarMacSTA(macSTA);                    // Altera MC no modo STA
   sta_obj.ConectaRedeWifi("");                      // STA_IP_MODE = [DHCP | STATIC]
-   
+#elif defined(ESP32) 
+  RedeWifi sta_obj(ssid, password, "WIFI_AP_STA");  //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
+  sta_obj.AlterarMacSTA(macSTA);                    // Altera MC no modo STA
+  sta_obj.ConectaRedeWifi("");                      // STA_IP_MODE = [DHCP | STATIC]
+#endif 
+  
   // Configurar inicializar esp-now
-  EspNow objespnow;
+  EspNow objespnow(&macSTA[0]);
 
 }// setup()
 

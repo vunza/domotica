@@ -14,6 +14,8 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 
 */
 
+#define PIN_LED 2//19//23
+
 #define DEBUG 1
 
 #if DEBUG == 1
@@ -40,7 +42,7 @@ void setup() {
     } 
   #endif
 
-  pinMode(2, OUTPUT); 
+  pinMode(PIN_LED, OUTPUT); 
 
   // Criar AP 
   /*RedeWifi ap_obj("ESP12E", "123456789", "WIFI_AP");
@@ -55,9 +57,7 @@ void setup() {
   // Configurar inicializar esp-now
   EspNow objespnow;
 
-  imprimeln(F("\nWi-Fi conectado!"));
-  imprimeln(F("Endereço IP: "));
-  imprimeln(WiFi.localIP());
+  imprime(F("MAC: "));
   imprimeln(WiFi.macAddress());
 
 }// setup()
@@ -66,14 +66,7 @@ void setup() {
 ////////////
 // loop() //
 ////////////
-void loop() {  
- 
-  for(int cont = 0; cont < 15; cont++){
-    SolicitarEmparelhamento(cont);
-    delay(500);  
-    digitalWrite(2, !digitalRead(2));
-  }
-  
-  
+uint8_t cont = 1;
+void loop() {   
 
 }// loop()

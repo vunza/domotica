@@ -20,7 +20,9 @@ RedeWifi::RedeWifi(const char *ssid, const char *pwd, const char* modo){
     RedeWifi::_pwd = pwd;
     
     if( strcmp(modo, "WIFI_AP_STA") == 0 ){
-        WiFi.mode(WIFI_AP_STA);        
+        WiFi.mode(WIFI_AP_STA);  
+        // SSID oculto, apenas para o fucionameto do ESP-NOW
+        WiFi.softAP("ESPNOW", "", 1, 1);       
     }
     else if( strcmp(modo, "WIFI_STA") == 0 ){
         WiFi.mode(WIFI_STA);
