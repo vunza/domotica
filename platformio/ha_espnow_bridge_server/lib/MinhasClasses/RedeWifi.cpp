@@ -13,23 +13,29 @@
     #define imprimeln(x)
 #endif
 
+
+
 // Construtor
 //modo: WIFI_AP_STA | WIFI_STA| WIFI_AP
-RedeWifi::RedeWifi(const char *ssid, const char *pwd, const char* modo){
+RedeWifi::RedeWifi(const char *ssid, const char *pwd, const char* modo, boolean change_mac, uint8_t* mac){
     RedeWifi::_ssid = ssid;
     RedeWifi::_pwd = pwd;
     
     if( strcmp(modo, "WIFI_AP_STA") == 0 ){
-        WiFi.mode(WIFI_AP_STA);  
-        // SSID oculto, apenas para o fucionameto do ESP-NOW
-        WiFi.softAP("ESPNOW", "", 1, 1);       
+      WiFi.mode(WIFI_AP_STA);  
+      // SSID oculto, apenas para o fucionameto do ESP-NOW
+      WiFi.softAP("ESPNOW", "", 1, 1);  
+      if(change_mac == true) AlterarMacSTA(mac);    
     }
     else if( strcmp(modo, "WIFI_STA") == 0 ){
-        WiFi.mode(WIFI_STA);
+      WiFi.mode(WIFI_STA);
+      if(change_mac == true) AlterarMacSTA(mac);
     }
     else if( strcmp(modo, "WIFI_AP") == 0 ){
-        WiFi.mode(WIFI_AP);
+      WiFi.mode(WIFI_AP_STA); 
+      if(change_mac == true) AlterarMacAP(mac);      
     }  
+    
     WiFi.disconnect();  
 }
 
@@ -55,7 +61,7 @@ void RedeWifi::AlterarMacAP(uint8_t* newMAC){
     // ESP32 Board add-on before version < 1.0.5
     //esp_wifi_set_mac(ESP_IF_WIFI_AP, &macSTA[0]);
   #endif
-} 
+}
 
 // STA_IP_MODE = [DHCP | STATIC]
 void RedeWifi::ConectaRedeWifi(const char* STA_IP_MODE){
@@ -67,17 +73,24 @@ void RedeWifi::ConectaRedeWifi(const char* STA_IP_MODE){
         imprime(".");
     }
 
+    // Converter, MAC STA original, de string para byte array
+    memcpy(_orgMAC, converteMacString2Byte(WiFi.macAddress().c_str()), sizeof(_orgMAC));
+
     imprimeln(F("\nWi-Fi conectado!"));
     imprimeln(F("Endereço IP: "));
     imprimeln(WiFi.localIP());
     imprimeln(WiFi.macAddress());
 } 
 
+const uint8_t* RedeWifi::GetMacAddress(){
+  return _orgMAC;
+}
+
 // AP_IP_MODE = [DEFAULT | CUSTOM]
 void RedeWifi::CriaRedeWifi(const char* AP_IP_MODE){
 
     // AP PADRAO
-    WiFi.softAP(RedeWifi::_ssid , RedeWifi::_pwd); 
+    WiFi.softAP(RedeWifi::_ssid , RedeWifi::_pwd);      
 
     // AP CUSTOMIZADA
     /*DadosRede dados_rede = {
@@ -94,10 +107,30 @@ void RedeWifi::CriaRedeWifi(const char* AP_IP_MODE){
     WiFi.softAP(_ssid, _pwd, dados_rede.CHANNEL, dados_rede.HIDE_SSID, dados_rede.MAX_CONNECTIONS);   
     */
 
+    // Converter, MAC AP original, de string para byte array
+    memcpy(_orgMAC, converteMacString2Byte(WiFi.softAPmacAddress().c_str()), sizeof(_orgMAC));
+
     char cz_MACADDR[18];
     strcpy(cz_MACADDR, WiFi.softAPmacAddress().c_str());
     imprimeln("SSID: " + WiFi.softAPSSID() + "\nIP: " + WiFi.softAPIP().toString());
     imprime("MAC: ");
     imprimeln(cz_MACADDR);
-}     
+}  
+
+
+////////////////////////////////////////////
+// Converter MAC (string para Byte array) //
+////////////////////////////////////////////
+uint8_t* converteMacString2Byte(const char* cz_mac) {
+
+  uint8_t* MAC = (uint8_t*)calloc(6, sizeof(uint8_t));
+  char* ptr;
+
+  MAC[0] = strtol(cz_mac, &ptr, HEX );
+  for ( uint8_t i = 1; i < 6; i++ ) {
+    MAC[i] = strtol(ptr + 1, &ptr, HEX );
+  }
+
+  return MAC;
+}
 

@@ -1,0 +1,1218 @@
+:root {
+  --clr: #222327;
+  --larg_min_tela: 720px;
+  --larg_card: 310px;
+  --larg_card_wrapper: 350px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+  /* Impede Seleccção e Copia */
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+body {
+  background-color: var(--clr);
+}
+
+/*----------------------------------- div_geral ----------------------------------*/
+#div_geral {
+  position: fixed;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  overflow: auto;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));  
+}
+
+/* Aplicar a regra em ecrãs acima de XXXpx*/
+@media (min-width: var(--larg_min_tela)) {
+  /*#div_geral {
+    width: var(--larg_min_tela);
+  }*/
+}
+
+/* Aplicar a regra em ecrãs abaixo de XXXpx*/
+@media (max-height: 768px) {
+  /*#card_wrapper {
+    height: 90%;    
+  }*/
+}
+
+
+
+.div_grupos {
+  position: relative;
+  width: 90%;
+  left: 5%;
+  box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
+}
+
+.p_nome_item {
+  padding: 5px;
+  color: black;
+  font-family: Arial;
+  text-align: center;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+
+.svg_item {
+  position: relative;
+  padding: 10px;
+  width: 80px;
+  height: 80px;
+}
+
+/*----------------------- COMANDO TASMOTA --------------------------*/
+#send_tasmota_cmnd{
+  display: none;
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+#div_ctrls{
+  position: relative;
+  top: 20px;
+  width: 225px;
+  height: 205px;
+  padding: 5px;
+  margin: auto;
+  border: 1px solid white;
+  border-radius: 5px;
+  background-color: rgb(100, 100, 100);
+}
+
+#btn_connect_wifi{
+  display: block;
+  width: 165px;
+  height: 35px;
+  margin-top: 5px;
+  cursor: pointer;
+  background: #39be5a;
+  color: white;
+  font-size: 20px;
+}
+
+#btn_close_connect_wifi{
+  display: block;
+  width: 165px;
+  height: 35px;
+  margin-top: 5px;
+  cursor: pointer;
+  background: #ec5b5b;
+  color: white;
+  font-size: 20px;
+}
+
+.txt_tasmota{
+  width: 160px;
+  height: 25px;
+  font-size: 18px;
+}
+
+
+/*----------------------- CONFIGURAÇÔES TIMERS --------------------------*/
+#div_cfg_tmrs_wrapper {
+  display: none;
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+#div_cfg_tmrs {
+  display: block;
+  position: absolute;
+  width: 300px;
+  height: 370px;
+  top: 10px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgb(100, 100, 100);
+  color: white;
+  border: 1px solid whitesmoke;
+  border-radius: 5px;
+}
+
+#div_estado {
+  position: absolute;
+  display: inline-flex;
+  padding: 5px;
+  width: 45px;
+  height: 45px;
+  top: 2px;
+  right: 1px;
+  cursor: pointer;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+#div_tasmota{
+  position: relative;
+  display: flex;
+  width: 35px;
+  height: 35px;
+  margin: 0 15px 0 15px;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  border-radius: 50%;
+}
+
+#div_separador_cfg_top {
+  position: absolute;
+  top: 15px;
+  display: block;
+  width: 100%;
+  border: 0px solid white;
+  font-size: 20px;
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#div_tmr {
+  position: relative;
+  top: 60px;
+  display: flex;
+  height: 45px;
+  width: 95%;
+  overflow: auto;
+  margin: auto;
+}
+
+
+#div_tmr>label {
+  padding: 5px 25px 5px 5px;
+  position: relative;
+  cursor: pointer;
+  width: 5px;
+}
+
+.hora {
+  height: 100%;
+}
+
+#hora_actual {
+  padding: 5px;
+  display: inline;
+  color: yellow;
+}
+
+#div_semana {
+  position: relative;
+  top: 95px;
+  display: flex;
+  height: 35px;
+  width: 250px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#div_semana>label {
+  padding: 5px 30px 5px 5px;
+  position: relative;
+  cursor: pointer;
+  width: 5px;
+}
+
+span:hover {
+  background: rgb(67, 67, 240);
+}
+
+label input {
+  display: none;
+}
+
+label span {
+  border: 2px solid #ccc;
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  overflow: hidden;
+  line-height: 1.4;
+  text-align: center;
+  border-radius: 100%;
+  font-size: 12pt;
+  color: white;
+}
+
+input:checked+span {
+  background: rgb(7, 7, 7);
+  border-color: rgb(190, 209, 16);
+}
+
+#chk_activar {
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+}
+
+
+.cfg_timers {
+  position: relative;
+  display: flex;
+  width: 35px;
+  height: 35px;
+  margin-left: 1px;
+  cursor: pointer;
+}
+
+#div_past_timer{  
+  margin-left: 10px;
+}
+
+#div_copy_timer{
+  margin-right: 10px;
+}
+
+#div_share_timer{
+  margin-right: 10px;
+}
+
+
+#div_guardar_tmrs {  
+  margin-left: 20px;
+  margin-right: 25px;
+}
+
+
+#div_wrapper_save_tmrs {
+  position: relative;
+  margin-top: 105px;
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+
+
+/*----------------------- CONFIGURAÇÔES --------------------------*/
+#div_wrapper_set_name {
+  display: none;
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+#div_set_name {
+  display: block;
+  position: absolute;
+  width: 260px;
+  height: 95px;
+  padding: 5px;
+  top: 10px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgb(100, 100, 100);
+  border: solid 2px whitesmoke;
+  color: white;
+  border-radius: 5px;
+}
+
+#div_sair {
+  position: relative;
+  display: flex;
+  width: 35px;
+  height: 35px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+#div_guardar {
+  position: relative;
+  display: flex;
+  width: 35px;
+  height: 35px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+
+#div_buttons_set_name {
+  position: relative;
+  margin-top: 20px;
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+
+#txt_nome {
+  position: relative;
+  width: 100%;
+  padding-right: 8px;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+}
+
+/********************************** TABELA ******************************************/
+#td_hora_actual {
+  text-align: center;
+}
+
+#tbl_cmd>td,
+th {
+  border: 1px solid gray;
+  text-align: left;
+  padding: 1px;
+}
+
+.esquerda {
+  text-align: left;
+}
+
+#tbl_cmd {
+  position: relative;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+/***************************** CARDS/GRIDS ***********************************************/
+.div_img_clk{
+  padding-top: 2px;
+  margin-right: 6px;
+  display: inline-flex;    
+}
+
+.div_historico {  
+  display: inline-flex;
+  position: relative; 
+  text-align: center; 
+  font-size: 16px; 
+}
+
+#div_historico_bomba{    
+  font-size: 14px; 
+}
+
+#div_energy {  
+  display: inline-flex;
+  position: relative; 
+  text-align: center; 
+  font-size: 12px; 
+}
+
+#tr_historico{
+  display: block;
+}
+
+#tr_historico2{
+  display: block;  
+}
+
+
+#div_dragg {
+  display: none;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
+  border-radius: 5px;
+  padding-top: 10px;
+  z-index: 999;
+}
+.highlight {
+  background-color: rgba(223, 212, 212, 0.4);
+}
+
+.card1 {
+  background-color: #FFFFFF;
+}
+
+.fundo{
+  background: rgba(223, 212, 212, 0.4);
+}
+
+
+.grid_container {  
+  display: grid;
+  grid-template-rows: 50% 50%;
+  /*grid-template-columns: 50% 50%;*/
+  padding-top: 5px;
+  gap: 5px;
+  justify-content: center;  
+}
+
+.grid_container>div {
+  border: 1px solid rgb(168, 168, 168);
+  text-align: center;
+  border-radius: 5x;  
+}
+
+.card {
+  position: relative;
+  width: var(--larg_card);
+  height: 80px;
+  box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
+  transition: 0.3s;
+  border-radius: 5px;
+  padding-top: 5px;
+}
+
+
+.div_nome {
+  text-align: left;
+  padding-left: 5px;
+  width: 215px; 
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#card_wrapper {
+  position: relative;
+  width: var(--larg_card_wrapper);
+  height: 95%;
+  /*padding: 5px;*/ 
+  align-items: center;
+  justify-content: center;
+  display:block;
+  flex-wrap:nowrap;
+  overflow: auto;
+  margin: auto;    
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+
+.text_container {
+  position: relative;   
+  font-size: 12px;
+  width: 98%;
+}
+
+
+#tab_energia td{  
+  padding: 0px;
+  font-size: 12px;
+}
+
+#tbl_hist_clk th{
+  border: none;  
+}
+
+
+.div_img {
+  position: relative;
+  border-radius: 50%;
+  padding: 2px;  
+  width: 45px;
+  height: 45px; 
+  margin-right: 10px; 
+  box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);  
+}
+
+#indicador_servidor{
+  display: none;
+  position: absolute;
+  top: 0px;
+  right: 1px;
+  margin: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e95050;
+}
+
+
+/************************************* MENSAGEM FEEDBACK *****************************************/
+#div-msg-feedback-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  cursor: wait;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 2;
+  display: block;
+}
+
+#div-msg-feedback-wrapper {
+  position: absolute;
+  width: 350px;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(50, 50, 50, 0.9);
+  color: white;
+  border-radius: 5px 5px 5px 5px;
+  border: 2px solid lightgray;
+  text-align: center;
+  padding: 15px 15px 15px 15px;
+  z-index: 2;
+}
+
+#div-msg-feedback-header {
+  width: 100%;
+  border-radius: 5px 5px 0px 0px;
+  padding: 5px;
+  background-color: #3367D6;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  color: white;
+}
+
+#div-msg-feedback-header i {
+  float: left;
+  padding: 3px;
+}
+
+#div-msg-feedback {
+  font-family: arial;
+  padding-top: 10px;
+  font-weight: bold;
+}
+
+
+
+/************************************* CONFIGURAÇÕES WIFI *****************************************/
+#div_wifi_wrappper {
+  display: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+
+#div_lista_redes_wifi>li,a {
+  text-decoration: none;
+  list-style-type: none;
+  padding: 5px;  
+}
+
+#div_lista_redes_wifi {  
+  max-width: 255px;
+  overflow-x:auto;
+  background: #eee;
+  border-radius: 5px;  
+}
+
+#fieldset_redes_wifi {
+  position: relative;
+  width: 97%;
+  padding: 5px;
+  margin: 5px;
+  height: auto;
+  border-radius: 5px;
+}
+
+
+#fieldset_set_wifi {
+  position: absolute;
+  width: 97%;
+  padding: 5px;
+  margin: 5px;
+  height: 325px;
+  border-radius: 5px;
+}
+
+
+.btn_cancelar {
+  display: block;
+  width: 150px;
+  height: 35px;
+  margin-top: 5px;
+  margin-left: 50px;
+  cursor: pointer;
+  background: #ec5b5b;
+  color: white;
+  font-size: 20px;
+}
+
+
+
+input[type=text] {
+  text-align: center;
+  width: 165px;
+}
+
+
+.div_separador {
+  height: 10px;
+}
+
+#div_scan_wifi {
+  position: absolute;
+  display: inline;
+  width: 25px;
+  height: 25px;
+  margin-left: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: #eee;
+  font-family: 'console', 'PT Sans';
+  background: rgb(100, 100, 100) radial-gradient(circle at 50% 0, rgba(255, 255, 255, .65), rgba(255, 255, 255, .35));
+  box-shadow:
+    inset rgba(0, 0, 0, .6) 0 -3px 8px,
+    inset rgba(252, 255, 255, .7) 0 3px 8px,
+    rgba(0, 0, 0, .8) 0 3px 8px -3px;
+}
+
+
+#div_set_wifi {
+  position: relative;
+  top: 20px;
+  height: 340px;
+  width: 280px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgb(100, 100, 100);
+  border: solid 2px whitesmoke;
+  color: white;
+  border-radius: 5px;
+  border: solid 1px black;
+}
+
+
+#div_redes_wifi {
+  display: none;
+  position: relative;
+  width: 280px;
+  height: auto;
+  top: 30px;
+  background-color: rgb(100, 100, 100);
+  border: solid 2px whitesmoke;
+  color: white;
+  left: 50%;
+  transform: translate(-50%);
+  border-radius: 5px;
+  border: solid 1px black;
+}
+
+.div_wrapper_btn_wifi {
+  position: relative;
+  top: 0px;
+  margin-left: 10px;
+}
+
+#div_obter_tunel_ngrok{
+  margin-left: 20px;
+}
+
+#div_emparelhar_zigbee{
+  margin-left: 20px;
+}
+
+#div_sair_wifi {  
+  margin-left: 35px; 
+}
+
+
+#div_guardar_wifi {
+  margin-right: 5px; 
+}
+
+
+#div_wrapper_save_wifi {
+  position: relative;
+  margin-top: 15px;
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+
+
+
+
+/****************** MENU CONTEXTUAL ********************/
+.menu_contextual {
+  position: absolute;
+  --mouse-x: 0;
+  --mouse-y: 0;
+  display: none;
+  position: fixed;
+  margin: 0;
+  left: 0;
+  top: 0;
+  /* The following line is responsible for all the magic */
+  transform: translateX(min(var(--mouse-x), calc(100vw - 100%))) translateY(min(var(--mouse-y), calc(100vh - 100%)));
+  width: 200px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  padding: 0px 5px 5px 5px;
+  border-radius: 5px;
+  background: #4e94ab;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+
+.menu_contextual ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  /*justify-content: center|left|...;*/
+}
+
+
+.menu_contextual li {
+  border-bottom: 1px solid #fff;
+}
+
+.menu_contextual li a {
+  display: block;
+  padding: 5px;
+  color: #000000;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+a>svg {
+  position: relative;
+  top: 5px;
+}
+
+
+
+
+/**************************** CONTROLOS REMOTO **********************************/
+#div_ctrl_r_wrappper {
+  display: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: var(--clr);
+}
+
+button {
+  cursor: pointer;
+}
+
+
+.ctrlRemoto {
+  display: block;
+  position: relative;
+  background-color: #eee;
+  width: 170px;
+  top: 5px;
+  font-family: 'console', 'PT Sans';
+  padding: 5px 5px 5px 5px;
+  border-radius: 10px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  text-align: center;
+  background: rgb(100, 100, 100) radial-gradient(circle at 50% 0, rgba(255, 255, 255, .65), rgba(255, 255, 255, .35));
+  box-shadow:
+    inset rgba(0, 0, 0, .6) 0 -3px 8px,
+    inset rgba(252, 255, 255, .7) 0 3px 8px,
+    rgba(0, 0, 0, .8) 0 3px 8px -3px;
+}
+
+.on_of_btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  background-color: #e95050;
+  border-radius: 50%;
+  padding: 5px;
+  cursor: pointer;
+  left: 50%;
+  transform: translate(-50%);
+}
+
+.btn {
+  box-sizing: border-box;
+  display: inline-block;
+  border: 0;
+  text-align: center;
+  vertical-align: top;
+  width: 40px;
+  height: 40px;
+  line-height: 30px;
+  margin: 5px;
+  box-shadow: 0 0 10px 0px rgba(0, 0, 0, 0.5);
+}
+
+.btn:active {
+  box-shadow: inset 0 0 10px 0px rgba(0, 0, 0, 0.5);
+}
+
+.btn-big-inner:focus,
+.btn:focus {
+  outline: none;
+}
+
+
+.ctrl_tv .btn.text {
+  font-size: 15px;
+  padding: 0;
+}
+
+.top-navigate,
+.channel,
+.vol_ch,
+.round {
+  background-color: #1c1c1c;
+  color: #eee;
+  font-size: 35px;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+/* COLORS */
+.green {
+  color: #239B56;
+}
+
+.red {
+  background-color: #B03A2E;
+}
+
+.dark {
+  background: #191919;
+}
+
+
+.block-vol_ch {
+  width: 49px;
+}
+
+.btn.vol_ch.text {
+  font-size: 10px;
+  padding: 0px;
+}
+
+.btn_res {
+  width: 40px;
+  height: 40px;
+  cursor: none;
+  border-radius: 50%;
+}
+
+.div_ch_vol {
+  width: 45px;
+  background: gray;
+  border-radius: 20px;
+  height: 96px;
+}
+
+.btn_ch {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
+.btn_menos {
+  margin-top: 10px;
+}
+
+.hr_remote_ctrl {
+  width: 98%;
+  text-align: left;
+  margin: 5px 0 5px 0;
+}
+
+.ctrl {
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, .8);
+  border-radius: 50%;
+  padding: 5px;
+}
+
+.div_wrap_ctrls {
+  display: inline-flex;
+}
+
+.flicked2 {
+  background-color: blue;
+  border-radius: 5px;
+}
+
+.flickedPgr {
+  background-color: blue;
+  border-radius: 50%;
+}
+
+#div_ir_panel {
+  display: none;
+  position: relative;
+  width: 180px;
+  left: 50%;
+  transform: translate(-50%);
+  border: 1px solid red;
+}
+
+#div_btn_panel_ir button {
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 14px;
+  color: white;
+}
+
+#btn_desprogramar {
+  background-color: #4a4d4a;
+}
+
+#btn_programar {
+  background-color: #39be5a;
+}
+
+#btn_fechar {
+  background-color: rgb(206, 90, 90);
+}
+
+#div_tecla_painel_ir {
+  position: relative;
+  display: block;
+  width: 50px;
+  margin: auto;
+  justify-content: center;
+}
+
+.VNT,
+.ARC,
+.TLV,
+#ctrl_remoto {
+  display: none;
+}
+
+
+
+/**************************** MENU DE NAVEGAÇÂO INFERIOR **********************************/
+
+/*@media (max-width: 600px) {
+  .div_cfg_sys {
+      bottom: 10px;
+      right: 10px;
+      padding: 10px;
+  }
+}*/
+
+.div_cfg_sys {
+  position: fixed;
+  cursor: pointer;
+  bottom: 1px;
+  right: 1px;
+  padding: 20px 20px 10px 20px;
+  border-radius: 50%;    
+  /*background-color: var(--clr);
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);   
+  background-color: #f0f0f0;*/
+}
+
+
+
+.navigation {
+  position: fixed;
+  width: 40px; 
+  height: 40px;  
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(102, 101, 101, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%; 
+  bottom: 10px;
+}
+
+.navigation ul {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.navigation ul li {
+  position: relative;
+  list-style: none;
+  display: inline;
+  width: 60px;
+  height: 60px;
+  z-index: 1;
+}
+
+.navigation ul li a {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  text-align: center;
+  font-weight: 500;
+}
+
+.navigation ul li a .icon {
+  position: relative;
+  display: block;
+  line-height: 70px;
+  font-size: 1.5em;
+  text-align: center;
+  transition: 0.5s;
+  color: var(--clr);
+  background: none;
+}
+
+.navigation ul li a .icon {
+  position: relative;
+  display: block;
+  line-height: 70px;
+  font-size: 1.5em;
+  text-align: center;
+  transition: 0.5s;
+  color: var(--clr);
+  background: none;
+}
+
+
+.navigation ul li.active a .icon {
+  transform: translateY(-3px);
+  filter: invert(1);
+  border-radius: 50%; 
+  transition: 0.5s;  
+}
+
+.navigation ul li a .text {
+  position: absolute;
+  color: var(--clr);
+  font-weight: 400;
+  font-size: 0.75em;
+  letter-spacing: 0.05em;
+  transition: 0.5s;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+#span_text_centro_menu_inferior{
+  display: none;
+}
+
+.navigation ul li.active a .text {
+  opacity: 1;
+  transform: translateY(10px);
+}
+
+.navigation ul li.active a svg {
+  position: relative;
+  top: -2px;
+}
+
+.navigation .icon svg{ 
+  width: 20px;
+  height: 25px; 
+}
+
+
+
+/* Menu Cotrolos Remoto */
+#div_head{
+  position: relative;
+  top: 0px;
+  width: 100%;
+  padding: 8px 5px 5px 5px;
+  height: 40px;
+  margin-bottom: 10px;
+  background: #fff;
+  text-align: center;
+  font-size: 20px;
+  color: white;
+  border-radius: 0 0 10px 10px;
+}
+
+#menu_ctrl_r {
+  position: relative;  
+  width: auto;
+  background: #4e94ab;
+  color: white;
+  float: left;
+  margin-left: 15px;
+}
+#menu_ctrl_r ul {
+  margin: 0;
+  padding: 0;
+}
+#menu_ctrl_r li {
+  list-style: none;
+  font-size: 18px;
+  padding: 5px;
+  cursor: pointer;
+}
+#menu_ctrl_r li:hover {
+  background-color: #90CAF9;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+#menu_ctrl_r li.active {
+  background-color: #2196F3;
+}
+#menu_ctrl_r ul li ul {
+  display: none;
+}
+#menu_ctrl_r ul li.submenu {
+  position: relative;
+}
+#menu_ctrl_r ul li.submenu ul {
+  position: absolute;
+  left: 100%;
+  width: auto;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+#menu_ctrl_r ul li.submenu:hover ul {
+  display: inline-block;
+}
+.submenu{
+  border-top: 1px solid white;
+}
+.submenu:after {
+  content: ' »';
+}
+/* Change this in order to change the Dropdown symbol */
+.submenu:only-child:after {
+  content: '';
+}
+
+
+.back_btn{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  background-color: rgb(20, 20, 20);
+  border-radius: 50%;
+  }
+
+ 
+.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+

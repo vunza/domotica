@@ -13,12 +13,16 @@
 #endif
 
 
+extern uint8_t SERVER_MAC[6];
+extern uint8_t broadcastAddress[6];
+extern unsigned long ctrl_server_alive;
 
-typedef struct Pairing{
-  char comando[16]; 
+typedef struct Payload{
+  char comando[16]; // ASK_CHANNEL, ASW_CHANNEL, PING_REQUEST, PING_RESPONSE, SEND_DATA
   uint8_t canal_wifi;
-  uint8_t mac[6];
-}Pairing;
+  uint8_t mac_origem[6];
+  uint8_t mac_destino[6];
+}Payload;
 
 
  
@@ -43,6 +47,7 @@ class EspNow {
   void callback_rx_esp_now(const uint8_t * mac, const uint8_t *incomingData, int len);
 #endif
 
-boolean SolicitarEmparelhamento(uint8_t wifi_channel);
+void ProcessarPayload(Payload pld);
+
 
 #endif // ESPNOW_H

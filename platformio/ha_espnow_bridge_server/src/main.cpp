@@ -23,9 +23,11 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 #define imprime(x)
 #define imprimeln(x)
 #endif
-  
+ 
+
 uint8_t macSTA[6] = {0x02, 0x00, 0x00, 0x00, 0x00, 0x01};
-uint8_t macAP[6]  = {0x02, 0x00, 0x00, 0x00, 0x00, 0x02};   
+uint8_t macAP[6]  = {0x02, 0x00, 0x00, 0x00, 0x00, 0x02}; 
+uint8_t macaddr[6];  
 const char* ssid = "TPLINK";  
 const char* password = "gregorio@2012"; 
  
@@ -40,29 +42,31 @@ void setup() {
     Serial.begin(115200);
     
     // Aguardar pela inicializacao da Serual
-    while (!Serial){    
-    } 
+    while (!Serial); 
   #endif 
 
+ 
   // Criar AP 
-  //RedeWifi ap_obj("ESPNOW", "123456789", "WIFI_AP");
-  //ap_obj.AlterarMacAP(macAP);
-  //ap_obj.CriaRedeWifi("");
+  //RedeWifi wifi_obj("ESPNOW", "123456789", "WIFI_AP", true, macAP);  
+  //wifi_obj.CriaRedeWifi("");
   
 
   // Conectar-se a WiFi
 #if defined(ESP8266) 
-  RedeWifi sta_obj(ssid, password, "WIFI_STA");     //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
-  sta_obj.AlterarMacSTA(macSTA);                    // Altera MC no modo STA
-  sta_obj.ConectaRedeWifi("");                      // STA_IP_MODE = [DHCP | STATIC]
+  RedeWifi wifi_obj(ssid, password, "WIFI_STA", true, macSTA);     //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
+  wifi_obj.ConectaRedeWifi("");                                   // STA_IP_MODE = [DHCP | STATIC]
 #elif defined(ESP32) 
-  RedeWifi sta_obj(ssid, password, "WIFI_AP_STA");  //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
-  sta_obj.AlterarMacSTA(macSTA);                    // Altera MC no modo STA
-  sta_obj.ConectaRedeWifi("");                      // STA_IP_MODE = [DHCP | STATIC]
-#endif 
+  RedeWifi wifi_obj(ssid, password, "WIFI_AP_STA", true, macSTA);   //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
+  wifi_obj.ConectaRedeWifi("");                                     // STA_IP_MODE = [DHCP | STATIC]
+#endif
+
+
+  // Obter MAC   
+  memcpy(macaddr, wifi_obj.GetMacAddress(), sizeof(macaddr));
+
+  // Iniciar ESP-NOW  
+  EspNow objespnow(&macaddr[0]);   
   
-  // Configurar inicializar esp-now
-  EspNow objespnow(&macSTA[0]);
 
 }// setup()
 
@@ -72,6 +76,9 @@ void setup() {
 // loop() //
 ////////////
 void loop() {
-  
 
+  /*strcpy(pld.comando, "PAIRING_TEST");
+  esp_now_send(mac_addr, (uint8_t *)&pld, sizeof(pld)); 
+  delay(2000);*/
+ 
 }// loop()

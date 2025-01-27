@@ -15,6 +15,8 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 */
 
 #define PIN_LED 2//19//23
+#define TMP_CTRL_SERVER_ALIVE 60  // Tempo para checar servidor
+#define TMP_SEND_ALIVE 5          // Tempo para checar servidor
 
 #define DEBUG 1
 
@@ -25,8 +27,8 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 #define imprime(x)
 #define imprimeln(x)
 #endif
-  
 
+unsigned long ctrl_send_alive = 0;
 
 /////////////
 // setup() //
@@ -38,11 +40,10 @@ void setup() {
     Serial.begin(115200);
     
     // Aguardar pela inicializacao da Serual
-    while (!Serial){    
-    } 
+    while (!Serial); 
   #endif
 
-  pinMode(PIN_LED, OUTPUT); 
+  //pinMode(PIN_LED, OUTPUT); 
 
   // Criar AP 
   /*RedeWifi ap_obj("ESP12E", "123456789", "WIFI_AP");
@@ -54,11 +55,10 @@ void setup() {
   //sta_obj.AlterarMacSTA(macSTA);                    // Altera MC no modo STA
   //sta_obj.ConectaRedeWifi("");                      // STA_IP_MODE = [DHCP | STATIC]
 
+  
   // Configurar inicializar esp-now
   EspNow objespnow;
 
-  imprime(F("MAC: "));
-  imprimeln(WiFi.macAddress());
 
 }// setup()
 
@@ -66,7 +66,30 @@ void setup() {
 ////////////
 // loop() //
 ////////////
-uint8_t cont = 1;
-void loop() {   
+void loop() {  
+
+  // Controlo da comunicacao esp-now com o Servidor.
+  if( (millis() - ctrl_server_alive)/1000 >= TMP_CTRL_SERVER_ALIVE ){
+
+    // Renicializa o esp-now
+    esp_now_deinit();
+    RedeWifi sta_obj("", "", "WIFI_STA"); 
+    EspNow objespnow;   
+
+    // Reinicializa o contador
+    ctrl_server_alive = millis();
+  } 
+
+  // Enviar alive ao servidor.
+  if( (millis() - ctrl_send_alive)/1000 >= TMP_SEND_ALIVE ){     
+    
+    Payload pld = {};
+    strncpy(pld.comando, "PING_REQUEST", sizeof(pld.comando));    
+    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));
+      
+    ctrl_send_alive = millis();
+  } 
 
 }// loop()
+
+
