@@ -23,6 +23,8 @@ unsigned long ctrl_server_alive = 0;
 // Construtor
 EspNow::EspNow(){ 
 
+  //RestartEspNow();
+
   // Init ESP-NOW
   if (esp_now_init() != 0) {
     imprimeln(F("Error initializing ESP-NOW"));
@@ -96,11 +98,13 @@ EspNow::EspNow(){
         imprime(F("Erro ao enviar no canal: "));
         imprimeln(channel);
       }
-      delay(1000);
+      
+      vTaskDelay(pdMS_TO_TICKS(1000));
     } 
-  #endif    
+  #endif  
+   
 
-}
+} // FIM
 
 
 
@@ -139,7 +143,7 @@ EspNow::EspNow(){
 // Callback, ESP-NOW, when data is received //
 //////////////////////////////////////////////
 #if defined(ESP8266) 
-  void callback_rx_esp_now(uint8_t * mac, uint8_t *incomingData, uint8_t len) { 
+  void callback_rx_esp_now(uint8_t * mac, uint8_t *incomingData, uint8_t len) {     
   
     Payload pld = {};   
     memcpy(&pld, incomingData, sizeof(pld));
@@ -181,11 +185,12 @@ void ProcessarPayload(Payload pld){
     #endif
 
     device_paired = true;
-
+    ctrl_server_alive = millis();
   }
   else if(strcmp(pld.comando, "PING_RESPONSE") == 0){
     // Reinivializa variael de controlo do Servidor
-    ctrl_server_alive = 0;
+    device_paired = false;
+    ctrl_server_alive = millis();
   }
 
   char macStr[18];
@@ -204,5 +209,80 @@ void ProcessarPayload(Payload pld){
   imprimeln(pld.canal_wifi);
   imprimeln("-------------------");
 
-}
+} // FIM de ProcessarPayload(...)
 
+
+///////////////////////////////////////
+// Obter canal, esp-now, do Servidor //
+///////////////////////////////////////
+void ReEmparelhar(){
+
+  imprimeln(F("Servidor Indisponível!"));
+
+  Payload pld = {};
+  strncpy(pld.comando, "ASK_CHANNEL", sizeof(pld.comando));  
+     
+  // Enviar Broad cast
+  #if defined(ESP8266) 
+    esp_now_set_self_role(ESP_NOW_ROLE_COMBO);    
+    for (int channel = 1; channel <= 13 && (device_paired == false); channel++) {
+      wifi_promiscuous_enable(true);
+      wifi_set_channel(channel);
+      wifi_promiscuous_enable(false);
+
+      // Envia a mensagem de broadcast
+      uint8_t result = esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));
+      if (result == 0) {
+        imprime(F("Mensagem enviada no canal: "));
+        imprimeln(channel);
+        imprime(F(" MAC Destino: "));
+        char macStr[18];    
+        snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+                broadcastAddress[0], broadcastAddress[1], broadcastAddress[2], broadcastAddress[3], broadcastAddress[4], broadcastAddress[5]);
+        imprimeln(macStr);
+      } else {
+        imprime(F("Erro ao enviar no canal: "));
+        imprimeln(channel);
+      }
+
+      delay(1000);  
+    } 
+    
+  #elif defined(ESP32) 
+    for (int channel = 1; channel <= 13  && (device_paired == false); channel++) {
+
+      esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+      broadcastPeer.channel = 0; // 0 = any
+      broadcastPeer.encrypt = false; // can't encrypt when broadcasting
+      memcpy(broadcastPeer.peer_addr, broadcastAddress, 6); // copy broadcast address
+
+      bool exists = esp_now_is_peer_exist(broadcastAddress);      
+      if(exists) esp_now_del_peer(broadcastAddress);
+
+      if (esp_now_add_peer(&broadcastPeer) != ESP_OK){
+          Serial.println("Can't register espnow broadcast peer, rebooting");
+          return;        
+      } 
+
+      // Envia a mensagem de broadcast
+      esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));
+      if (result == ESP_OK) {
+        imprime(F("Mensagem enviada no canal: "));
+        imprimeln(channel);
+        imprime(F(" MAC Destino: "));
+        char macStr[18];    
+        snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+                broadcastAddress[0], broadcastAddress[1], broadcastAddress[2], broadcastAddress[3], broadcastAddress[4], broadcastAddress[5]);
+        imprimeln(macStr);
+      } else {
+        imprime(F("Erro ao enviar no canal: "));
+        imprimeln(channel);
+      }
+      
+      vTaskDelay(pdMS_TO_TICKS(1000));
+    } 
+  #endif
+
+  ctrl_server_alive = millis();
+
+}// FIM de ReEmparelhar()

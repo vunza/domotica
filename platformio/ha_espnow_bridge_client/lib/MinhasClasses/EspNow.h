@@ -16,6 +16,7 @@
 extern uint8_t SERVER_MAC[6];
 extern uint8_t broadcastAddress[6];
 extern unsigned long ctrl_server_alive;
+extern boolean device_paired; 
 
 typedef struct Payload{
   char comando[16]; // ASK_CHANNEL, ASW_CHANNEL, PING_REQUEST, PING_RESPONSE, SEND_DATA
@@ -48,6 +49,7 @@ class EspNow {
 #endif
 
 void ProcessarPayload(Payload pld);
+void ReEmparelhar();
 
 
 #endif // ESPNOW_H

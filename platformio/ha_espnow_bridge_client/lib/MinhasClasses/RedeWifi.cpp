@@ -62,7 +62,11 @@ void RedeWifi::ConectaRedeWifi(const char* STA_IP_MODE){
 
     // Esperar a conexão com o Wi-Fi
     while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
+      #if defined(ESP8266)      
+        delay(1000);   
+      #elif defined(ESP32)        
+        vTaskDelay(pdMS_TO_TICKS(1000));
+      #endif
         imprime(".");
     }
 

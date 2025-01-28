@@ -80,5 +80,6 @@ void loop() {
   /*strcpy(pld.comando, "PAIRING_TEST");
   esp_now_send(mac_addr, (uint8_t *)&pld, sizeof(pld)); 
   delay(2000);*/
+  //vTaskDelay(pdMS_TO_TICKS(1000));
  
 }// loop()

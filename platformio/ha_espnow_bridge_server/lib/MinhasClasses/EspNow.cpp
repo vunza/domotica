@@ -161,7 +161,7 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
     #endif
     
   }
-  else{ // Se o par existe, envia resposta
+  else if( exists && strcmp(pld.comando, "ASK_CHANNEL") == 0){ // Se o par existe, envia resposta
     strcpy(pld.comando, "ASW_CHANNEL");
     pld.canal_wifi = wifi_channel;
     memcpy(&pld.mac_origem, SERVER_MAC, sizeof(SERVER_MAC));

@@ -15,7 +15,7 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 */
 
 #define PIN_LED 2//19//23
-#define TMP_CTRL_SERVER_ALIVE 60  // Tempo para checar servidor
+#define TMP_CTRL_SERVER_ALIVE 15  // Tempo para checar servidor
 #define TMP_SEND_ALIVE 5          // Tempo para checar servidor
 
 #define DEBUG 1
@@ -54,11 +54,9 @@ void setup() {
   RedeWifi sta_obj("", "", "WIFI_STA");               //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
   //sta_obj.AlterarMacSTA(macSTA);                    // Altera MC no modo STA
   //sta_obj.ConectaRedeWifi("");                      // STA_IP_MODE = [DHCP | STATIC]
-
   
   // Configurar inicializar esp-now
   EspNow objespnow;
-
 
 }// setup()
 
@@ -69,24 +67,16 @@ void setup() {
 void loop() {  
 
   // Controlo da comunicacao esp-now com o Servidor.
-  if( (millis() - ctrl_server_alive)/1000 >= TMP_CTRL_SERVER_ALIVE ){
-
-    // Renicializa o esp-now
-    esp_now_deinit();
-    RedeWifi sta_obj("", "", "WIFI_STA"); 
-    EspNow objespnow;   
-
-    // Reinicializa o contador
-    ctrl_server_alive = millis();
+  if( (millis() - ctrl_server_alive)/1000 >= TMP_CTRL_SERVER_ALIVE ){     
+    ReEmparelhar();      
   } 
 
-  // Enviar alive ao servidor.
-  if( (millis() - ctrl_send_alive)/1000 >= TMP_SEND_ALIVE ){     
-    
+
+  // Enviar mensagem ao servidor para verificar se está disponível.
+  if( (millis() - ctrl_send_alive)/1000 >= TMP_SEND_ALIVE ){         
     Payload pld = {};
     strncpy(pld.comando, "PING_REQUEST", sizeof(pld.comando));    
-    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));
-      
+    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));      
     ctrl_send_alive = millis();
   } 
 
