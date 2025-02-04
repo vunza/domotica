@@ -18,6 +18,7 @@
 // Minhas classes
 #include <RedeWifi.h>
 #include <EspNow.h>
+#include <ClienteMqtt.h>
 
 
 #if defined(ESP8266) 

@@ -13,11 +13,13 @@
 #endif
 
 
+enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA};
+
 typedef struct Payload{
-  char comando[16]; // ASK_CHANNEL, ASW_CHANNEL, PING_REQUEST, PING_RESPONSE, SEND_DATA
+  uint8_t tipo_msg;;          // PAIRING, DATA
   uint8_t canal_wifi;
-  uint8_t mac_origem[6];
-  uint8_t mac_destino[6];
+  uint8_t mac_servidor[6];
+  uint8_t mac_cliente[6];
 }Payload;
  
 class EspNow {

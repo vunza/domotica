@@ -4,8 +4,10 @@
 #include <Arduino.h>
 
 #if defined(ESP8266) 
-  #include <ESP8266WiFi.h> 
-  #include <espnow.h>  
+  #include <ESP8266WiFi.h>   
+  extern "C" {
+    #include <espnow.h>
+  }
 #elif defined(ESP32) 
   #include <WiFi.h>
   #include <esp_wifi.h>
@@ -18,11 +20,13 @@ extern uint8_t broadcastAddress[6];
 extern unsigned long ctrl_server_alive;
 extern boolean device_paired; 
 
+enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA};
+
 typedef struct Payload{
-  char comando[16]; // ASK_CHANNEL, ASW_CHANNEL, PING_REQUEST, PING_RESPONSE, SEND_DATA
+  uint8_t tipo_msg;;          // PAIRING, DATA
   uint8_t canal_wifi;
-  uint8_t mac_origem[6];
-  uint8_t mac_destino[6];
+  uint8_t mac_servidor[6];
+  uint8_t mac_cliente[6];
 }Payload;
 
 

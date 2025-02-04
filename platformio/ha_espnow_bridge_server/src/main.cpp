@@ -30,7 +30,12 @@ uint8_t macAP[6]  = {0x02, 0x00, 0x00, 0x00, 0x00, 0x02};
 uint8_t macaddr[6];  
 const char* ssid = "TPLINK";  
 const char* password = "gregorio@2012"; 
- 
+
+ClienteMqtt* objmqtt;
+const char* mqtt_server = "192.168.0.5";
+uint16_t mqtt_port = 1883;
+const char* mqtt_user = "";
+const char* mqtt_pwd = "";
 
 /////////////
 // setup() //
@@ -51,11 +56,12 @@ void setup() {
   //wifi_obj.CriaRedeWifi("");
   
 
-  // Conectar-se a WiFi
+  // Conectar-se a uma rede WiFi
 #if defined(ESP8266) 
   RedeWifi wifi_obj(ssid, password, "WIFI_STA", true, macSTA);     //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
   wifi_obj.ConectaRedeWifi("");                                   // STA_IP_MODE = [DHCP | STATIC]
 #elif defined(ESP32) 
+  // Para ESP32 deve ser "WIFI_AP_STA"
   RedeWifi wifi_obj(ssid, password, "WIFI_AP_STA", true, macSTA);   //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
   wifi_obj.ConectaRedeWifi("");                                     // STA_IP_MODE = [DHCP | STATIC]
 #endif
@@ -66,8 +72,8 @@ void setup() {
 
   // Iniciar ESP-NOW  
   EspNow objespnow(&macaddr[0]);   
-  
-
+  objmqtt = new ClienteMqtt(mqtt_server, mqtt_port, mqtt_user, mqtt_pwd);
+ 
 }// setup()
 
 
@@ -75,11 +81,24 @@ void setup() {
 ////////////
 // loop() //
 ////////////
+uint8_t state = 0;
 void loop() {
 
-  /*strcpy(pld.comando, "PAIRING_TEST");
-  esp_now_send(mac_addr, (uint8_t *)&pld, sizeof(pld)); 
-  delay(2000);*/
-  //vTaskDelay(pdMS_TO_TICKS(1000));
+  // Cliente MQTT
+  if (!clientMqtt.connected()) {
+    objmqtt->ReconnectarMqtt();
+  }
+
+  clientMqtt.loop(); 
+  
+  state = !state; 
+  //clientMqtt.publish("homeassistant/switch/esp8266_switch/state", state ? "ON" : "OFF");
+  
+  #if defined(ESP8266) 
+    //delay(2000);
+  #elif defined(ESP32) 
+    //vTaskDelay(pdMS_TO_TICKS(2000));
+  #endif
  
 }// loop()
+

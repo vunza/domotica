@@ -38,8 +38,9 @@ EspNow::EspNow(const uint8_t *mac){
   // ESP-NOW
   #if defined(ESP8266) 
     esp_now_set_self_role(ESP_NOW_ROLE_COMBO);   
+    wifi_set_channel(WIFI_CH);
   #elif defined(ESP32)
-           
+    esp_wifi_set_channel(WIFI_CH, WIFI_SECOND_CHAN_NONE);         
   #endif 
 
   esp_now_register_send_cb(callback_tx_esp_now);
@@ -86,27 +87,29 @@ EspNow::EspNow(const uint8_t *mac){
   void callback_rx_esp_now(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
 
     Payload pld = {};   
-    memcpy(&pld, incomingData, sizeof(pld)); 
+    memcpy(&pld, incomingData, sizeof(pld));   
+
     // Emparelha dispositivo requerente e envia resposta
-    if(strcmp(pld.comando, "ASK_CHANNEL") == 0){
+    if(pld.tipo_msg == ASK_PAIRING){
       EmparelharDispositivos(mac, incomingData);
     }  
     else{
-      ProcessarPayload(mac, incomingData);
+      //ProcessarPayload(mac, incomingData);
     }
   
   }// end callback_rx_esp_now(...)
 #elif defined(ESP32) 
   void callback_rx_esp_now(const uint8_t * mac, const uint8_t *incomingData, int len){ 
-   
+  
     Payload pld = {};   
     memcpy(&pld, incomingData, sizeof(pld)); 
+
     // Emparelha dispositivo requerente e envia resposta
-    if(strcmp(pld.comando, "ASK_CHANNEL") == 0){
+    if(pld.tipo_msg == ASK_PAIRING){
       EmparelharDispositivos(mac, incomingData);
     }    
     else{
-      ProcessarPayload(mac, incomingData);
+      //ProcessarPayload(mac, incomingData);
     }
 
   }// end callback_rx_esp_now(...)
@@ -130,7 +133,7 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
   bool exists = esp_now_is_peer_exist(mac);
  
   // Se o par nao existe, Emparelha dispositivo requerente e envia resposta
-  if( !exists && strcmp(pld.comando, "ASK_CHANNEL") == 0){    
+  if( !exists && pld.tipo_msg == ASK_PAIRING){    
       
     #if defined(ESP8266) 
       uint8_t result = esp_now_add_peer(mac, ESP_NOW_ROLE_SLAVE, wifi_channel, NULL, 0); 
@@ -139,9 +142,9 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
         return;
       }  
       else{
-        strcpy(pld.comando, "ASW_CHANNEL");
+        pld.tipo_msg = CONFIRM_PAIRING;
         pld.canal_wifi = wifi_channel;
-        memcpy(&pld.mac_origem, SERVER_MAC, sizeof(SERVER_MAC));
+        memcpy(&pld.mac_servidor, SERVER_MAC, sizeof(SERVER_MAC));
         esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));        
       } 
     #elif defined(ESP32)     
@@ -153,18 +156,20 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
         return;
       }
       else{
-        strcpy(pld.comando, "ASW_CHANNEL");
+        pld.tipo_msg = CONFIRM_PAIRING;
         pld.canal_wifi = wifi_channel;
-        memcpy(&pld.mac_origem, SERVER_MAC, sizeof(SERVER_MAC));
+        memcpy(&pld.mac_servidor, SERVER_MAC, sizeof(SERVER_MAC));
+        memcpy(&pld.mac_cliente, mac, sizeof(pld.mac_cliente));
         esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));       
       }
     #endif
     
   }
-  else if( exists && strcmp(pld.comando, "ASK_CHANNEL") == 0){ // Se o par existe, envia resposta
-    strcpy(pld.comando, "ASW_CHANNEL");
+  else if( exists && pld.tipo_msg == ASK_PAIRING){ // Se o par existe, envia resposta
+    pld.tipo_msg = CONFIRM_PAIRING;
     pld.canal_wifi = wifi_channel;
-    memcpy(&pld.mac_origem, SERVER_MAC, sizeof(SERVER_MAC));
+    memcpy(&pld.mac_servidor, SERVER_MAC, sizeof(SERVER_MAC));
+    memcpy(&pld.mac_cliente, mac, sizeof(pld.mac_cliente));
     esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
   } 
 
@@ -184,27 +189,27 @@ void ProcessarPayload(const uint8_t * mac, const uint8_t* incomingData){
   Payload pld = {};   
   memcpy(&pld, incomingData, sizeof(pld));
 
-  if(strcmp(pld.comando, "PING_REQUEST") == 0){    
+  /*if(strcmp(pld.comando, "PING_REQUEST") == 0){    
     memcpy(pld.comando, "PING_RESPONSE", sizeof(pld.comando));
-    memcpy(pld.mac_origem, SERVER_MAC, sizeof(pld.mac_destino));
-    memcpy(pld.mac_destino, mac, sizeof(pld.mac_destino));
+    memcpy(pld.mac_servidor, SERVER_MAC, sizeof(pld.mac_servidor));
+    memcpy(pld.mac_cliente, mac, sizeof(pld.mac_cliente));
     pld.canal_wifi = WIFI_CH;
       
     esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
-  }
+  }*/
 
   char macStr[18];
   imprime("Origem: ");
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-    pld.mac_origem[0], pld.mac_origem[1], pld.mac_origem[2], pld.mac_origem[3], pld.mac_origem[4], pld.mac_origem[5]);
+    pld.mac_servidor[0], pld.mac_servidor[1], pld.mac_servidor[2], pld.mac_servidor[3], pld.mac_servidor[4], pld.mac_servidor[5]);
   imprimeln(macStr);
   char macStr1[18];
   imprime("Destino: ");
   snprintf(macStr1, sizeof(macStr1), "%02x:%02x:%02x:%02x:%02x:%02x",
-    pld.mac_destino[0], pld.mac_destino[1], pld.mac_destino[2], pld.mac_destino[3], pld.mac_destino[4], pld.mac_destino[5]);
+    pld.mac_cliente[0], pld.mac_cliente[1], pld.mac_cliente[2], pld.mac_cliente[3], pld.mac_cliente[4], pld.mac_cliente[5]);
   imprimeln(macStr1);
   imprime("Comando: ");
-  imprimeln(pld.comando);    
+  imprimeln(pld.tipo_msg);    
   imprime("Canal: ");
   imprimeln(pld.canal_wifi);
   imprimeln("-------------------");
