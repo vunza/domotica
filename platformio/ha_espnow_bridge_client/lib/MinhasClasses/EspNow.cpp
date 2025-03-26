@@ -13,9 +13,12 @@
 #endif
 
 uint8_t broadcastAddress[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t localMac[6]; 
 boolean device_paired = false; 
 uint8_t SERVER_MAC[6];
-unsigned long ctrl_server_alive = 0;
+unsigned long ctrl_time_send_status = 0;
+uint8_t remote_wifi_channel = 0; 
+uint8_t local_wifi_channel = WiFi.channel(); 
 
 #if defined(ESP32) 
   esp_now_peer_info_t broadcastPeer;
@@ -41,7 +44,9 @@ EspNow::EspNow(){
   // Regista callbacks para Rx/Tx de mensagens esp-now
   esp_now_register_send_cb(callback_tx_esp_now);
   esp_now_register_recv_cb(callback_rx_esp_now);  
- 
+
+  // Guardar, como byte array, o MAC do dispositivo.
+  memcpy(localMac, ConverteMacString2Byte(WiFi.macAddress().c_str()), sizeof(localMac));
 
   #if defined(ESP8266) 
     esp_now_set_self_role(ESP_NOW_ROLE_COMBO); 
@@ -139,11 +144,12 @@ EspNow::EspNow(){
     snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
             mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     imprime("Destino: ");
-    imprime(macStr);
-    imprime(" Canal: ");
-    imprime(wifi_get_channel());
-    imprime(" Status: ");
-    imprimeln(status == 0 ? "Successo." : "Falha: ");     
+    imprimeln(macStr);
+    imprime("Canal: ");
+    imprimeln(remote_wifi_channel);
+    imprime("Status: ");
+    imprimeln(status == 0 ? "Successo." : "Falha: ");  
+    imprimeln("------------------");   
   }
 #elif defined(ESP32) 
   void callback_tx_esp_now(const uint8_t *mac_addr, esp_now_send_status_t status) {
@@ -151,12 +157,12 @@ EspNow::EspNow(){
     snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
             mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     imprime("Destino: ");
-    imprime(macStr);
-    imprime(" Canal: ");
-    imprime(WiFi.channel());
-    imprime(" Status: ");
+    imprimeln(macStr);
+    imprime("Canal: ");
+    imprimeln(remote_wifi_channel);
+    imprime("Status: ");
     imprimeln(status == 0 ? "Successo." : "Falha: ");
-  
+    imprimeln("------------------");
   }  
 #endif
 
@@ -192,27 +198,28 @@ void ProcessarPayload(Payload pld){
 
   // Guardar MAC do Servidor
   memcpy(SERVER_MAC, pld.mac_servidor, sizeof(SERVER_MAC));
-  uint8_t wifi_channel = pld.canal_wifi;
-
+  remote_wifi_channel = pld.canal_wifi;  
+  
   // Procerssar mensagem de emparelhamento
-  if(pld.tipo_msg == CONFIRM_PAIRING){   
+  if(pld.tipo_msg == CONFIRM_PAIRING && (memcmp(localMac, pld.mac_cliente, sizeof(localMac)) == 0) ){ 
+  //if(pld.tipo_msg == CONFIRM_PAIRING && (remote_wifi_channel != local_wifi_channel) ){   
     
     #if defined(ESP8266)      
       // ALterar Canal WiFi          
       wifi_promiscuous_enable(true);
-      wifi_set_channel(wifi_channel);
+      wifi_set_channel(remote_wifi_channel);
       wifi_promiscuous_enable(false);  
     #elif defined(ESP32) 
-      esp_wifi_set_channel(wifi_channel, WIFI_SECOND_CHAN_NONE);      
+      esp_wifi_set_channel(remote_wifi_channel, WIFI_SECOND_CHAN_NONE);      
     #endif
 
     device_paired = true;
-    ctrl_server_alive = millis();
+    ctrl_time_send_status = millis();
   }
   /*else if(pld.tipo_msg == DATA){
     // Reinivializa variael de controlo do Servidor
     device_paired = false;
-    ctrl_server_alive = millis();
+    ctrl_time_send_status = millis();
   }*/
 
   char macStr[18];
@@ -228,9 +235,10 @@ void ProcessarPayload(Payload pld){
   imprime("Comando: ");
   imprimeln(pld.tipo_msg);    
   imprime("Canal: ");
-  imprimeln(pld.canal_wifi);
+  imprimeln(remote_wifi_channel);
   imprimeln("-------------------");
-
+  imprimeln(WiFi.macAddress());
+  
 } // FIM de ProcessarPayload(...)
 
 
@@ -305,6 +313,26 @@ void ReEmparelhar(){
     } 
   #endif
 
-  ctrl_server_alive = millis();
+  ctrl_time_send_status = millis();
 
 }// FIM de ReEmparelhar()
+
+
+
+
+////////////////////////////////////////////
+// Converter MAC (string para Byte array) //
+////////////////////////////////////////////
+uint8_t* ConverteMacString2Byte(const char* cz_mac) {
+
+  //static uint8_t MAC[6];
+  uint8_t* MAC = (uint8_t*)calloc(6, sizeof(uint8_t));
+  char* ptr;
+
+  MAC[0] = strtol(cz_mac, &ptr, HEX );
+  for ( uint8_t i = 1; i < 6; i++ ) {
+    MAC[i] = strtol(ptr + 1, &ptr, HEX );
+  }
+
+  return MAC;
+}// converteMacString2Byte(const char* cz_mac)

@@ -12,14 +12,16 @@
   #include <esp_now.h>  
 #endif
 
+extern uint8_t pin_state;
 
 enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA};
 
 typedef struct Payload{
-  uint8_t tipo_msg;;          // PAIRING, DATA
+  uint8_t tipo_msg;;          // ASK_PAIRING, CONFIRM_PAIRING, DATA
   uint8_t canal_wifi;
   uint8_t mac_servidor[6];
   uint8_t mac_cliente[6];
+  uint8_t estado_pin;
 }Payload;
  
 class EspNow {

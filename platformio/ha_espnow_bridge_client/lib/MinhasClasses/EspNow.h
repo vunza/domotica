@@ -16,17 +16,22 @@
 
 
 extern uint8_t SERVER_MAC[6];
+extern uint8_t localMac[6]; 
 extern uint8_t broadcastAddress[6];
-extern unsigned long ctrl_server_alive;
+extern unsigned long ctrl_time_send_status;
 extern boolean device_paired; 
+extern uint8_t remote_wifi_channel;
 
-enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA};
+enum TipoMensagem {
+  ASK_PAIRING = 0, CONFIRM_PAIRING, DATA
+};
 
 typedef struct Payload{
-  uint8_t tipo_msg;;          // PAIRING, DATA
+  uint8_t tipo_msg;;          // ASK_PAIRING, CONFIRM_PAIRING, DATA
   uint8_t canal_wifi;
   uint8_t mac_servidor[6];
   uint8_t mac_cliente[6];
+  uint8_t estado_pin;
 }Payload;
 
 
@@ -54,6 +59,7 @@ class EspNow {
 
 void ProcessarPayload(Payload pld);
 void ReEmparelhar();
+uint8_t* ConverteMacString2Byte(const char* cz_mac);
 
 
 #endif // ESPNOW_H

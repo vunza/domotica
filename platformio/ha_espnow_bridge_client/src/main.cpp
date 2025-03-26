@@ -15,8 +15,9 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 */
 
 #define PIN_LED 2//19//23
-#define TMP_CTRL_SERVER_ALIVE 60  // Tempo para checar servidor
-#define TMP_SEND_ALIVE 10          // Tempo para checar servidor
+
+#define CTRL_TIME_SEND_STATUS 5    // Tempo para enviar estado do dispositivo ao servidor
+#define TMP_SEND_ALIVE 10           // Tempo para checar servidor
 
 #define DEBUG 1
 
@@ -43,7 +44,7 @@ void setup() {
     while (!Serial); 
   #endif
 
-  //pinMode(PIN_LED, OUTPUT); 
+  pinMode(PIN_LED, OUTPUT); 
 
   // Criar AP 
   //RedeWifi ap_obj("ESP12E", "123456789", "WIFI_AP");
@@ -64,26 +65,34 @@ void setup() {
 ////////////
 // loop() //
 ////////////
-uint8_t cont = 0;
 void loop() {  
 
-  // Controlo da comunicacao esp-now com o Servidor.
-  if( (millis() - ctrl_server_alive)/1000 >= TMP_CTRL_SERVER_ALIVE ){     
-    //ReEmparelhar();      
+  // Envia, ao servidor, o estado do didpositivo.
+  if( (millis() - ctrl_time_send_status)/1000 >= CTRL_TIME_SEND_STATUS ){     
+    
+    Payload pld = {};
+    pld.tipo_msg = DATA;   
+    pld.canal_wifi = remote_wifi_channel;
+    pld.estado_pin = digitalRead(PIN_LED);
+    memcpy(pld.mac_cliente, localMac, sizeof(localMac));     
+    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));      
+    ctrl_time_send_status = millis();
+        
+    imprime("Comando: ");
+    imprimeln(pld.tipo_msg); 
+
+    digitalWrite(PIN_LED, !digitalRead(PIN_LED));          
   } 
 
 
   // Enviar mensagem ao servidor para verificar se está disponível.
-  /*if( (millis() - ctrl_send_alive)/1000 >= TMP_SEND_ALIVE ){         
-    Payload pld = {};
-    strncpy(pld.comando, "PING_REQUEST", sizeof(pld.comando));    
-    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));      
-    ctrl_send_alive = millis();
+  if( (millis() - ctrl_send_alive)/1000 >= TMP_SEND_ALIVE ){         
+    
+  }
 
-    imprimeln("PING_REQUEST");
-  }*/
-
-  /*uint8_t data[24];
+  /*
+  uint8_t cont = 0;
+  uint8_t data[24];
   char buff[16];
   sprintf(buff, "Contador = %d", cont++);
   memcpy(&data, buff, sizeof(data));

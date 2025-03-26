@@ -81,7 +81,6 @@ void setup() {
 ////////////
 // loop() //
 ////////////
-uint8_t state = 0;
 void loop() {
 
   // Cliente MQTT
@@ -89,15 +88,14 @@ void loop() {
     objmqtt->ReconnectarMqtt();
   }
 
-  clientMqtt.loop(); 
-  
-  state = !state; 
-  //clientMqtt.publish("homeassistant/switch/esp8266_switch/state", state ? "ON" : "OFF");
+  clientMqtt.loop();   
+
+  clientMqtt.publish("homeassistant/switch/esp8266_switch/state", pin_state ? "ON" : "OFF");
   
   #if defined(ESP8266) 
-    //delay(2000);
+    delay(200);
   #elif defined(ESP32) 
-    //vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(200));
   #endif
  
 }// loop()

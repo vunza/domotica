@@ -12,6 +12,7 @@
     #define imprimeln(x)
 #endif
 
+uint8_t pin_state = 0;
 uint8_t WIFI_CH = 0;
 char SERVER_MAC[6];
 
@@ -93,8 +94,8 @@ EspNow::EspNow(const uint8_t *mac){
     if(pld.tipo_msg == ASK_PAIRING){
       EmparelharDispositivos(mac, incomingData);
     }  
-    else{
-      //ProcessarPayload(mac, incomingData);
+    else if(pld.tipo_msg == DATA){          
+      ProcessarPayload(mac, incomingData);
     }
   
   }// end callback_rx_esp_now(...)
@@ -108,8 +109,8 @@ EspNow::EspNow(const uint8_t *mac){
     if(pld.tipo_msg == ASK_PAIRING){
       EmparelharDispositivos(mac, incomingData);
     }    
-    else{
-      //ProcessarPayload(mac, incomingData);
+     else if(pld.tipo_msg == DATA){{
+      ProcessarPayload(mac, incomingData);
     }
 
   }// end callback_rx_esp_now(...)
@@ -179,7 +180,7 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
 
 ///////////////////////
 // Processar Payload //
-//////////////////////
+///////////////////////
 #if defined(ESP8266) 
 void ProcessarPayload(uint8_t * mac, uint8_t* incomingData){
 #elif defined(ESP32) 
@@ -187,32 +188,21 @@ void ProcessarPayload(const uint8_t * mac, const uint8_t* incomingData){
 #endif
 
   Payload pld = {};   
-  memcpy(&pld, incomingData, sizeof(pld));
+  memcpy(&pld, incomingData, sizeof(pld));  
 
-  /*if(strcmp(pld.comando, "PING_REQUEST") == 0){    
-    memcpy(pld.comando, "PING_RESPONSE", sizeof(pld.comando));
-    memcpy(pld.mac_servidor, SERVER_MAC, sizeof(pld.mac_servidor));
-    memcpy(pld.mac_cliente, mac, sizeof(pld.mac_cliente));
-    pld.canal_wifi = WIFI_CH;
-      
-    esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
-  }*/
-
-  char macStr[18];
-  imprime("Origem: ");
-  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-    pld.mac_servidor[0], pld.mac_servidor[1], pld.mac_servidor[2], pld.mac_servidor[3], pld.mac_servidor[4], pld.mac_servidor[5]);
-  imprimeln(macStr);
   char macStr1[18];
-  imprime("Destino: ");
+  imprime("Cliete: ");
   snprintf(macStr1, sizeof(macStr1), "%02x:%02x:%02x:%02x:%02x:%02x",
     pld.mac_cliente[0], pld.mac_cliente[1], pld.mac_cliente[2], pld.mac_cliente[3], pld.mac_cliente[4], pld.mac_cliente[5]);
   imprimeln(macStr1);
   imprime("Comando: ");
-  imprimeln(pld.tipo_msg);    
-  imprime("Canal: ");
-  imprimeln(pld.canal_wifi);
+  imprimeln(pld.tipo_msg);   
+  imprime("Estado do PIN: ");
+  imprimeln(pld.estado_pin);   
   imprimeln("-------------------");
+
+  // Simulação de estado  
+  pin_state = pld.estado_pin;  
 
 }
 

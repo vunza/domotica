@@ -30,6 +30,7 @@ RedeWifi::RedeWifi(const char *ssid, const char *pwd, const char* modo){
     }   
     
     WiFi.disconnect(); 
+
 }
 
 // Alterar MAC no Modo STA
