@@ -23,6 +23,7 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 #define imprime(x)
 #define imprimeln(x)
 #endif
+
  
 
 uint8_t macSTA[6] = {0x02, 0x00, 0x00, 0x00, 0x00, 0x01};
@@ -36,6 +37,10 @@ const char* mqtt_server = "192.168.0.5";
 uint16_t mqtt_port = 1883;
 const char* mqtt_user = "";
 const char* mqtt_pwd = "";
+
+/*unsigned long previousMillis = 0;
+const long interval = 400; // Intervalo em ms
+*/
 
 /////////////
 // setup() //
@@ -83,20 +88,43 @@ void setup() {
 ////////////
 void loop() {
 
+  /*unsigned long currentMillis = millis();
+  // Verifica se o intervalo passou
+  if (currentMillis - previousMillis < interval) {
+    previousMillis = currentMillis; // Salva o último tempo
+    return;
+  }*/
+
   // Cliente MQTT
   if (!clientMqtt.connected()) {
     objmqtt->ReconnectarMqtt();
   }
 
-  clientMqtt.loop();   
+  clientMqtt.loop();    
 
+  // Publica o dispositivo para o autodiscovery
+  if(send_auto_discovery == true){
+
+    char topico[64];
+    char payload[256];
+    char friedly_name[64] = "teste_bridge";
+
+    sprintf(topico, "homeassistant/switch/%s/config", friedly_name);
+    sprintf(payload, "{\"name\": \"%s\", \"command_topic\": \"homeassistant/switch/%s/set\", \"state_topic\": \"homeassistant/switch/%s/state\"}", friedly_name, friedly_name, friedly_name);
+  
+    clientMqtt.publish(topico, payload,true);  
+
+    send_auto_discovery = false;
+  } 
+
+  // Publica o estado do dispositivo
   clientMqtt.publish("homeassistant/switch/esp8266_switch/state", pin_state ? "ON" : "OFF");
   
+
   #if defined(ESP8266) 
-    delay(200);
+    delay(100);
   #elif defined(ESP32) 
-    vTaskDelay(pdMS_TO_TICKS(200));
+    vTaskDelay(pdMS_TO_TICKS(100));
   #endif
  
 }// loop()
-

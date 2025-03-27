@@ -14,7 +14,10 @@
 
 uint8_t pin_state = 0;
 uint8_t WIFI_CH = 0;
-char SERVER_MAC[6];
+char SERVER_MAC[18];
+char CLIENT_MAC[18];
+boolean send_auto_discovery = false;
+
 
 #if defined(ESP32) 
   esp_now_peer_info_t peerInfo;   
@@ -128,6 +131,13 @@ void EmparelharDispositivos(uint8_t * mac, uint8_t* incomingData){
 void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
 #endif
 
+  // Guarda o MAC do Clinte, após conversão de Byte Array para const char
+  const uint8_t maxLength = 18;  
+  char buffer[maxLength];  
+  snprintf(buffer, maxLength, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  memcpy(CLIENT_MAC, buffer, sizeof(CLIENT_MAC));
+
+  // Registo dos Clientes/Pares
   uint8_t wifi_channel = WIFI_CH;
   Payload pld = {};   
   memcpy(&pld, incomingData, sizeof(pld));
@@ -146,7 +156,7 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
         pld.tipo_msg = CONFIRM_PAIRING;
         pld.canal_wifi = wifi_channel;
         memcpy(&pld.mac_servidor, SERVER_MAC, sizeof(SERVER_MAC));
-        esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));        
+        esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));               
       } 
     #elif defined(ESP32)     
       memcpy(peerInfo.peer_addr, mac, 6);
@@ -173,6 +183,9 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
     memcpy(&pld.mac_cliente, mac, sizeof(pld.mac_cliente));
     esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
   } 
+
+  // Controlo do envio do topico auto discovery
+  send_auto_discovery = true; 
 
 }// End
 

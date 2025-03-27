@@ -13,6 +13,8 @@
 #endif
 
 extern uint8_t pin_state;
+extern char CLIENT_MAC[18];
+extern boolean send_auto_discovery;
 
 enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA};
 
