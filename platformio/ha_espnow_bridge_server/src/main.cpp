@@ -107,18 +107,26 @@ void loop() {
 
     char topico[64];
     char payload[256];
-    char friedly_name[64] = "teste_bridge";
+    char friedly_name[64] = "auto_discovery";
 
-    sprintf(topico, "homeassistant/switch/%s/config", friedly_name);
-    sprintf(payload, "{\"name\": \"%s\", \"command_topic\": \"homeassistant/switch/%s/set\", \"state_topic\": \"homeassistant/switch/%s/state\"}", friedly_name, friedly_name, friedly_name);
+    sprintf(topico, "homeassistant/switch/%s/config", CLIENT_NAME);
+    sprintf(payload, "{\"unique_id\":\"%s\",\"name\": \"%s\", \"command_topic\": \"homeassistant/switch/%s/set\", \"state_topic\": \"homeassistant/switch/%s/state\"}", CLIENT_NAME, friedly_name, CLIENT_NAME, CLIENT_NAME);
   
     clientMqtt.publish(topico, payload,true);  
 
     send_auto_discovery = false;
+   
   } 
 
+  // Eliminar entidade
+  //clientMqtt.publish("homeassistant/switch/ESP4D301F/config", "");
+  clientMqtt.publish("homeassistant/switch/teste_bridge/config", "");
+
   // Publica o estado do dispositivo
-  clientMqtt.publish("homeassistant/switch/esp8266_switch/state", pin_state ? "ON" : "OFF");
+  //clientMqtt.publish("homeassistant/switch/esp8266_switch/state", pin_state ? "ON" : "OFF");
+  char topico[64];
+  sprintf(topico, "homeassistant/switch/%s/state", CLIENT_NAME);
+  clientMqtt.publish(topico, pin_state ? "ON" : "OFF");
   
 
   #if defined(ESP8266) 

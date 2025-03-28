@@ -16,6 +16,7 @@ uint8_t pin_state = 0;
 uint8_t WIFI_CH = 0;
 char SERVER_MAC[18];
 char CLIENT_MAC[18];
+char CLIENT_NAME[CLIENT_NAME_SIZE];
 boolean send_auto_discovery = false;
 
 
@@ -137,11 +138,16 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
   snprintf(buffer, maxLength, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   memcpy(CLIENT_MAC, buffer, sizeof(CLIENT_MAC));
 
+  
+
   // Registo dos Clientes/Pares
   uint8_t wifi_channel = WIFI_CH;
   Payload pld = {};   
   memcpy(&pld, incomingData, sizeof(pld));
   bool exists = esp_now_is_peer_exist(mac);
+
+  // Guarda o Nome do Clinte
+  memcpy(CLIENT_NAME, pld.nome_cliente, sizeof(CLIENT_NAME));
  
   // Se o par nao existe, Emparelha dispositivo requerente e envia resposta
   if( !exists && pld.tipo_msg == ASK_PAIRING){    

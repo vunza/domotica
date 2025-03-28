@@ -12,8 +12,11 @@
   #include <esp_now.h>  
 #endif
 
+#define CLIENT_NAME_SIZE 16
+
 extern uint8_t pin_state;
 extern char CLIENT_MAC[18];
+extern char CLIENT_NAME[CLIENT_NAME_SIZE];
 extern boolean send_auto_discovery;
 
 enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA};
@@ -23,6 +26,7 @@ typedef struct Payload{
   uint8_t canal_wifi;
   uint8_t mac_servidor[6];
   uint8_t mac_cliente[6];
+  char nome_cliente[CLIENT_NAME_SIZE];
   uint8_t estado_pin;
 }Payload;
  

@@ -16,6 +16,7 @@ uint8_t broadcastAddress[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 uint8_t localMac[6]; 
 boolean device_paired = false; 
 uint8_t SERVER_MAC[6];
+char CLIENT_NAME[CLIENT_NAME_SIZE];
 unsigned long ctrl_time_send_status = 0;
 uint8_t remote_wifi_channel = 0; 
 uint8_t local_wifi_channel = WiFi.channel(); 
@@ -26,11 +27,32 @@ uint8_t local_wifi_channel = WiFi.channel();
  
 // Construtor
 EspNow::EspNow(){ 
+ 
+// Guarda o nome do dispositivo
+#if defined(ESP32) 
+  memcpy(CLIENT_NAME, WiFi.getHostname().c_str(), sizeof(CLIENT_NAME));
+#elif defined(ESP8266)  
+  memcpy(CLIENT_NAME, WiFi.hostname().c_str(), sizeof(CLIENT_NAME));
+#endif
+
+  // Eliminar o caracter '-'
+  uint8_t j = 0;
+  char AUX_CLIENT_NAME[CLIENT_NAME_SIZE];
+  for (uint8_t i = 0; CLIENT_NAME[i] != '\0'; i++) {
+    if (CLIENT_NAME[i] != '-') {     
+      AUX_CLIENT_NAME[j] = CLIENT_NAME[i];
+      j++;
+    }
+  }
+
+  AUX_CLIENT_NAME[j] = '\0'; 
+  memcpy(CLIENT_NAME, AUX_CLIENT_NAME, sizeof(CLIENT_NAME));
 
   uint8_t scan_wifi_ch = 0;
 
   Payload pld = {};
   pld.tipo_msg = ASK_PAIRING; 
+  memcpy(pld.nome_cliente, CLIENT_NAME, sizeof(CLIENT_NAME));
 
   // Init ESP-NOW
   if (esp_now_init() != 0) {
@@ -251,6 +273,7 @@ void ReEmparelhar(){
 
   Payload pld = {};
   pld.tipo_msg = ASK_PAIRING;
+  memcpy(pld.nome_cliente, CLIENT_NAME, sizeof(CLIENT_NAME));
      
   // Enviar Broad cast
   #if defined(ESP8266) 

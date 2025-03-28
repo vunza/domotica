@@ -27,7 +27,8 @@ RedeWifi::RedeWifi(const char *ssid, const char *pwd, const char* modo){
     }
     else if( strcmp(modo, "WIFI_AP") == 0 ){
         WiFi.mode(WIFI_AP);
-    }   
+    }  
+    
     
     WiFi.disconnect(); 
 

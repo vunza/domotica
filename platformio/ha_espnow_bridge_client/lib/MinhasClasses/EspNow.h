@@ -14,10 +14,13 @@
   #include <esp_now.h>  
 #endif
 
+#define CLIENT_NAME_SIZE 16
+
 
 extern uint8_t SERVER_MAC[6];
 extern uint8_t localMac[6]; 
 extern uint8_t broadcastAddress[6];
+extern char CLIENT_NAME[CLIENT_NAME_SIZE];
 extern unsigned long ctrl_time_send_status;
 extern boolean device_paired; 
 extern uint8_t remote_wifi_channel;
@@ -31,6 +34,7 @@ typedef struct Payload{
   uint8_t canal_wifi;
   uint8_t mac_servidor[6];
   uint8_t mac_cliente[6];
+  char nome_cliente[CLIENT_NAME_SIZE];
   uint8_t estado_pin;
 }Payload;
 
