@@ -97,36 +97,61 @@ void loop() {
 
   // Cliente MQTT
   if (!clientMqtt.connected()) {
-    objmqtt->ReconnectarMqtt();
+    objmqtt->ReconnectarMqtt(mqtt_user, mqtt_pwd);
   }
 
   clientMqtt.loop();    
-
-  // Publica o dispositivo para o autodiscovery
-  if(send_auto_discovery == true){
-
-    char topico[64];
-    char payload[256];
-    char friedly_name[64] = "auto_discovery";
-
-    sprintf(topico, "homeassistant/switch/%s/config", CLIENT_NAME);
-    sprintf(payload, "{\"unique_id\":\"%s\",\"name\": \"%s\", \"command_topic\": \"homeassistant/switch/%s/set\", \"state_topic\": \"homeassistant/switch/%s/state\"}", CLIENT_NAME, friedly_name, CLIENT_NAME, CLIENT_NAME);
   
-    clientMqtt.publish(topico, payload,true);  
+  if(send_auto_discovery == true){
+   
+    char discoveryTopic[TOPICS_SIZE];  
+    char friedly_name[FRIENDLY_NAME_SIZE] = "auto_discovery"; // TODO: Rever logica
+    char command_topic[TOPICS_SIZE];
+    char state_topic[TOPICS_SIZE];
+    char availability_topic[TOPICS_SIZE];
+    //char payload[512];
+    
+    sprintf(discoveryTopic, "homeassistant/%s/%s/config", DEVICE_CLASS, DEVICE_NAME);
+    sprintf(command_topic, "homeassistant/%s/%s/set", DEVICE_CLASS, DEVICE_NAME);
+    sprintf(state_topic, "homeassistant/%s/%s/state", DEVICE_CLASS, DEVICE_NAME);
+    sprintf(availability_topic, "homeassistant/%s/%s/available", DEVICE_CLASS, DEVICE_NAME);
+    DynamicJsonDocument doc(512);
+  
+    doc["name"] = friedly_name;
+    doc["unique_id"] = DEVICE_NAME;
+    doc["command_topic"] = command_topic;
+    doc["state_topic"] = state_topic;    
+    //doc["availability_topic"] = availability_topic;
+    doc["device_class"] = DEVICE_CLASS;  // Opcional (pode ser "light" se for uma luz)
+    doc["optimistic"] = false;           // Força atualização via state_topic
+    doc["retain"] = true;                // Mantém estado após reinício 
+
+
+   
+    String payload;
+    serializeJson(doc, payload);
+
+    // Publica o dispositivo para o autodiscovery
+    clientMqtt.publish(discoveryTopic, payload.c_str(), true);
+
+    // Subescrever nos topicos para obtencao do estados dos dispositivos
+    clientMqtt.subscribe(state_topic);
+    clientMqtt.subscribe(command_topic);
 
     send_auto_discovery = false;
    
   } 
 
   // Eliminar entidade
+  //clientMqtt.publish("homeassistant/light/ESP4D301F/config", "");
   //clientMqtt.publish("homeassistant/switch/ESP4D301F/config", "");
-  clientMqtt.publish("homeassistant/switch/teste_bridge/config", "");
+  //clientMqtt.publish("homeassistant/switch/teste_bridge/config", "");
 
   // Publica o estado do dispositivo
-  //clientMqtt.publish("homeassistant/switch/esp8266_switch/state", pin_state ? "ON" : "OFF");
-  char topico[64];
-  sprintf(topico, "homeassistant/switch/%s/state", CLIENT_NAME);
-  clientMqtt.publish(topico, pin_state ? "ON" : "OFF");
+  /*char topico[64];
+  sprintf(topico, "homeassistant/light/%s/state", DEVICE_NAME);
+  clientMqtt.publish(topico, pin_state ? "ON" : "OFF");*/
+
   
 
   #if defined(ESP8266) 

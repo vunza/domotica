@@ -26,7 +26,7 @@ typedef struct DadosMqtt{
 class ClienteMqtt {
   public:
     ClienteMqtt(const char* mqtt_server, uint16_t mqtt_port, const char* mqtt_user, const char* mqtt_pwd);
-    void ReconnectarMqtt();
+    void ReconnectarMqtt(const char* mqtt_user, const char* mqtt_pwd);
 
   private:
     char _mqtt_server[64];
@@ -39,6 +39,6 @@ class ClienteMqtt {
 
 
 void callback(char* topic, byte* payload, unsigned int length);
-void ReconnectarMqtt(const char* mqtt_user, const char* mqtt_pwd);
+
 
 #endif // CLIENTEMQTT_H

@@ -75,13 +75,13 @@ void loop() {
     pld.canal_wifi = remote_wifi_channel;
     pld.estado_pin = digitalRead(PIN_LED);
     memcpy(pld.mac_cliente, localMac, sizeof(localMac));     
-    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));      
+    /*esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));      
     ctrl_time_send_status = millis();
         
     imprime("Comando: ");
     imprimeln(pld.tipo_msg); 
 
-    digitalWrite(PIN_LED, !digitalRead(PIN_LED));          
+    digitalWrite(PIN_LED, !digitalRead(PIN_LED)); */         
   } 
 
 

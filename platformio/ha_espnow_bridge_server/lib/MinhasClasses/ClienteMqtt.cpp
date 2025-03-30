@@ -32,7 +32,7 @@ ClienteMqtt::ClienteMqtt(const char* mqtt_server, uint16_t mqtt_port, const char
   // Inializar MQTT
   clientMqtt.setServer(_mqtt_server, _mqtt_port);
   clientMqtt.setCallback(callback); 
-
+  
   // Obter Nome do Dispositivo
   #if defined(ESP8266) 
     strcpy(hostname, WiFi.hostname().c_str());
@@ -46,25 +46,42 @@ ClienteMqtt::ClienteMqtt(const char* mqtt_server, uint16_t mqtt_port, const char
 // Função de callback para mensagens recebidas //
 /////////////////////////////////////////////////
 void callback(char* topic, byte* payload, unsigned int length) {  
-  imprimeln(F("Mensagem recebida em: "));
-  imprimeln(topic);
+
+  String aux_topic = String(topic);
+  char aux_ayload[8];
+  
+  uint8_t lastSlash = aux_topic.lastIndexOf('/'); // Encontrar a posição da última "/"
+  uint8_t secondLastSlash = aux_topic.lastIndexOf('/', lastSlash - 1); // Encontrar a posição do penúltimo "/"
+
+  String deviceID = aux_topic.substring(secondLastSlash + 1, lastSlash); 
+  String command = aux_topic.substring(lastSlash + 1);
+
+  if( command == "set" ){
+    
+    for (uint i = 0; i < length; i++) {
+      aux_ayload[i] = (char)payload[i];
+    }
+
+    Serial.println(aux_ayload);
+  }
+  
 }
 
 
 /////////////////////////////
 // Reconectar Cliente MQTT //
 /////////////////////////////
-void ClienteMqtt::ReconnectarMqtt() {
+void ClienteMqtt::ReconnectarMqtt(const char* mqtt_user, const char* mqtt_pwd){  
   while (!clientMqtt.connected()) {
     imprimeln(F("Conectando ao MQTT..."));
-    if (clientMqtt.connect(hostname, _mqtt_user, _mqtt_pwd)) {
+    if (clientMqtt.connect(hostname, mqtt_user, mqtt_pwd)) {
       
       imprimeln(F("Conectado!"));
       
       // Publica o dispositivo para o autodiscovery
-      clientMqtt.publish("homeassistant/switch/esp8266_switch/config",
+      /*clientMqtt.publish("homeassistant/switch/esp8266_switch/config",
                      "{\"name\": \"teste_switch\", \"command_topic\": \"homeassistant/switch/esp8266_switch/set\", \"state_topic\": \"homeassistant/switch/esp8266_switch/state\"}",
-                     true);
+                     true);*/
     } 
     else {
       imprime(F("Falha ao conectar. Erro: "));

@@ -42,5 +42,8 @@
   #include "AsyncTCP.h"
 #endif
 
+#define TOPICS_SIZE 64
+#define FRIENDLY_NAME_SIZE 32
+
 
 #endif // COMUM_H

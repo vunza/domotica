@@ -16,7 +16,8 @@ uint8_t pin_state = 0;
 uint8_t WIFI_CH = 0;
 char SERVER_MAC[18];
 char CLIENT_MAC[18];
-char CLIENT_NAME[CLIENT_NAME_SIZE];
+char DEVICE_NAME[DEVICE_NAME_SIZE];
+char DEVICE_CLASS[DEVICE_CLASS_SIZE];
 boolean send_auto_discovery = false;
 
 
@@ -146,8 +147,10 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
   memcpy(&pld, incomingData, sizeof(pld));
   bool exists = esp_now_is_peer_exist(mac);
 
-  // Guarda o Nome do Clinte
-  memcpy(CLIENT_NAME, pld.nome_cliente, sizeof(CLIENT_NAME));
+  // Guarda o Nome e a Classe do Clinte
+  memcpy(DEVICE_NAME, pld.nome_dispositivo, sizeof(DEVICE_NAME));
+  memcpy(DEVICE_CLASS, pld.classe_dispositivo, sizeof(DEVICE_CLASS));
+
  
   // Se o par nao existe, Emparelha dispositivo requerente e envia resposta
   if( !exists && pld.tipo_msg == ASK_PAIRING){    

@@ -16,7 +16,8 @@ uint8_t broadcastAddress[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 uint8_t localMac[6]; 
 boolean device_paired = false; 
 uint8_t SERVER_MAC[6];
-char CLIENT_NAME[CLIENT_NAME_SIZE];
+char DEVICE_NAME[DEVICE_NAME_SIZE];
+char DEVICE_CLASS[DEVICE_CLASS_SIZE];
 unsigned long ctrl_time_send_status = 0;
 uint8_t remote_wifi_channel = 0; 
 uint8_t local_wifi_channel = WiFi.channel(); 
@@ -28,31 +29,36 @@ uint8_t local_wifi_channel = WiFi.channel();
 // Construtor
 EspNow::EspNow(){ 
  
-// Guarda o nome do dispositivo
+  // Guarda o nome do dispositivo
 #if defined(ESP32) 
-  memcpy(CLIENT_NAME, WiFi.getHostname().c_str(), sizeof(CLIENT_NAME));
+  memcpy(DEVICE_NAME, WiFi.getHostname().c_str(), sizeof(DEVICE_NAME));
 #elif defined(ESP8266)  
-  memcpy(CLIENT_NAME, WiFi.hostname().c_str(), sizeof(CLIENT_NAME));
+  memcpy(DEVICE_NAME, WiFi.hostname().c_str(), sizeof(DEVICE_NAME));
 #endif
+
+  // Atribuitr classe ao dispositivo  
+  memcpy(DEVICE_CLASS, "switch", sizeof(DEVICE_CLASS)); // TODO: Rever logica para atribuicao da classe
+
 
   // Eliminar o caracter '-'
   uint8_t j = 0;
-  char AUX_CLIENT_NAME[CLIENT_NAME_SIZE];
-  for (uint8_t i = 0; CLIENT_NAME[i] != '\0'; i++) {
-    if (CLIENT_NAME[i] != '-') {     
-      AUX_CLIENT_NAME[j] = CLIENT_NAME[i];
+  char AUX_DEVICE_NAME[DEVICE_NAME_SIZE];
+  for (uint8_t i = 0; DEVICE_NAME[i] != '\0'; i++) {
+    if (DEVICE_NAME[i] != '-') {     
+      AUX_DEVICE_NAME[j] = DEVICE_NAME[i];
       j++;
     }
   }
 
-  AUX_CLIENT_NAME[j] = '\0'; 
-  memcpy(CLIENT_NAME, AUX_CLIENT_NAME, sizeof(CLIENT_NAME));
+  AUX_DEVICE_NAME[j] = '\0'; 
+  memcpy(DEVICE_NAME, AUX_DEVICE_NAME, sizeof(DEVICE_NAME));
 
   uint8_t scan_wifi_ch = 0;
 
   Payload pld = {};
   pld.tipo_msg = ASK_PAIRING; 
-  memcpy(pld.nome_cliente, CLIENT_NAME, sizeof(CLIENT_NAME));
+  memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME));
+  memcpy(pld.classe_dispositivo, DEVICE_CLASS, sizeof(DEVICE_CLASS)); 
 
   // Init ESP-NOW
   if (esp_now_init() != 0) {
@@ -273,7 +279,8 @@ void ReEmparelhar(){
 
   Payload pld = {};
   pld.tipo_msg = ASK_PAIRING;
-  memcpy(pld.nome_cliente, CLIENT_NAME, sizeof(CLIENT_NAME));
+  memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME));
+  memcpy(pld.classe_dispositivo, DEVICE_CLASS, sizeof(DEVICE_CLASS)); 
      
   // Enviar Broad cast
   #if defined(ESP8266) 
