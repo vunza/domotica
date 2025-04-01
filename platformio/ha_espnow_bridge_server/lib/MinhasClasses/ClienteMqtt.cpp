@@ -16,6 +16,8 @@
 WiFiClient espClient;
 PubSubClient clientMqtt(espClient);
 char hostname[16];
+uint8_t broadcastAddress[6] = {0x58, 0xbf, 0x25, 0x4d, 0x30, 0x1f};
+
 
 
 /////////////////
@@ -47,9 +49,11 @@ ClienteMqtt::ClienteMqtt(const char* mqtt_server, uint16_t mqtt_port, const char
 /////////////////////////////////////////////////
 void callback(char* topic, byte* payload, unsigned int length) {  
 
-  String aux_topic = String(topic);
-  char aux_ayload[8];
+  String aux_topic = String(topic);  
+  Payload pld = {}; 
+  uint8_t pin_state = 0;
   
+  // TODO: Melhhorar logica, tornar generica, para qualquer topico
   uint8_t lastSlash = aux_topic.lastIndexOf('/'); // Encontrar a posição da última "/"
   uint8_t secondLastSlash = aux_topic.lastIndexOf('/', lastSlash - 1); // Encontrar a posição do penúltimo "/"
 
@@ -58,11 +62,38 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   if( command == "set" ){
     
-    for (uint i = 0; i < length; i++) {
-      aux_ayload[i] = (char)payload[i];
+    char payloadStr[length + 1];
+    memcpy(payloadStr, payload, length);
+    payloadStr[length] = '\0';
+
+    //Serial.println(aux_ayload);
+    if( strcmp(payloadStr, "ON") == 0 ){
+      pin_state = 1;
+    }
+    else if( strcmp(payloadStr, "OFF") == 0 ){
+      pin_state = 0;
     }
 
-    Serial.println(aux_ayload);
+    pld.tipo_msg = CMD_SET;
+    pld.estado_pin = pin_state;
+    memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME));
+
+
+    // Converte a MAC HEX, sem delimitadores ("58bf254d301f") , em bytes array
+    uint8_t macBytes[6]; 
+    for (int i = 0; i < 6; i++) {
+      char byteStr[3]; // Armazena cada par HEX (ex: "58")
+      strncpy(byteStr, CLIENT_MAC + (i * 2), 2); // Copia 2 caracteres
+      byteStr[2] = '\0'; // Garante terminação nula
+      macBytes[i] = strtol(byteStr, NULL, 16); // Converte para byte
+    }
+
+    // Broadcast o estado do PIN
+    esp_now_send(macBytes, (uint8_t *)&pld, sizeof(pld));
+    
+  }
+  else if( command == "state" ){
+
   }
   
 }

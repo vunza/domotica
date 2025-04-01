@@ -21,10 +21,10 @@ extern char DEVICE_NAME[DEVICE_NAME_SIZE];
 extern char DEVICE_CLASS[DEVICE_CLASS_SIZE];
 extern boolean send_auto_discovery;
 
-enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA};
+enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA, CMD_SET};
 
 typedef struct Payload{
-  uint8_t tipo_msg;;          // ASK_PAIRING, CONFIRM_PAIRING, DATA
+  uint8_t tipo_msg;;          // ASK_PAIRING, CONFIRM_PAIRING, DATA, CMD_SET
   uint8_t canal_wifi;
   uint8_t mac_servidor[6];
   uint8_t mac_cliente[6];
@@ -57,7 +57,6 @@ class EspNow {
   void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData);
   void ProcessarPayload(const uint8_t * mac, const uint8_t* incomingData);
 #endif
-
 
 
 #endif // ESPNOW_H

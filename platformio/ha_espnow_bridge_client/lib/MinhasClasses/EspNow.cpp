@@ -21,6 +21,8 @@ char DEVICE_CLASS[DEVICE_CLASS_SIZE];
 unsigned long ctrl_time_send_status = 0;
 uint8_t remote_wifi_channel = 0; 
 uint8_t local_wifi_channel = WiFi.channel(); 
+uint8_t get_pin_state;
+boolean set_device_pin = false; 
 
 #if defined(ESP32) 
   esp_now_peer_info_t broadcastPeer;
@@ -31,7 +33,8 @@ EspNow::EspNow(){
  
   // Guarda o nome do dispositivo
 #if defined(ESP32) 
-  memcpy(DEVICE_NAME, WiFi.getHostname().c_str(), sizeof(DEVICE_NAME));
+  memcpy(DEVICE_NAME, WiFi.getHostname(), sizeof(DEVICE_NAME));
+  imprimeln(DEVICE_NAME);
 #elif defined(ESP8266)  
   memcpy(DEVICE_NAME, WiFi.hostname().c_str(), sizeof(DEVICE_NAME));
 #endif
@@ -39,7 +42,7 @@ EspNow::EspNow(){
   // Atribuitr classe ao dispositivo  
   memcpy(DEVICE_CLASS, "switch", sizeof(DEVICE_CLASS)); // TODO: Rever logica para atribuicao da classe
 
-
+  // TDOD: Manusear aqui o nome do dev, em vez do hostname
   // Eliminar o caracter '-'
   uint8_t j = 0;
   char AUX_DEVICE_NAME[DEVICE_NAME_SIZE];
@@ -94,7 +97,7 @@ EspNow::EspNow(){
       if (result == 0) {
         imprime(F("Mensagem enviada no canal: "));
         imprimeln(scan_wifi_ch);
-        imprime(F(" MAC Destino: "));
+        imprime(F("MAC Destino: "));
         char macStr[18];    
         snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
                 broadcastAddress[0], broadcastAddress[1], broadcastAddress[2], broadcastAddress[3], broadcastAddress[4], broadcastAddress[5]);
@@ -135,7 +138,7 @@ EspNow::EspNow(){
       if (result == ESP_OK) {
         imprime(F("Mensagem enviada no canal: "));
         imprimeln(scan_wifi_ch);
-        imprime(F(" MAC Destino: "));
+        imprime(F("MAC Destino: "));
         char macStr[18];    
         snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
                 broadcastAddress[0], broadcastAddress[1], broadcastAddress[2], broadcastAddress[3], broadcastAddress[4], broadcastAddress[5]);
@@ -168,7 +171,7 @@ EspNow::EspNow(){
 //////////////////////////////////////////
 #if defined(ESP8266) 
   void callback_tx_esp_now(uint8_t *mac_addr, uint8_t status) { 
-    char macStr[18];    
+    /*char macStr[18];    
     snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
             mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     imprime("Destino: ");
@@ -177,11 +180,11 @@ EspNow::EspNow(){
     imprimeln(remote_wifi_channel);
     imprime("Status: ");
     imprimeln(status == 0 ? "Successo." : "Falha: ");  
-    imprimeln("------------------");   
+    imprimeln("------------------");*/   
   }
 #elif defined(ESP32) 
   void callback_tx_esp_now(const uint8_t *mac_addr, esp_now_send_status_t status) {
-    char macStr[18];    
+    /*char macStr[18];    
     snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
             mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     imprime("Destino: ");
@@ -190,7 +193,7 @@ EspNow::EspNow(){
     imprimeln(remote_wifi_channel);
     imprime("Status: ");
     imprimeln(status == 0 ? "Successo." : "Falha: ");
-    imprimeln("------------------");
+    imprimeln("------------------");*/
   }  
 #endif
 
@@ -203,7 +206,7 @@ EspNow::EspNow(){
   
     Payload pld = {};   
     memcpy(&pld, incomingData, sizeof(pld));
-    //memcpy(pld.mac_origem, mac, sizeof(pld.mac_origem));
+    memcpy(pld.mac_servidor, mac, sizeof(pld.mac_servidor));
     ProcessarPayload(pld);   
   
   }// end callback_rx_esp_now(...)
@@ -234,23 +237,23 @@ void ProcessarPayload(Payload pld){
     
     #if defined(ESP8266)      
       // ALterar Canal WiFi          
-      wifi_promiscuous_enable(true);
+      wifi_promiscuous_enable(true);     
       wifi_set_channel(remote_wifi_channel);
       wifi_promiscuous_enable(false);  
     #elif defined(ESP32) 
       esp_wifi_set_channel(remote_wifi_channel, WIFI_SECOND_CHAN_NONE);      
     #endif
 
+   
     device_paired = true;
     ctrl_time_send_status = millis();
   }
-  /*else if(pld.tipo_msg == DATA){
-    // Reinivializa variael de controlo do Servidor
-    device_paired = false;
-    ctrl_time_send_status = millis();
-  }*/
+  else if(pld.tipo_msg == CMD_SET /*&& strcmp(pld.nome_dispositivo, DEVICE_NAME) == 0*/){
+    get_pin_state = pld.estado_pin;    
+    set_device_pin = true;   
+  }
 
-  char macStr[18];
+  /*char macStr[18];
   imprime("Servidor: ");
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
     pld.mac_servidor[0], pld.mac_servidor[1], pld.mac_servidor[2], pld.mac_servidor[3], pld.mac_servidor[4], pld.mac_servidor[5]);
@@ -265,7 +268,7 @@ void ProcessarPayload(Payload pld){
   imprime("Canal: ");
   imprimeln(remote_wifi_channel);
   imprimeln("-------------------");
-  imprimeln(WiFi.macAddress());
+  imprimeln(WiFi.macAddress());*/
   
 } // FIM de ProcessarPayload(...)
 
@@ -286,7 +289,7 @@ void ReEmparelhar(){
   #if defined(ESP8266) 
     esp_now_set_self_role(ESP_NOW_ROLE_COMBO);    
     for (int channel = 0; channel <= MAX_WIFI_CHANNELS && (device_paired == false); channel++) {
-      wifi_promiscuous_enable(true);
+      wifi_promiscuous_enable(true);     
       wifi_set_channel(channel);
       wifi_promiscuous_enable(false);
 
@@ -295,7 +298,7 @@ void ReEmparelhar(){
       if (result == 0) {
         imprime(F("Mensagem enviada no canal: "));
         imprimeln(channel);
-        imprime(F(" MAC Destino: "));
+        imprime(F("MAC Destino: "));
         char macStr[18];    
         snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
                 broadcastAddress[0], broadcastAddress[1], broadcastAddress[2], broadcastAddress[3], broadcastAddress[4], broadcastAddress[5]);
@@ -329,7 +332,7 @@ void ReEmparelhar(){
       if (result == ESP_OK) {
         imprime(F("Mensagem enviada no canal: "));
         imprimeln(channel);
-        imprime(F(" MAC Destino: "));
+        imprime(F("MAC Destino: "));
         char macStr[18];    
         snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
                 broadcastAddress[0], broadcastAddress[1], broadcastAddress[2], broadcastAddress[3], broadcastAddress[4], broadcastAddress[5]);

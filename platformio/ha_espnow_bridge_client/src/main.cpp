@@ -14,9 +14,14 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 
 */
 
-#define PIN_LED 2//19//23
 
-#define CTRL_TIME_SEND_STATUS 5    // Tempo para enviar estado do dispositivo ao servidor
+#if defined(ESP8266) 
+#define PIN_LED 2//19//23 
+#elif defined(ESP32) 
+#define PIN_LED 23//19//2
+#endif
+
+#define CTRL_TIME_SEND_STATUS 5     // Tempo para enviar estado do dispositivo ao servidor
 #define TMP_SEND_ALIVE 10           // Tempo para checar servidor
 
 #define DEBUG 1
@@ -68,21 +73,42 @@ void setup() {
 void loop() {  
 
   // Envia, ao servidor, o estado do didpositivo.
-  if( (millis() - ctrl_time_send_status)/1000 >= CTRL_TIME_SEND_STATUS ){     
+  if( set_device_pin == true ){  
+
+    set_device_pin = false;
+
+    Payload pld = {};
+    pld.tipo_msg = DATA;   
+    pld.canal_wifi = remote_wifi_channel;
+    pld.estado_pin = get_pin_state;
+    memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME));
+    memcpy(pld.mac_cliente, localMac, sizeof(localMac));     
+    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));
+
+    #if defined(ESP8266)      
+      digitalWrite(PIN_LED, !get_pin_state); // logica invertida
+    #elif defined(ESP32) 
+       digitalWrite(PIN_LED, get_pin_state);      
+    #endif  
+       
+  } 
+
+
+  /*if((millis() - ctrl_time_send_status)/1000 >= CTRL_TIME_SEND_STATUS ){  
     
     Payload pld = {};
     pld.tipo_msg = DATA;   
     pld.canal_wifi = remote_wifi_channel;
     pld.estado_pin = digitalRead(PIN_LED);
-    memcpy(pld.mac_cliente, localMac, sizeof(localMac));     
-    /*esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));      
-    ctrl_time_send_status = millis();
-        
-    imprime("Comando: ");
-    imprimeln(pld.tipo_msg); 
+    memcpy(pld.mac_cliente, localMac, sizeof(localMac));   
+    memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME)); 
+    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));      
+    
+    ctrl_time_send_status = millis(); 
 
-    digitalWrite(PIN_LED, !digitalRead(PIN_LED)); */         
-  } 
+    digitalWrite(PIN_LED, !digitalRead(PIN_LED));    
+  }*/
+
 
 
   // Enviar mensagem ao servidor para verificar se está disponível.
@@ -90,28 +116,10 @@ void loop() {
     
   }
 
-  /*
-  uint8_t cont = 0;
-  uint8_t data[24];
-  char buff[16];
-  sprintf(buff, "Contador = %d", cont++);
-  memcpy(&data, buff, sizeof(data));
-  if(cont > 9) cont = 0;
-  //esp_err_t result = esp_now_send(broadcastAddress, data, sizeof(data));
-
-  uint8_t result = esp_now_send(broadcastAddress, data, sizeof(data));
-
-  //if (result == ESP_OK) {
-  if (result == 0) {
-    Serial.println("Mensagem enviada com sucesso");
-  } else {
-    Serial.println("Erro ao enviar mensagem");
-  }
-
-  delay(1000);  // Envia a mensagem a cada 2 segundos
-  */
-
 }// loop()
+
+
+
 
 
 

@@ -38,9 +38,6 @@ uint16_t mqtt_port = 1883;
 const char* mqtt_user = "";
 const char* mqtt_pwd = "";
 
-/*unsigned long previousMillis = 0;
-const long interval = 400; // Intervalo em ms
-*/
 
 /////////////
 // setup() //
@@ -88,13 +85,6 @@ void setup() {
 ////////////
 void loop() {
 
-  /*unsigned long currentMillis = millis();
-  // Verifica se o intervalo passou
-  if (currentMillis - previousMillis < interval) {
-    previousMillis = currentMillis; // Salva o último tempo
-    return;
-  }*/
-
   // Cliente MQTT
   if (!clientMqtt.connected()) {
     objmqtt->ReconnectarMqtt(mqtt_user, mqtt_pwd);
@@ -105,59 +95,59 @@ void loop() {
   if(send_auto_discovery == true){
    
     char discoveryTopic[TOPICS_SIZE];  
-    char friedly_name[FRIENDLY_NAME_SIZE] = "auto_discovery"; // TODO: Rever logica
+    char friedly_name[FRIENDLY_NAME_SIZE] = "wemos_d1_mini"; // TODO: Rever logica
     char command_topic[TOPICS_SIZE];
     char state_topic[TOPICS_SIZE];
     char availability_topic[TOPICS_SIZE];
-    //char payload[512];
+    char payload[PAYLOAD_SIZE];
     
-    sprintf(discoveryTopic, "homeassistant/%s/%s/config", DEVICE_CLASS, DEVICE_NAME);
-    sprintf(command_topic, "homeassistant/%s/%s/set", DEVICE_CLASS, DEVICE_NAME);
-    sprintf(state_topic, "homeassistant/%s/%s/state", DEVICE_CLASS, DEVICE_NAME);
-    sprintf(availability_topic, "homeassistant/%s/%s/available", DEVICE_CLASS, DEVICE_NAME);
-    DynamicJsonDocument doc(512);
+    sprintf(discoveryTopic, "homeassistant/%s/%s/config", DEVICE_CLASS, CLIENT_MAC);
+    sprintf(command_topic, "bridge/%s/%s/set", DEVICE_CLASS, CLIENT_MAC);
+    sprintf(state_topic, "bridge/%s/%s/state", DEVICE_CLASS, CLIENT_MAC);
+    sprintf(availability_topic, "bridge/%s/%s/available", DEVICE_CLASS, CLIENT_MAC);
+    DynamicJsonDocument doc(512);    
   
-    doc["name"] = friedly_name;
-    doc["unique_id"] = DEVICE_NAME;
+    doc["name"] = DEVICE_NAME;//friedly_name;
+    doc["unique_id"] = CLIENT_MAC;
     doc["command_topic"] = command_topic;
-    doc["state_topic"] = state_topic;    
+    doc["state_topic"] = state_topic;       
+    doc["device_class"] = DEVICE_CLASS;    // Opcional (pode ser "light" se for uma luz)
+    //doc["optimistic"] = false;           // Força atualização via state_topic
+    //doc["retain"] = true;                // Mantém estado após reinício 
     //doc["availability_topic"] = availability_topic;
-    doc["device_class"] = DEVICE_CLASS;  // Opcional (pode ser "light" se for uma luz)
-    doc["optimistic"] = false;           // Força atualização via state_topic
-    doc["retain"] = true;                // Mantém estado após reinício 
-
-
-   
-    String payload;
+    
     serializeJson(doc, payload);
 
+    //imprimeln(discoveryTopic);
+    //imprimeln(payload);
+
     // Publica o dispositivo para o autodiscovery
-    clientMqtt.publish(discoveryTopic, payload.c_str(), true);
+    clientMqtt.publish(discoveryTopic, payload, true);
 
     // Subescrever nos topicos para obtencao do estados dos dispositivos
-    clientMqtt.subscribe(state_topic);
+    //clientMqtt.subscribe(state_topic);
     clientMqtt.subscribe(command_topic);
 
     send_auto_discovery = false;
    
   } 
 
-  // Eliminar entidade
-  //clientMqtt.publish("homeassistant/light/ESP4D301F/config", "");
-  //clientMqtt.publish("homeassistant/switch/ESP4D301F/config", "");
-  //clientMqtt.publish("homeassistant/switch/teste_bridge/config", "");
-
   // Publica o estado do dispositivo
-  /*char topico[64];
-  sprintf(topico, "homeassistant/light/%s/state", DEVICE_NAME);
-  clientMqtt.publish(topico, pin_state ? "ON" : "OFF");*/
-
+  if( true ){ // TODO: Rever logica
+    char state_topic[TOPICS_SIZE];
+    sprintf(state_topic, "bridge/%s/%s/state", DEVICE_CLASS, CLIENT_MAC);
+    //imprimeln(state_topic);
+    clientMqtt.publish(state_topic, pin_state ? "ON" : "OFF");    
+  }
   
 
   #if defined(ESP8266) 
-    delay(100);
+    delay(50);
   #elif defined(ESP32) 
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(50));
   #endif
  
 }// loop()
+
+
+

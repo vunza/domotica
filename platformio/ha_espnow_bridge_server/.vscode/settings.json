@@ -14,5 +14,5 @@
         "regex": "cpp"
     },
     "liveServer.settings.fullReload": false,
-    "cmake.sourceDirectory": "/home/wnr/Desktop/projectoiot/platformio/ws_server_client_esp/.pio/libdeps/Shelly_1L/AsyncTCP"
+    "cmake.sourceDirectory": "/home/wnr/Desktop/domotica/platformio/ha_espnow_bridge_server/lib/ArduinoJson"
 }

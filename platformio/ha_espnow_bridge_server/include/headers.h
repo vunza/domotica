@@ -44,6 +44,7 @@
 
 #define TOPICS_SIZE 64
 #define FRIENDLY_NAME_SIZE 32
+#define PAYLOAD_SIZE 254
 
 
 #endif // COMUM_H

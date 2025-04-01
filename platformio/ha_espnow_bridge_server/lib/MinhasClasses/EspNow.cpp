@@ -81,9 +81,9 @@ EspNow::EspNow(const uint8_t *mac){
     imprime(macStr);
     imprime(" Status: ");
     imprimeln(status == ESP_NOW_SEND_SUCCESS ? "Successo." : "Falha: ");
-  }  
+  }
 #endif
-
+  
 
 
 //////////////////////////////////////////////
@@ -102,8 +102,7 @@ EspNow::EspNow(const uint8_t *mac){
     else if(pld.tipo_msg == DATA){          
       ProcessarPayload(mac, incomingData);
     }
-  
-  }// end callback_rx_esp_now(...)
+  }// end callback_rx_esp_now(...)  
 #elif defined(ESP32) 
   void callback_rx_esp_now(const uint8_t * mac, const uint8_t *incomingData, int len){ 
   
@@ -114,32 +113,43 @@ EspNow::EspNow(const uint8_t *mac){
     if(pld.tipo_msg == ASK_PAIRING){
       EmparelharDispositivos(mac, incomingData);
     }    
-     else if(pld.tipo_msg == DATA){{
+     else if(pld.tipo_msg == DATA){
       ProcessarPayload(mac, incomingData);
     }
 
   }// end callback_rx_esp_now(...)
 #endif
-
-
+ 
   
 
 ////////////////////////////
 // Emparelha dispositivos //
 ////////////////////////////
 #if defined(ESP8266) 
-void EmparelharDispositivos(uint8_t * mac, uint8_t* incomingData){
+  void EmparelharDispositivos(uint8_t * mac, uint8_t* incomingData){  
 #elif defined(ESP32) 
-void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
+  void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
 #endif
 
-  // Guarda o MAC do Clinte, após conversão de Byte Array para const char
-  const uint8_t maxLength = 18;  
-  char buffer[maxLength];  
-  snprintf(buffer, maxLength, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  memcpy(CLIENT_MAC, buffer, sizeof(CLIENT_MAC));
-
+    // Guarda o MAC do Clinte, após retirar o caracter ':' e conversão de Byte Array para const char
+    const uint8_t maxLength = 18;  
+    char buffer[maxLength];  
+    snprintf(buffer, maxLength, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        
+    // Eliminar o caracter ':'
+    uint8_t j = 0;
+    char AUX_DEVICE_MAC[maxLength];
   
+    for (uint8_t i = 0; buffer[i] != '\0'; i++) {
+      if (buffer[i] != ':') {     
+        AUX_DEVICE_MAC[j] = buffer[i];
+        j++;
+      }
+    }
+
+    AUX_DEVICE_MAC[j] = '\0';  
+    
+  memcpy(CLIENT_MAC, AUX_DEVICE_MAC, sizeof(CLIENT_MAC));   
 
   // Registo dos Clientes/Pares
   uint8_t wifi_channel = WIFI_CH;
@@ -152,7 +162,7 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
   memcpy(DEVICE_CLASS, pld.classe_dispositivo, sizeof(DEVICE_CLASS));
 
  
-  // Se o par nao existe, Emparelha dispositivo requerente e envia resposta
+   // Se o par nao existe, Emparelha dispositivo requerente e envia resposta
   if( !exists && pld.tipo_msg == ASK_PAIRING){    
       
     #if defined(ESP8266) 
@@ -175,11 +185,11 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
         imprimeln(F("Failed to add peer"));
         return;
       }
-      else{
+      else{        
         pld.tipo_msg = CONFIRM_PAIRING;
         pld.canal_wifi = wifi_channel;
         memcpy(&pld.mac_servidor, SERVER_MAC, sizeof(SERVER_MAC));
-        memcpy(&pld.mac_cliente, mac, sizeof(pld.mac_cliente));
+        memcpy(&pld.mac_cliente, mac, sizeof(pld.mac_cliente));       
         esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));       
       }
     #endif
@@ -190,12 +200,12 @@ void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
     pld.canal_wifi = wifi_channel;
     memcpy(&pld.mac_servidor, SERVER_MAC, sizeof(SERVER_MAC));
     memcpy(&pld.mac_cliente, mac, sizeof(pld.mac_cliente));
-    esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
-  } 
+    esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));    
+  }
 
   // Controlo do envio do topico auto discovery
   send_auto_discovery = true; 
-
+  
 }// End
 
 

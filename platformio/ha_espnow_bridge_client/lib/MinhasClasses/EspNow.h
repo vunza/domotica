@@ -25,13 +25,15 @@ extern char DEVICE_CLASS[DEVICE_CLASS_SIZE];
 extern unsigned long ctrl_time_send_status;
 extern boolean device_paired; 
 extern uint8_t remote_wifi_channel;
+extern uint8_t get_pin_state;
+extern boolean set_device_pin; 
 
 enum TipoMensagem {
-  ASK_PAIRING = 0, CONFIRM_PAIRING, DATA
+  ASK_PAIRING = 0, CONFIRM_PAIRING, DATA, CMD_SET
 };
 
 typedef struct Payload{
-  uint8_t tipo_msg;;          // ASK_PAIRING, CONFIRM_PAIRING, DATA
+  uint8_t tipo_msg;;          // ASK_PAIRING, CONFIRM_PAIRING, DATA, CMD_SET
   uint8_t canal_wifi;
   uint8_t mac_servidor[6];
   uint8_t mac_cliente[6];
