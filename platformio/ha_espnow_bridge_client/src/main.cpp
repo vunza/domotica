@@ -21,8 +21,8 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 #define PIN_LED 23//19//2
 #endif
 
-#define CTRL_TIME_SEND_STATUS 5     // Tempo para enviar estado do dispositivo ao servidor
-#define TMP_SEND_ALIVE 10           // Tempo para checar servidor
+#define TIME_PING_REQUEST 5                 // Tempo para enviar estado do dispositivo ao servidor
+#define TMP_CHECK_SERVER_ALIVE 5            // Tempo para checar servidor
 
 #define DEBUG 1
 
@@ -34,7 +34,6 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 #define imprimeln(x)
 #endif
 
-unsigned long ctrl_send_alive = 0;
 
 /////////////
 // setup() //
@@ -94,27 +93,27 @@ void loop() {
   } 
 
 
-  /*if((millis() - ctrl_time_send_status)/1000 >= CTRL_TIME_SEND_STATUS ){  
-    
+  if((millis() - ctrl_time_ping_request)/1000 >= TIME_PING_REQUEST ){   
+
+    // Reemparelhar
+    if(ping_couter > TMP_CHECK_SERVER_ALIVE){   
+      device_paired = false;   
+      ReEmparelhar();
+    }
+     
+    // Enviar "PING_REQUEST" para controlo da disponibilidade do servidor
     Payload pld = {};
-    pld.tipo_msg = DATA;   
-    pld.canal_wifi = remote_wifi_channel;
-    pld.estado_pin = digitalRead(PIN_LED);
+    pld.tipo_msg = PING_REQUEST;      
     memcpy(pld.mac_cliente, localMac, sizeof(localMac));   
     memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME)); 
-    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));      
-    
-    ctrl_time_send_status = millis(); 
+    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));    
+     
+    // Actualiza Variaveis 
+    ping_couter++;
+    ctrl_time_ping_request = millis(); 
 
-    digitalWrite(PIN_LED, !digitalRead(PIN_LED));    
-  }*/
-
-
-
-  // Enviar mensagem ao servidor para verificar se está disponível.
-  if( (millis() - ctrl_send_alive)/1000 >= TMP_SEND_ALIVE ){         
-    
   }
+
 
 }// loop()
 

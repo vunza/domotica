@@ -16,8 +16,6 @@
 WiFiClient espClient;
 PubSubClient clientMqtt(espClient);
 char hostname[16];
-uint8_t broadcastAddress[6] = {0x58, 0xbf, 0x25, 0x4d, 0x30, 0x1f};
-
 
 
 /////////////////
@@ -57,7 +55,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   uint8_t lastSlash = aux_topic.lastIndexOf('/'); // Encontrar a posição da última "/"
   uint8_t secondLastSlash = aux_topic.lastIndexOf('/', lastSlash - 1); // Encontrar a posição do penúltimo "/"
 
-  String deviceID = aux_topic.substring(secondLastSlash + 1, lastSlash); 
+  String dev_mac = aux_topic.substring(secondLastSlash + 1, lastSlash); 
   String command = aux_topic.substring(lastSlash + 1);
 
   if( command == "set" ){
@@ -74,6 +72,19 @@ void callback(char* topic, byte* payload, unsigned int length) {
       pin_state = 0;
     }
 
+    // Actualiza estado do PIN no HA
+    char state_topic[TOPICS_SIZE];
+    
+    uint8_t var_len = dev_mac.length() + 1;    
+    char AUX_CLIENT_MAC[var_len];
+    dev_mac.toCharArray(AUX_CLIENT_MAC, var_len);
+
+    sprintf(state_topic, "bridge/%s/%s/state", DEVICE_CLASS, AUX_CLIENT_MAC);    
+    clientMqtt.publish(state_topic, pin_state ? "ON" : "OFF"); 
+
+
+
+    // Actualiza estado do PIN no dispositivo
     pld.tipo_msg = CMD_SET;
     pld.estado_pin = pin_state;
     memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME));
@@ -83,12 +94,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
     uint8_t macBytes[6]; 
     for (int i = 0; i < 6; i++) {
       char byteStr[3]; // Armazena cada par HEX (ex: "58")
-      strncpy(byteStr, CLIENT_MAC + (i * 2), 2); // Copia 2 caracteres
+      strncpy(byteStr, AUX_CLIENT_MAC + (i * 2), 2); // Copia 2 caracteres
       byteStr[2] = '\0'; // Garante terminação nula
       macBytes[i] = strtol(byteStr, NULL, 16); // Converte para byte
     }
 
-    // Broadcast o estado do PIN
+    // Envia o estado do PIN
+    if(macBytes == ){
+
+    }
     esp_now_send(macBytes, (uint8_t *)&pld, sizeof(pld));
     
   }

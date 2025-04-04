@@ -22,14 +22,15 @@ extern uint8_t localMac[6];
 extern uint8_t broadcastAddress[6];
 extern char DEVICE_NAME[DEVICE_NAME_SIZE];
 extern char DEVICE_CLASS[DEVICE_CLASS_SIZE];
-extern unsigned long ctrl_time_send_status;
+extern unsigned long ctrl_time_ping_request;
 extern boolean device_paired; 
 extern uint8_t remote_wifi_channel;
 extern uint8_t get_pin_state;
 extern boolean set_device_pin; 
+extern uint8_t ping_couter; 
 
 enum TipoMensagem {
-  ASK_PAIRING = 0, CONFIRM_PAIRING, DATA, CMD_SET
+  ASK_PAIRING = 0, CONFIRM_PAIRING, DATA, CMD_SET, PING_REQUEST, PING_RESPONSE
 };
 
 typedef struct Payload{

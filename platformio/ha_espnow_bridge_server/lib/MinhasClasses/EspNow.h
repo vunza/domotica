@@ -2,6 +2,7 @@
 #define ESPNOW_H
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #if defined(ESP8266) 
   #include <ESP8266WiFi.h> 
@@ -21,7 +22,7 @@ extern char DEVICE_NAME[DEVICE_NAME_SIZE];
 extern char DEVICE_CLASS[DEVICE_CLASS_SIZE];
 extern boolean send_auto_discovery;
 
-enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA, CMD_SET};
+enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA, CMD_SET, PING_REQUEST, PING_RESPONSE};
 
 typedef struct Payload{
   uint8_t tipo_msg;;          // ASK_PAIRING, CONFIRM_PAIRING, DATA, CMD_SET
@@ -57,6 +58,11 @@ class EspNow {
   void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData);
   void ProcessarPayload(const uint8_t * mac, const uint8_t* incomingData);
 #endif
+
+////////////////////////////////////////////
+// Converter MAC (string para Byte array) //
+////////////////////////////////////////////
+uint8_t* ConverteMacString2Byte(const char* cz_mac);
 
 
 #endif // ESPNOW_H

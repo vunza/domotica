@@ -18,11 +18,12 @@ boolean device_paired = false;
 uint8_t SERVER_MAC[6];
 char DEVICE_NAME[DEVICE_NAME_SIZE];
 char DEVICE_CLASS[DEVICE_CLASS_SIZE];
-unsigned long ctrl_time_send_status = 0;
+unsigned long ctrl_time_ping_request = 0;
 uint8_t remote_wifi_channel = 0; 
 uint8_t local_wifi_channel = WiFi.channel(); 
 uint8_t get_pin_state;
 boolean set_device_pin = false; 
+uint8_t ping_couter = 0; 
 
 #if defined(ESP32) 
   esp_now_peer_info_t broadcastPeer;
@@ -34,7 +35,6 @@ EspNow::EspNow(){
   // Guarda o nome do dispositivo
 #if defined(ESP32) 
   memcpy(DEVICE_NAME, WiFi.getHostname(), sizeof(DEVICE_NAME));
-  imprimeln(DEVICE_NAME);
 #elif defined(ESP8266)  
   memcpy(DEVICE_NAME, WiFi.hostname().c_str(), sizeof(DEVICE_NAME));
 #endif
@@ -122,7 +122,7 @@ EspNow::EspNow(){
       esp_wifi_set_channel(scan_wifi_ch, WIFI_SECOND_CHAN_NONE);   
       memset(&broadcastPeer, 0, sizeof(broadcastPeer));       
       memcpy(broadcastPeer.peer_addr, broadcastAddress, 6);
-      broadcastPeer.channel = scan_wifi_ch;
+      broadcastPeer.channel = 0;
       broadcastPeer.encrypt = false;
 
       bool exists = esp_now_is_peer_exist(broadcastAddress);      
@@ -193,7 +193,8 @@ EspNow::EspNow(){
     imprimeln(remote_wifi_channel);
     imprime("Status: ");
     imprimeln(status == 0 ? "Successo." : "Falha: ");
-    imprimeln("------------------");*/
+    imprimeln("------------------");
+    */
   }  
 #endif
 
@@ -246,11 +247,14 @@ void ProcessarPayload(Payload pld){
 
    
     device_paired = true;
-    ctrl_time_send_status = millis();
+    ctrl_time_ping_request = millis();
   }
   else if(pld.tipo_msg == CMD_SET /*&& strcmp(pld.nome_dispositivo, DEVICE_NAME) == 0*/){
     get_pin_state = pld.estado_pin;    
     set_device_pin = true;   
+  }
+  else if(pld.tipo_msg == PING_RESPONSE){
+    ping_couter = 0;     
   }
 
   /*char macStr[18];
@@ -346,7 +350,7 @@ void ReEmparelhar(){
     } 
   #endif
 
-  ctrl_time_send_status = millis();
+  ctrl_time_ping_request = millis();
 
 }// FIM de ReEmparelhar()
 

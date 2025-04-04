@@ -12,6 +12,7 @@
    #include <WiFi.h>
 #endif
 
+#define TOPICS_SIZE 64
 
 extern WiFiClient espClient;
 extern PubSubClient clientMqtt;

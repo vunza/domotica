@@ -14,6 +14,13 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 
 */
 
+
+#if defined(ESP8266) 
+  #define PIN_LED 2//19//23 
+#elif defined(ESP32) 
+  #define PIN_LED 23//19//2
+#endif
+
 #define DEBUG 1
 
 #if DEBUG == 1
@@ -52,6 +59,8 @@ void setup() {
     while (!Serial); 
   #endif 
 
+  pinMode(PIN_LED, OUTPUT); 
+
  
   // Criar AP 
   //RedeWifi wifi_obj("ESPNOW", "123456789", "WIFI_AP", true, macAP);  
@@ -75,6 +84,54 @@ void setup() {
   // Iniciar ESP-NOW  
   EspNow objespnow(&macaddr[0]);   
   objmqtt = new ClienteMqtt(mqtt_server, mqtt_port, mqtt_user, mqtt_pwd);
+
+
+   
+  // Guarda o nome do dispositivo
+#if defined(ESP32) 
+  memcpy(DEVICE_NAME, WiFi.getHostname(), sizeof(DEVICE_NAME));
+#elif defined(ESP8266)  
+  memcpy(DEVICE_NAME, WiFi.hostname().c_str(), sizeof(DEVICE_NAME));
+#endif
+
+  // TDOD: Manusear aqui o nome do dev, em vez do hostname
+  // Eliminar o caracter '-'
+  uint8_t j = 0;
+  char AUX_DEVICE_NAME[DEVICE_NAME_SIZE];
+  for (uint8_t i = 0; DEVICE_NAME[i] != '\0'; i++) {
+    if (DEVICE_NAME[i] != '-') {     
+      AUX_DEVICE_NAME[j] = DEVICE_NAME[i];
+      j++;
+    }
+  }
+
+  AUX_DEVICE_NAME[j] = '\0';  
+
+  // Guardar, como byte array, o MAC do dispositivo.
+  char buffer[18];
+  memcpy(buffer, WiFi.macAddress().c_str(), sizeof(buffer));
+  
+  // Eliminar o caracter ':'
+  uint8_t k = 0;
+  char AUX_DEVICE_MAC[18];
+  
+  for (uint8_t i = 0; buffer[i] != '\0'; i++) {
+    if (buffer[i] != ':') {     
+      AUX_DEVICE_MAC[k] = buffer[i];
+      k++;
+    }
+  }
+
+  AUX_DEVICE_MAC[k] = '\0';     
+
+  // Guardar dados do dispositivo Servidor
+  memcpy(DEVICE_NAME, AUX_DEVICE_NAME, sizeof(DEVICE_NAME));
+  memcpy(DEVICE_CLASS, "switch", sizeof(DEVICE_CLASS)); // TODO: Rever logica p/atribuir classe do dev
+  memcpy(CLIENT_MAC, AUX_DEVICE_MAC, sizeof(CLIENT_MAC)); 
+
+  // Auto discovery do Se5rvidor
+  send_auto_discovery = true;
+
  
 }// setup()
 
@@ -95,19 +152,20 @@ void loop() {
   if(send_auto_discovery == true){
    
     char discoveryTopic[TOPICS_SIZE];  
-    char friedly_name[FRIENDLY_NAME_SIZE] = "wemos_d1_mini"; // TODO: Rever logica
+    char friedly_name[FRIENDLY_NAME_SIZE];
     char command_topic[TOPICS_SIZE];
     char state_topic[TOPICS_SIZE];
     char availability_topic[TOPICS_SIZE];
     char payload[PAYLOAD_SIZE];
     
+    memcpy(friedly_name, DEVICE_NAME, sizeof(friedly_name)); // TODO: Rever logica, nos clients
     sprintf(discoveryTopic, "homeassistant/%s/%s/config", DEVICE_CLASS, CLIENT_MAC);
     sprintf(command_topic, "bridge/%s/%s/set", DEVICE_CLASS, CLIENT_MAC);
     sprintf(state_topic, "bridge/%s/%s/state", DEVICE_CLASS, CLIENT_MAC);
     sprintf(availability_topic, "bridge/%s/%s/available", DEVICE_CLASS, CLIENT_MAC);
     DynamicJsonDocument doc(512);    
   
-    doc["name"] = DEVICE_NAME;//friedly_name;
+    doc["name"] = friedly_name;
     doc["unique_id"] = CLIENT_MAC;
     doc["command_topic"] = command_topic;
     doc["state_topic"] = state_topic;       
@@ -116,7 +174,7 @@ void loop() {
     //doc["retain"] = true;                // Mantém estado após reinício 
     //doc["availability_topic"] = availability_topic;
     
-    serializeJson(doc, payload);
+    serializeJson(doc, payload);   
 
     //imprimeln(discoveryTopic);
     //imprimeln(payload);
@@ -124,27 +182,25 @@ void loop() {
     // Publica o dispositivo para o autodiscovery
     clientMqtt.publish(discoveryTopic, payload, true);
 
-    // Subescrever nos topicos para obtencao do estados dos dispositivos
-    //clientMqtt.subscribe(state_topic);
+    // Subescrever o topico para obtencao do estado dos dispositivos   
     clientMqtt.subscribe(command_topic);
-
+       
     send_auto_discovery = false;
    
   } 
 
-  // Publica o estado do dispositivo
-  if( true ){ // TODO: Rever logica
-    char state_topic[TOPICS_SIZE];
-    sprintf(state_topic, "bridge/%s/%s/state", DEVICE_CLASS, CLIENT_MAC);
-    //imprimeln(state_topic);
-    clientMqtt.publish(state_topic, pin_state ? "ON" : "OFF");    
-  }
-  
 
+  // Alterar estado do PIN do Servidor
+  if(){
+
+  }
+
+  // TODO: Rever esta logica, faz bloquear o processo de reemparelhamento 
+  // quando o cliente é ESP32 e o master é eSP8266
   #if defined(ESP8266) 
-    delay(50);
+    //delay(100);
   #elif defined(ESP32) 
-    vTaskDelay(pdMS_TO_TICKS(50));
+    //vTaskDelay(pdMS_TO_TICKS(100));
   #endif
  
 }// loop()
