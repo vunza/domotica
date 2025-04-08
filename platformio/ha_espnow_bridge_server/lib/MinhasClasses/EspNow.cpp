@@ -19,6 +19,7 @@ char CLIENT_MAC[18];
 char DEVICE_NAME[DEVICE_NAME_SIZE];
 char DEVICE_CLASS[DEVICE_CLASS_SIZE];
 boolean send_auto_discovery = false;
+Generica obj_generica;
 
 
 #if defined(ESP32) 
@@ -102,6 +103,9 @@ EspNow::EspNow(const uint8_t *mac){
     else if(pld.tipo_msg == DATA){          
       ProcessarPayload(mac, incomingData);
     }
+    else if(pld.tipo_msg == PING_REQUEST){
+      ProcessarPayload(mac, incomingData);
+    }
   }// end callback_rx_esp_now(...)  
 #elif defined(ESP32) 
   void callback_rx_esp_now(const uint8_t * mac, const uint8_t *incomingData, int len){ 
@@ -134,25 +138,15 @@ EspNow::EspNow(const uint8_t *mac){
   void EmparelharDispositivos(const uint8_t * mac, const uint8_t* incomingData){
 #endif
 
-    // Guarda o MAC do Clinte, após retirar o caracter ':' e conversão de Byte Array para const char
-    const uint8_t maxLength = 18;  
-    char buffer[maxLength];  
-    snprintf(buffer, maxLength, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  // Guarda o MAC do Clinte, após retirar o caracter ':' e conversão de Byte Array para const char
+  const uint8_t maxLength = 18;  
+  char buffer[maxLength];  
+  snprintf(buffer, maxLength, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         
-    // Eliminar o caracter ':'
-    uint8_t j = 0;
-    char AUX_DEVICE_MAC[maxLength];
-  
-    for (uint8_t i = 0; buffer[i] != '\0'; i++) {
-      if (buffer[i] != ':') {     
-        AUX_DEVICE_MAC[j] = buffer[i];
-        j++;
-      }
-    }
-
-    AUX_DEVICE_MAC[j] = '\0';  
+  // Eliminar o caracter ':'
+  obj_generica.RemoveMacDelimiters(':', buffer, buffer);   
     
-  memcpy(CLIENT_MAC, AUX_DEVICE_MAC, sizeof(CLIENT_MAC));   
+  memcpy(CLIENT_MAC, buffer, sizeof(CLIENT_MAC));   
 
   // Registo dos Clientes/Pares
   uint8_t wifi_channel = WIFI_CH;
@@ -246,7 +240,6 @@ void ProcessarPayload(const uint8_t * mac, const uint8_t* incomingData){
     memcpy(&pld.mac_cliente, mac, sizeof(pld.mac_cliente));    
     esp_now_send(mac, (uint8_t *)&pld, sizeof(pld));
   }
-
 
 }
 

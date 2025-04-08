@@ -24,6 +24,8 @@ uint8_t local_wifi_channel = WiFi.channel();
 uint8_t get_pin_state;
 boolean set_device_pin = false; 
 uint8_t ping_couter = 0; 
+Generica objGenerica;
+
 
 #if defined(ESP32) 
   esp_now_peer_info_t broadcastPeer;
@@ -77,8 +79,9 @@ EspNow::EspNow(){
   esp_now_register_recv_cb(callback_rx_esp_now);  
 
   // Guardar, como byte array, o MAC do dispositivo.
-  memcpy(localMac, ConverteMacString2Byte(WiFi.macAddress().c_str()), sizeof(localMac));
+  memcpy(localMac, objGenerica.ConverteMacString2Byte(WiFi.macAddress().c_str()), sizeof(localMac));
 
+//ConverteMacString2Byte(WiFi.macAddress().c_str())
   #if defined(ESP8266) 
     esp_now_set_self_role(ESP_NOW_ROLE_COMBO); 
 
@@ -353,23 +356,3 @@ void ReEmparelhar(){
   ctrl_time_ping_request = millis();
 
 }// FIM de ReEmparelhar()
-
-
-
-
-////////////////////////////////////////////
-// Converter MAC (string para Byte array) //
-////////////////////////////////////////////
-uint8_t* ConverteMacString2Byte(const char* cz_mac) {
-
-  //static uint8_t MAC[6];
-  uint8_t* MAC = (uint8_t*)calloc(6, sizeof(uint8_t));
-  char* ptr;
-
-  MAC[0] = strtol(cz_mac, &ptr, HEX );
-  for ( uint8_t i = 1; i < 6; i++ ) {
-    MAC[i] = strtol(ptr + 1, &ptr, HEX );
-  }
-
-  return MAC;
-}// converteMacString2Byte(const char* cz_mac)

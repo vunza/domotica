@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <Generica.h>
 
 #if defined(ESP8266) 
   #include <ESP8266WiFi.h> 
@@ -21,6 +22,7 @@ extern char CLIENT_MAC[18];
 extern char DEVICE_NAME[DEVICE_NAME_SIZE];
 extern char DEVICE_CLASS[DEVICE_CLASS_SIZE];
 extern boolean send_auto_discovery;
+
 
 enum TipoMensagem {ASK_PAIRING = 0, CONFIRM_PAIRING, DATA, CMD_SET, PING_REQUEST, PING_RESPONSE};
 

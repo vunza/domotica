@@ -16,7 +16,7 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 
 
 #if defined(ESP8266) 
-  #define PIN_LED 2//19//23 
+  #define PIN_LED 12//2//23 
 #elif defined(ESP32) 
   #define PIN_LED 23//19//2
 #endif
@@ -44,7 +44,7 @@ const char* mqtt_server = "192.168.0.5";
 uint16_t mqtt_port = 1883;
 const char* mqtt_user = "";
 const char* mqtt_pwd = "";
-
+Generica objGenerica;
 
 /////////////
 // setup() //
@@ -69,11 +69,11 @@ void setup() {
 
   // Conectar-se a uma rede WiFi
 #if defined(ESP8266) 
-  RedeWifi wifi_obj(ssid, password, "WIFI_STA", true, macSTA);     //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
+  RedeWifi wifi_obj(ssid, password, "WIFI_STA", false, macSTA);     //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
   wifi_obj.ConectaRedeWifi("");                                   // STA_IP_MODE = [DHCP | STATIC]
 #elif defined(ESP32) 
   // Para ESP32 deve ser "WIFI_AP_STA"
-  RedeWifi wifi_obj(ssid, password, "WIFI_AP_STA", true, macSTA);   //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
+  RedeWifi wifi_obj(ssid, password, "WIFI_AP_STA", false, macSTA);   //modo: WIFI_AP_STA | WIFI_STA | WIFI_AP
   wifi_obj.ConectaRedeWifi("");                                     // STA_IP_MODE = [DHCP | STATIC]
 #endif
 
@@ -96,42 +96,24 @@ void setup() {
 
   // TDOD: Manusear aqui o nome do dev, em vez do hostname
   // Eliminar o caracter '-'
-  uint8_t j = 0;
-  char AUX_DEVICE_NAME[DEVICE_NAME_SIZE];
-  for (uint8_t i = 0; DEVICE_NAME[i] != '\0'; i++) {
-    if (DEVICE_NAME[i] != '-') {     
-      AUX_DEVICE_NAME[j] = DEVICE_NAME[i];
-      j++;
-    }
-  }
+  objGenerica.RemoveMacDelimiters('-', DEVICE_NAME, DEVICE_NAME); 
 
-  AUX_DEVICE_NAME[j] = '\0';  
 
   // Guardar, como byte array, o MAC do dispositivo.
   char buffer[18];
   memcpy(buffer, WiFi.macAddress().c_str(), sizeof(buffer));
+  memcpy(SAVE_SERVER_MAC, buffer, sizeof(SAVE_SERVER_MAC));// Guarda o MAC do Server
   
   // Eliminar o caracter ':'
-  uint8_t k = 0;
-  char AUX_DEVICE_MAC[18];
+  objGenerica.RemoveMacDelimiters(':', buffer, buffer);
   
-  for (uint8_t i = 0; buffer[i] != '\0'; i++) {
-    if (buffer[i] != ':') {     
-      AUX_DEVICE_MAC[k] = buffer[i];
-      k++;
-    }
-  }
-
-  AUX_DEVICE_MAC[k] = '\0';     
-
   // Guardar dados do dispositivo Servidor
-  memcpy(DEVICE_NAME, AUX_DEVICE_NAME, sizeof(DEVICE_NAME));
+  memcpy(DEVICE_NAME, DEVICE_NAME, sizeof(DEVICE_NAME));
   memcpy(DEVICE_CLASS, "switch", sizeof(DEVICE_CLASS)); // TODO: Rever logica p/atribuir classe do dev
-  memcpy(CLIENT_MAC, AUX_DEVICE_MAC, sizeof(CLIENT_MAC)); 
+  memcpy(CLIENT_MAC, buffer, sizeof(CLIENT_MAC)); 
 
   // Auto discovery do Se5rvidor
-  send_auto_discovery = true;
-
+  send_auto_discovery = true;  
  
 }// setup()
 
@@ -143,7 +125,7 @@ void setup() {
 void loop() {
 
   // Cliente MQTT
-  if (!clientMqtt.connected()) {
+  if (!clientMqtt.connected()) { 
     objmqtt->ReconnectarMqtt(mqtt_user, mqtt_pwd);
   }
 
@@ -191,16 +173,17 @@ void loop() {
 
 
   // Alterar estado do PIN do Servidor
-  if(){
-
+  if( set_server_pin == true ){
+    set_server_pin = false;
+    digitalWrite(PIN_LED, server_pin);
   }
 
   // TODO: Rever esta logica, faz bloquear o processo de reemparelhamento 
   // quando o cliente é ESP32 e o master é eSP8266
   #if defined(ESP8266) 
-    //delay(100);
+    //delay(50);
   #elif defined(ESP32) 
-    //vTaskDelay(pdMS_TO_TICKS(100));
+    //vTaskDelay(pdMS_TO_TICKS(50));
   #endif
  
 }// loop()

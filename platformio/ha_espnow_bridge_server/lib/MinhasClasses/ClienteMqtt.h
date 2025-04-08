@@ -16,6 +16,10 @@
 
 extern WiFiClient espClient;
 extern PubSubClient clientMqtt;
+extern char SAVE_SERVER_MAC[18];
+extern boolean set_server_pin;
+extern uint8_t server_pin;
+
 
 ///////////////////////////////
 // Gestão das connexões WiFi //

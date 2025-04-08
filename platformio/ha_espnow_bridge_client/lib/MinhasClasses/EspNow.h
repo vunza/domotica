@@ -2,6 +2,7 @@
 #define ESPNOW_H
 
 #include <Arduino.h>
+#include <Generica.h>
 
 #if defined(ESP8266) 
   #include <ESP8266WiFi.h>   
@@ -68,7 +69,6 @@ class EspNow {
 
 void ProcessarPayload(Payload pld);
 void ReEmparelhar();
-uint8_t* ConverteMacString2Byte(const char* cz_mac);
 
 
 #endif // ESPNOW_H

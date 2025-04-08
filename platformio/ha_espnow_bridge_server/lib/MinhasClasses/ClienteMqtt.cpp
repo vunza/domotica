@@ -16,7 +16,10 @@
 WiFiClient espClient;
 PubSubClient clientMqtt(espClient);
 char hostname[16];
-
+char SAVE_SERVER_MAC[18];
+Generica ObjGenerica;
+boolean set_server_pin = false;
+uint8_t server_pin = 0;
 
 /////////////////
 // Construtor //
@@ -99,11 +102,17 @@ void callback(char* topic, byte* payload, unsigned int length) {
       macBytes[i] = strtol(byteStr, NULL, 16); // Converte para byte
     }
 
+    // Retira os caracteres ':' do MAC
+    ObjGenerica.RemoveMacDelimiters(':', SAVE_SERVER_MAC, SAVE_SERVER_MAC);
+    
     // Envia o estado do PIN
-    if(macBytes == ){
-
+    if( strcmp(AUX_CLIENT_MAC, SAVE_SERVER_MAC) == 0 ){ // Servidor
+      set_server_pin = true;
+      server_pin = pin_state;
     }
-    esp_now_send(macBytes, (uint8_t *)&pld, sizeof(pld));
+    else{ // Cliente
+      esp_now_send(macBytes, (uint8_t *)&pld, sizeof(pld));
+    }
     
   }
   else if( command == "state" ){
@@ -133,10 +142,13 @@ void ClienteMqtt::ReconnectarMqtt(const char* mqtt_user, const char* mqtt_pwd){
       imprimeln(clientMqtt.state());      
       
       #if defined(ESP8266) 
-        delay(5000);
+        //delay(100);
       #elif defined(ESP32) 
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        //vTaskDelay(pdMS_TO_TICKS(100));
       #endif
+
+      ReconnectarMqtt(mqtt_user, mqtt_pwd);
+
     }
   }
 }

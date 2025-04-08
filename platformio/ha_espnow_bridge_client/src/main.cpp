@@ -21,8 +21,8 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 #define PIN_LED 23//19//2
 #endif
 
-#define TIME_PING_REQUEST 5                 // Tempo para enviar estado do dispositivo ao servidor
-#define TMP_CHECK_SERVER_ALIVE 5            // Tempo para checar servidor
+#define TIME_PING_REQUEST 2                // Tempo para enviar estado do dispositivo ao servidor
+#define TMP_CHECK_SERVER_ALIVE 4           // Tempo para checar servidor
 
 #define DEBUG 1
 
@@ -94,19 +94,21 @@ void loop() {
 
 
   if((millis() - ctrl_time_ping_request)/1000 >= TIME_PING_REQUEST ){   
-
+    
     // Reemparelhar
-    if(ping_couter > TMP_CHECK_SERVER_ALIVE){   
-      device_paired = false;   
+    if(ping_couter >= TMP_CHECK_SERVER_ALIVE){   
+      device_paired = false;  
+      ping_couter = 0; 
       ReEmparelhar();
     }
-     
-    // Enviar "PING_REQUEST" para controlo da disponibilidade do servidor
-    Payload pld = {};
-    pld.tipo_msg = PING_REQUEST;      
-    memcpy(pld.mac_cliente, localMac, sizeof(localMac));   
-    memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME)); 
-    esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld));    
+    else{
+      // Enviar "PING_REQUEST" para controlo da disponibilidade do servidor
+      Payload pld = {};
+      pld.tipo_msg = PING_REQUEST;      
+      memcpy(pld.mac_cliente, localMac, sizeof(localMac));   
+      memcpy(pld.nome_dispositivo, DEVICE_NAME, sizeof(DEVICE_NAME)); 
+      esp_now_send(broadcastAddress, (uint8_t *)&pld, sizeof(pld)); 
+    }       
      
     // Actualiza Variaveis 
     ping_couter++;
