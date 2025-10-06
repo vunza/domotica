@@ -1,6 +1,40 @@
 /*!**************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/css/styles.scss ***!
   \**************************************************************************************************************/
+.caja {
+  border: 2px solid red;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: rgb(225.2719665272, 239.9163179916, 249.7280334728);
+}
+.caja h2 {
+  margin: 0;
+  color: rgb(25.4560669456, 96.1673640167, 143.5439330544);
+}
+.caja p {
+  font-size: 1.2em;
+  color: rgb(33.1380753138, 125.1882845188, 186.8619246862);
+}
+
+body {
+  background-color: gray;
+}
+
+p {
+  background-color: blue;
+  height: 300px;
+}
+
+div, nav {
+  background-color: orange;
+}
+div p, nav p {
+  padding: 5px;
+}
+div p:hover, nav p:hover {
+  background: yellow;
+}
+
 .title {
   color: #3498db;
 }

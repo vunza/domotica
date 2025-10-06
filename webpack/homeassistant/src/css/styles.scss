@@ -1,11 +1,13 @@
 
-// Cargar modulos de Sass
-//@use 'modulos';
 
-// variables.scss
-$primary: #3498db;
+// Cargar modulos de Sass
+@use 'modulo1';
+@use 'modulo2';
 
 .title {
-  color: $primary;    
+  color: modulo1.$primary;    
 }
+
+
+
 

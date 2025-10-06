@@ -21,20 +21,7 @@ module.exports = {
                     'css-loader',
                     'sass-loader'
                 ]
-            },
-            // {
-            //     exclude: /node_modules/,
-            //     test: /\.css$/i,
-            //     use:[
-            //         {loader: 'style-loader'},
-            //         {
-            //             loader: 'css-loader',
-            //             options: {
-            //                 modules: true
-            //             }
-            //         }
-            //     ]
-            // },
+            },           
             {
                  test: /\.css$/i,
                  use: [
