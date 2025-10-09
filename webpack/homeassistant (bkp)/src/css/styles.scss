@@ -1,0 +1,13 @@
+
+
+// Cargar modulos de Sass
+@use 'modulo1';
+@use 'modulo2';
+
+.title {
+  color: modulo1.$primary;    
+}
+
+
+
+

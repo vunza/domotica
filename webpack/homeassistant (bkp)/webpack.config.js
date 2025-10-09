@@ -4,7 +4,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const loader = require('sass-loader');
 
 module.exports = {
-    entry: path.resolve(__dirname, 'src/js/principal.js'),
+    entry: path.resolve(__dirname, 'src/js/index.js'),
     mode: 'development'/*production|none*/,
     output: {
         filename: '[name]-[contenthash].js',
@@ -55,8 +55,8 @@ module.exports = {
             template: path.resolve(__dirname, 'src/public/index.html'),         
         }),
          new HtmlWebpackPlugin({
-            filename: 'auxiliar.html',
-            template: path.resolve(__dirname, 'src/public/auxiliar.html'),         
+            filename: 'login.html',
+            template: path.resolve(__dirname, 'src/public/login.html'),         
         }),
         // Empaquetar CSS en un archivo separado
         new MiniCssExtractPlugin({ 
