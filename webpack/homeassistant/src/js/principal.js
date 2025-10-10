@@ -2,6 +2,7 @@ import '../css/styles.scss';
 //import img from '../assets/orquidea.jpeg';
 import { criar_card} from './cria_cards.js';
 
+
 criar_card(1);
 criar_card(2);
 criar_card(3);

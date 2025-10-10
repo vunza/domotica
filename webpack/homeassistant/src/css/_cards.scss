@@ -1,11 +1,11 @@
 
-$larg_card_wrapper: 100%;
+$larg_card_wrapper: 350px;
 $larg_card: 310px;
 
 #card_wrapper {
   position: relative;
-  width: $larg_card_wrapper;
-  height: 99vh;  
+  //width: $larg_card_wrapper;
+  //height: 99vh;  
   align-items: center;
   justify-content: center;
   display:block;
@@ -19,15 +19,10 @@ $larg_card: 310px;
   background-color: #FFFFFF;
 }
 
-.fundo{
-  background: rgba(223, 212, 212, 0.4);
-}
-
 
 .grid_container {  
   display: grid;
-  grid-template-rows: 50% 50%;
-  /*grid-template-columns: 50% 50%;*/
+  grid-template-rows: 50% 50%; 
   padding-top: 5px;
   gap: 5px;
   justify-content: center;  
@@ -36,7 +31,7 @@ $larg_card: 310px;
 .grid_container>div {
   border: 1px solid rgb(168, 168, 168);
   text-align: center;
-  border-radius: 5x;  
+  border-radius: 5x;   
 }
 
 .card {
