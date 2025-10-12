@@ -1,114 +1,266 @@
 
-$larg_card_wrapper: 350px;
-$larg_card: 310px;
+// Variáveis CSS modernas
+:root {
+  --primary-color: #6366f1;
+  --primary-hover: #4f46e5;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --bg-card: #ffffff;
+  --bg-hover: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 #card_wrapper {
-  position: relative;
-  //width: $larg_card_wrapper;
-  //height: 99vh;  
-  align-items: center;
-  justify-content: center;
-  display:block;
-  flex-wrap:nowrap;
-  overflow: auto;
-  margin: auto; 
-  border: 1px solid blue;   
-}
-
-.card1 {
-  background-color: #FFFFFF;
-}
-
-
-.grid_container {  
   display: grid;
-  grid-template-rows: 50% 50%; 
-  padding-top: 5px;
-  gap: 5px;
-  justify-content: center;  
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  align-items: start;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
 }
 
-.grid_container>div {
-  border: 1px solid rgb(168, 168, 168);
-  text-align: center;
-  border-radius: 5x;   
-}
-
+// Remove grid_container antigo e usa card diretamente
 .card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
   position: relative;
-  width: $larg_card;
-  height: 80px;
-  box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
-  transition: 0.3s;
-  border-radius: 5px;
-  padding-top: 5px;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    opacity: 0;
+    transition: var(--transition);
+  }
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    background: var(--bg-hover);
+    
+    &::before {
+      opacity: 1;
+    }
+    
+    .div_img {
+      transform: scale(1.1);      
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    }
+  }
 }
 
 
-.div_nome {
-  text-align: left;
-  padding-left: 5px;
-  width: 215px; 
-  font-weight: bold;
-  font-size: 16px;
+.srvr_indicator {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success-color);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  
+  &.offline {
+    background: var(--danger-color);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+  }
 }
-
-.card:hover {
-  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-}
-
 
 .text_container {
-  position: relative;   
-  font-size: 12px;
-  width: 98%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
+// Layout moderno com flexbox
+.card-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
 
 .div_img {
-  position: relative;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 2px solid #e0f2fe;
   border-radius: 50%;
-  padding: 2px;  
-  width: 45px;
-  height: 45px; 
-  margin-right: 10px; 
-  box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);  
+  transition: var(--transition);
+  cursor: pointer;
+  
+  .svg-icon {
+    width: 32px;
+    height: 32px;
+    transition: var(--transition);
+  }
+  
+  &.lamp-icon {
+    color: var(--warning-color);
+    background: linear-gradient(135deg, #fef3c7, #fef7cd);
+    border-color: #fef3c7;
+  }
+  
+  &.pump-icon {
+    color: var(--primary-color);
+    background: linear-gradient(135deg, #e0e7ff, #e0f2fe);
+    border-color: #e0e7ff;
+  }
+  
+  &.hub-icon {
+    color: var(--success-color);
+    background: linear-gradient(135deg, #d1fae5, #dcfce7);
+    border-color: #d1fae5;
+  }
 }
 
-.div_img_clk{
-  padding-top: 2px;
-  margin-right: 6px;
-  display: inline-flex;    
+.card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.div_historico {  
-  display: inline-flex;
-  position: relative; 
-  text-align: center; 
-  font-size: 16px; 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
-
-////////////
-// TABELA //
-////////////
-#td_hora_actual {
-  text-align: center;
+.div_nome {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0;
 }
 
-.esquerda {
-  text-align: left;
+.config-button {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  
+  &:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transform: rotate(90deg);
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
-#tr_historico{
-  display: block;
+.history-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
 }
 
-#tr_historico2{
-  display: block;  
+.div_img_clk {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
-#tbl_hist_clk th{
-  border: none;  
+.div_historico {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  flex: 1;
 }
+
+// Estados do dispositivo
+.card[data-status="online"] {
+  .srvr_indicator {
+    background: var(--success-color);
+  }
+}
+
+.card[data-status="offline"] {
+  .srvr_indicator {
+    background: var(--danger-color);
+  }
+  
+  opacity: 0.7;
+}
+
+.card[data-status="warning"] {
+  .srvr_indicator {
+    background: var(--warning-color);
+  }
+}
+
+// Animações
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grid_container {
+  animation: fadeIn 0.5s ease-out;
+  
+  &:nth-child(even) {
+    animation-delay: 0.1s;
+  }
+}
+
