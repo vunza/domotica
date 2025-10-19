@@ -3,6 +3,7 @@ $fundo_body: #121212;
 
 // Cargar modulos de Sass
 @use 'cards';
+@use 'menu_inferior';
 @use "sass:color";
 
 * {
@@ -21,11 +22,3 @@ $fundo_body: #121212;
 body {
   background-color: $fundo_body;  
 }
-
-
-
-
-
-
-
-
