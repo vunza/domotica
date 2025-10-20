@@ -4,6 +4,7 @@ $fundo_body: #121212;
 // Cargar modulos de Sass
 @use 'cards';
 @use 'menu_inferior';
+@use 'submenu_overlay';
 @use "sass:color";
 
 * {

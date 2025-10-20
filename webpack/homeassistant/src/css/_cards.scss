@@ -27,6 +27,7 @@
   max-width: 1400px;
   margin: 0 auto;
   align-items: start;
+  //border: 2px solid red;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -38,6 +39,27 @@
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   }
 }
+
+
+
+@media (max-width: 768px) {
+  #card_wrapper {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    padding-bottom: calc(1rem + 80px); //Ajuste para mobile 
+    gap: 1rem;
+  }
+}
+
+
+@media (min-width: 1200px) {
+  #card_wrapper {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+}
+
+
+
 
 // Remove grid_container antigo e usa card diretamente
 .card {

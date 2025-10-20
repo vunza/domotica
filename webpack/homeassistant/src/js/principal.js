@@ -2,6 +2,7 @@ import '../css/styles.scss';
 //import img from '../assets/orquidea.jpeg';
 import {criar_card} from './cria_cards.js';
 import {BottomNavigation} from './menu_inferior.js';
+import {SubmenuOverlay} from './submenu_overlay.js';
 
 
 ///////////////////////////////////////////
@@ -39,6 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializa a navegação inferior
     const bottomNav = new BottomNavigation();
     bottomNav.handleBackButton();
+
+    const submenuOverlay = new SubmenuOverlay();
     
     // Verifica hash da URL inicial
     const hash = window.location.hash.substring(1);
