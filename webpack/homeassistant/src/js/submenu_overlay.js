@@ -42,6 +42,8 @@ class SubmenuManager {
             });
         });
     }
+
+
     
     openSubmenu() {
         this.submenuOverlay.style.display = 'flex';
@@ -155,6 +157,33 @@ class SubmenuOverlay {
         });
         
         this.navigateTo('home-page');
+    }
+
+    navigateTo(pageId) {
+        if (this.currentPage === pageId) return;
+        
+        // Atualiza a página atual
+        this.currentPage = pageId;
+        
+        // Esconde todas as páginas com transição
+        this.pages.forEach(page => {
+            page.style.display = 'none';
+        });
+        
+        // Mostra a página selecionada
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.style.display = 'block';
+        }
+        
+        // Atualiza o estado ativo do menu
+        this.updateActiveState(pageId);
+        
+        // Adiciona ao histórico do navegador
+        history.pushState({ page: pageId }, '', `#${pageId}`);
+        
+        // Dispara evento customizado
+        this.dispatchNavigationEvent(pageId);
     }
     
     // ... resto do código existente da navegação
