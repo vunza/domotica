@@ -8,12 +8,11 @@
 
 import '../css/styles.scss';
 //import img from '../assets/orquidea.jpeg';
-import {criar_card, getDevicesData} from './cria_cards.js';
+import {criar_card} from './cria_cards.js';
+import {getZigbeeDevices} from './get_devs_entities_data.js';
 import {BottomNavigation} from './menu_inferior.js';
 import {SubmenuOverlay} from './submenu_overlay.js';
 import { tkn } from './vars_globais.js';
-
-
 
 
 ///////////////////////////////////////////
@@ -21,19 +20,18 @@ import { tkn } from './vars_globais.js';
 ///////////////////////////////////////////
 document.addEventListener('DOMContentLoaded', function() {
 
-    getDevicesData(tkn).then(data => {
+    getZigbeeDevices(tkn).then(data => {
         data.forEach(device => {
 
-            if(device.tipo === 'light' || device.tipo === 'switch'){
-                 console.log(device.id, device.nome, device.tipo);
-            }           
-
-            /*criar_card(device.id, {
+            criar_card(device.id, {
                 nome: device.nome,
+                historico: device.historico,
                 tipo: device.tipo,
-                status: device.status,
-                historico: device.historico
-            });*/
+                status: device.status
+            });
+
+            console.log(device.id, device.nome, device.tipo, device.status, 
+                device.historico/*, device.main_entity, device.entities*/);          
         });
     }).catch(error => {
         console.error('Erro ao obter dados dos dispositivos:', error);
@@ -41,37 +39,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    for (let i = 1; i <= 3; i++) {
+    /*for (let i = 1; i <= 3; i++) {
         criar_card(`lamp${i}`, {
             nome: `Lâmpada ${i}`,
             historico: '14:30:25, 15/12/2024',
             tipo: 'lampada',
             status: 'online'
         });
-    }   
+    }*/   
 
-    for (let i = 4; i <= 6; i++) {
-        criar_card(`lamp${i}`, {
-            nome: `Lâmpada ${i}`,
-            historico: '14:30:25, 15/12/2024',
-            tipo: 'bomba',
-            status: 'warning'
-        });
-    }
-
-    for (let i = 7; i <= 9; i++) {
-        criar_card(`lamp${i}`, {
-            nome: `Lâmpada ${i}`,
-            historico: '14:30:25, 15/12/2024',
-            tipo: 'hub_zb',
-            status: 'error'
-        });
-    }
+     
 
     // Inicializa a navegação inferior
     const bottomNav = new BottomNavigation();
     bottomNav.handleBackButton();
-
     const submenuOverlay = new SubmenuOverlay();
     
     // Verifica hash da URL inicial

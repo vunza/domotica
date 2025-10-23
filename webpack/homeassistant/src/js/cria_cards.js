@@ -68,46 +68,6 @@ const criar_card = (Id, deviceData = {}) => {
 }
 
 
-/**
- * Função que obtém os dados (Id, Dominio e Nome) dos dispositivos/entidades do Home Assistant.
- * @param {String} token Para autenticação na API do Home Assistant.
- * @returns {Promise<Array>} Uma promessa que resolve para um array de objetos contendo os dados dos dispositivos.
- */
-async function getDevicesData(token) {
-    const response = await fetch('/api/states', {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    });
-    
-    if (!response.ok) {
-        throw new Error('Falha ao obter entidades');
-    }
-    
-    const entities = await response.json();
-    
-    return entities.map(entity => {
-        const [domain, deviceId] = entity.entity_id.split('.');
-        
-        return {
-            // Para usar no criar_card()
-            id: entity.entity_id,
-            nome: entity.attributes.friendly_name || 
-                  deviceId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            tipo: domain,
-            status: entity.state === 'unavailable' ? 'offline' : 'online',
-            historico: new Date(entity.last_updated).toLocaleString('pt-PT'),
-            
-            // Dados completos se precisar
-            entity_id: entity.entity_id,
-            domain: domain,
-            device_id: deviceId,
-            state: entity.state,
-            attributes: entity.attributes
-        };
-    });
-}
-
 // Exemplo de uso:
 // criar_card('lamp1', {
 //     nome: 'Lâmpada Sala',
@@ -116,5 +76,6 @@ async function getDevicesData(token) {
 //     status: 'online'
 // });
 
-export { criar_card, getDevicesData };
+
+export { criar_card };
 
