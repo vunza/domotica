@@ -30,6 +30,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 status: device.status
             });
 
+            /*if(device.id.includes('_lux')|| device.id.includes('_motion')|| 
+                device.id.includes('_battery')|| device.id.includes('_temperature')||
+                device.id.includes('_learn')|| device.id.includes('_indicator')) {
+                return;
+            }
+            else if(device.tipo == 'lampada' || device.tipo == 'switch') {
+                criar_card(device.id, {
+                    nome: device.nome,
+                    historico: device.historico,
+                    tipo: device.tipo,
+                    status: device.status
+                });
+            }*/              
+
             console.log(device.id, device.nome, device.tipo, device.status, 
                 device.historico/*, device.main_entity, device.entities*/);          
         });

@@ -16,6 +16,11 @@ async function getZigbeeDevices(token) {
     }
     
     const entities = await response.json();
+
+     // Sem filro de 0x
+    /*const zigbeeEntities = entities.filter(entity => 
+        entity.entity_id
+    );*/
     
     // Filtra apenas dispositivos Zigbee (normalmente começam com 0x)
     const zigbeeEntities = entities.filter(entity => 
@@ -24,6 +29,7 @@ async function getZigbeeDevices(token) {
          entity.entity_id.startsWith('light.') ||
          entity.entity_id.startsWith('sensor.'))
     );
+   
     
     // Agrupa por dispositivo (baseado no ID do dispositivo)
     const devicesMap = new Map();
