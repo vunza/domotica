@@ -1,3 +1,13 @@
+import {criar_card} from './cria_cards.js';
+
+/**
+ * Gerencia o submenu overlay
+ * Permite abrir e fechar o submenu, além de lidar com ações dos itens do submenu.
+ * 
+ * @class SubmenuManager
+ * @author Zambo
+ * @date 2024-12-15 
+ */
 class SubmenuManager {
     constructor() {
         this.submenuOverlay = document.getElementById('submenuOverlay');
@@ -68,6 +78,10 @@ class SubmenuManager {
         
         // Executa a ação baseada no data-action
         switch(action) {
+            case 'config-devices':
+                this.configureDevices();
+                break;
+
             case 'add-device':
                 this.addDevice();
                 break;
@@ -94,6 +108,27 @@ class SubmenuManager {
     }
     
     // Métodos para cada ação
+    configureDevices() {
+
+        /**
+         * Limpa o container dos cards dos dispositivos.
+         */
+        let container = document.getElementById('card_wrapper');
+        container.innerHTML = ''; 
+
+        /**
+         * Criação de cards de dispositivos
+         */
+        for (let i = 1; i <= 3; i++) {
+            criar_card(`lamp${i}`, {
+                nome: `Lâmpada ${i}`,
+                historico: `${i}:30:25, 15/12/2024`,
+                tipo: 'lampada',
+                status: 'online'
+            });
+        }
+    }
+
     addDevice() {
         console.log('🔄 Abrindo modal para adicionar dispositivo...');
         // Sua lógica para adicionar dispositivo

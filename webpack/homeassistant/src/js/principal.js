@@ -12,7 +12,7 @@ import {criar_card} from './cria_cards.js';
 import {getZigbeeDevices} from './get_devs_entities_data.js';
 import {BottomNavigation} from './menu_inferior.js';
 import {SubmenuOverlay} from './submenu_overlay.js';
-import { tkn } from './vars_globais.js';
+import { tkn, tipos_dispositivos as devType } from './vars_globais.js';
 
 
 ///////////////////////////////////////////
@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 status: device.status
             });
 
+            // Ignora dispositivos de sensor
             /*if(device.id.includes('_lux')|| device.id.includes('_motion')|| 
                 device.id.includes('_battery')|| device.id.includes('_temperature')||
                 device.id.includes('_learn')|| device.id.includes('_indicator')) {
@@ -62,8 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }*/   
 
-     
-
+   
     // Inicializa a navegação inferior
     const bottomNav = new BottomNavigation();
     bottomNav.handleBackButton();

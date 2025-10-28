@@ -48,7 +48,7 @@ const criar_card = (Id, deviceData = {}) => {
                 <div class="card-info">
                     <div class="card-header">
                         <div class="div_nome">${nome}</div>
-                        <div class="config-button" id="${Id}" oncontextmenu="on_click_cfg(this.id);">
+                        <div style="display:none" class="config-button" id="${Id}" oncontextmenu="on_click_cfg(this.id);">
                             ${svgs.config}
                         </div>
                     </div>

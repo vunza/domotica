@@ -31,18 +31,18 @@
 
 .submenu-header h3 {
     margin: 0;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: bold;
     color: #333;
 }
 
 .submenu-close {
-    background: none;
+    background: none;   
     border: none;
-    padding: 8px;
-    cursor: pointer;
-    border-radius: 50%;
-    color: #666;
+    outline: none;
+    // padding: 8px;
+    // border-radius: 50%;     
+    cursor: pointer;    
     transition: all 0.3s ease;
 }
 
@@ -137,7 +137,7 @@
     }
     
     .submenu-close {
-        color: #aaa;
+        color: #333;
     }
     
     .submenu-close:hover {

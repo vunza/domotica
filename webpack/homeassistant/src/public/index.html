@@ -71,16 +71,25 @@
     <!-- Submenu Overlay -->
     <div class="submenu-overlay" id="submenuOverlay" style="display: none;">
         <div class="submenu-container">
+
             <div class="submenu-header">
                 <h3>Opções</h3>
                 <button class="submenu-close" id="closeSubmenu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2"/>
+                    <svg width="24" height="24" viewBox="0 0 22 22" fill="none">                        
+                        <path d="M10 3H6a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4M16 17l5-5-5-5M19.8 12H9" stroke="currentColor" stroke-width="2"/>
                     </svg>
                 </button>
             </div>
             
             <div class="submenu-items">
+
+                <div class="submenu-item" data-action="config-devices">
+                    <svg class="submenu-icon" viewBox="0 0 24 24">
+                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                    </svg>
+                    <span class="submenu-label">Configurar Dispositivo</span>
+                </div>
+
                 <div class="submenu-item" data-action="add-device">
                     <svg class="submenu-icon" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
@@ -95,9 +104,24 @@
                     <span class="submenu-label">Remover Dispositivo</span>
                 </div>
                 
-                <div class="submenu-item" data-action="settings">
-                    <svg class="submenu-icon" viewBox="0 0 24 24">
-                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                <div class="submenu-item" data-action="settings">                  
+                    <svg class="submenu-icon" viewBox="0 0 64 64" width="24" height="24" aria-hidden="true">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3">
+                        <line x1="14" y1="10" x2="14" y2="54"/>
+                        <rect x="8.5" y="30" width="11" height="6" rx="2" ry="2" fill="currentColor" stroke="none"/>
+                        <line x1="32" y1="6" x2="32" y2="58"/>
+                        <rect x="26.5" y="18" width="11" height="6" rx="2" ry="2" fill="currentColor" stroke="none"/>
+                        <line x1="50" y1="10" x2="50" y2="54"/>
+                        <rect x="44.5" y="38" width="11" height="6" rx="2" ry="2" fill="currentColor" stroke="none"/>
+                    </g>
+                    <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="10" y1="8" x2="18" y2="8"/>
+                        <line x1="28" y1="4" x2="36" y2="4"/>
+                        <line x1="46" y1="8" x2="54" y2="8"/>
+                        <line x1="10" y1="56" x2="18" y2="56"/>
+                        <line x1="28" y1="60" x2="36" y2="60"/>
+                        <line x1="46" y1="56" x2="54" y2="56"/>
+                    </g>
                     </svg>
                     <span class="submenu-label">Configurações</span>
                 </div>

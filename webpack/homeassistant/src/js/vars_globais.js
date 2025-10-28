@@ -23,4 +23,10 @@ const http_port = window.location.protocol;
  */
 const ip_e_porta = `${http_port}//${location.host}`; 
 
-export { tkn, http_port, ip_e_porta };
+/**
+ * Tipos de Dispositivos
+ * @type {Array<String>}
+ */
+const tipos_dispositivos = ["LAMPADA", "TOMADA", "AR_CONDICIONADO", "VENTILADOR", "CONTROLO_REMOTO"];
+
+export { tkn, http_port, ip_e_porta, tipos_dispositivos };
