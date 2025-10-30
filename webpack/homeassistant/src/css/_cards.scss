@@ -24,10 +24,11 @@
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
   padding: 1.5rem;
+  max-height: 100%;
   max-width: 1400px;
   margin: 0 auto;
   align-items: start;
-  //border: 2px solid red;
+  // border: 2px solid red;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;

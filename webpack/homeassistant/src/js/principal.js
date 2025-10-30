@@ -18,17 +18,18 @@ import { tkn, tipos_dispositivos as devType } from './vars_globais.js';
 ///////////////////////////////////////////
 // Espera o carregamento completo do DOM //
 ///////////////////////////////////////////
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {  
 
+    // Busca dispositivos Zigbee e cria cards dinamicamente.    
     getZigbeeDevices(tkn).then(data => {
-        data.forEach(device => {
+        data.forEach(device => {           
 
             criar_card(device.id, {
                 nome: device.nome,
                 historico: device.historico,
                 tipo: device.tipo,
                 status: device.status
-            });
+            });          
 
             // Ignora dispositivos de sensor
             /*if(device.id.includes('_lux')|| device.id.includes('_motion')|| 
@@ -45,35 +46,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }*/              
 
-            console.log(device.id, device.nome, device.tipo, device.status, 
-                device.historico/*, device.main_entity, device.entities*/);          
+            //console.log(device.id, device.nome, device.tipo, device.status, device.historico);  
+            //console.log(device.id, device.nome, device.tipo, device.status, device.historico, device.main_entity, device.entities);         
         });
     }).catch(error => {
         console.error('Erro ao obter dados dos dispositivos:', error);
         return [];
     });
-
-
-    /*for (let i = 1; i <= 3; i++) {
-        criar_card(`lamp${i}`, {
-            nome: `Lâmpada ${i}`,
-            historico: '14:30:25, 15/12/2024',
-            tipo: 'lampada',
-            status: 'online'
-        });
-    }*/   
-
+    
    
     // Inicializa a navegação inferior
-    const bottomNav = new BottomNavigation();
-    bottomNav.handleBackButton();
-    const submenuOverlay = new SubmenuOverlay();
+    const bottomNav = new BottomNavigation();   
+    const submenuOverlay = new SubmenuOverlay();  
     
     // Verifica hash da URL inicial
     const hash = window.location.hash.substring(1);
     if (hash && document.getElementById(hash)) {
         bottomNav.navigateTo(hash);
     }
+    
 });
 
 

@@ -64,7 +64,7 @@ const criar_card = (Id, deviceData = {}) => {
         </div>
     `;
 
-    container.innerHTML += cardHTML;
+    container.innerHTML += cardHTML;    
 }
 
 
