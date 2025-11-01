@@ -107,7 +107,9 @@ class SubmenuManager {
         }
     }
     
-    // Métodos para cada ação
+    /**
+     * Visualiza os dispositivos em modo de configuração, através do submenu overlay
+     */
     configureDevices() {
 
         /**

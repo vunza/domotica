@@ -114,29 +114,28 @@ class BottomNavigation {
 const navBarInicial = document.querySelector('.navbar_inicial')
 const navBar = document.querySelector('.bottom-nav')
 
+
+
 /**
- * Evento de clique na barra de navegação inferior inicial.
+ * Impedir o menu de contexto padrão em todo o documento.
+ */
+window.addEventListener('contextmenu', event => {
+    event.preventDefault();
+}, false);
+
+
+
+/**
+ * Evento de clique com o botão direito/long press na barra de navegação inferior inicial.
  * Ao clicar, simula click na opcao "Mais" da barra de navegação inferior e abre o SubMenu Overlay.
  */
-navBarInicial.addEventListener("click", e => {
-    //e.preventDefault();
-	//navBarInicial.style.display = 'none';
-	//navBar.style.display = 'flex';  
-    const targetPage = document.getElementById('more-menu');
-    targetPage.click();   
-})
-
-
-// show the menu when right-clicked or long-pressed
-/*navBarInicial.addEventListener('contextmenu', event => {
+navBarInicial.addEventListener('contextmenu', event => {
     event.preventDefault();
+    //navBarInicial.style.display = 'none';
+	//navBar.style.display = 'flex'; 
     const targetPage = document.getElementById('more-menu');
     targetPage.click(); 
-});*/
-
-   
-
-
+});
         
         
 
