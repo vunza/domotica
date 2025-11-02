@@ -1,4 +1,6 @@
 import {criar_card} from './cria_cards.js';
+import {getZigbeeDevices} from './get_devs_entities_data.js';
+import { tkn} from './vars_globais.js';
 
 /**
  * Gerencia o submenu overlay
@@ -118,17 +120,23 @@ class SubmenuManager {
         let container = document.getElementById('card_wrapper');
         container.innerHTML = ''; 
 
-        /**
-         * Criação de cards de dispositivos
-         */
-        for (let i = 1; i <= 3; i++) {
-            criar_card(`lamp${i}`, {
-                nome: `Lâmpada ${i}`,
-                historico: `${i}:30:25, 15/12/2024`,
-                tipo: 'lampada',
-                status: 'online'
+        // Busca dispositivos Zigbee e cria cards dinamicamente.    
+        getZigbeeDevices(tkn).then(data => {
+            data.forEach(device => {           
+
+                criar_card(device.id, {
+                    nome: device.nome,
+                    historico: device.historico,
+                    tipo: device.tipo,
+                    status: device.status
+                }); 
+
             });
-        }
+        }).catch(error => {
+            console.error('Erro ao obter a lista de dispositivos:', error);
+            return [];
+        });
+    
     }
 
     addDevice() {
