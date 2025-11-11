@@ -10,3 +10,7 @@
   - Sala de visitas
   - Cozinha
   - Corredor  
+
+### Atribuir iamgens as Cards em fucao do dominio (switch, light, etc.).  
+
+### Adicionar filtro por usuario (exibir cards aos users autorizados)

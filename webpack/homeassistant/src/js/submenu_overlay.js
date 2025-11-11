@@ -1,6 +1,6 @@
 import {criar_card} from './cria_cards.js';
 import {getZigbeeDevices} from './get_devs_entities_data.js';
-import { tkn} from './vars_globais.js';
+import {api} from './vars_globais.js';
 
 /**
  * Gerencia o submenu overlay
@@ -121,7 +121,7 @@ class SubmenuManager {
         container.innerHTML = ''; 
 
         // Busca dispositivos Zigbee e cria cards dinamicamente.    
-        getZigbeeDevices(tkn).then(data => {
+        getZigbeeDevices(api).then(data => {
             data.forEach(device => {           
 
                 criar_card(device.id, {

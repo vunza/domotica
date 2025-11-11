@@ -9,17 +9,26 @@
  * Token de acesso para autenticação na API do Home Assistant.
  * @type {String}
 */
-const tkn = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjMDUwYTVkNTMzZDU0ZjBmODJlY2NjZmQyZDgwZDRlYyIsImlhdCI6MTczNjcxNzU1NSwiZXhwIjoyMDUyMDc3NTU1fQ.oLIiyFN8c4lPCAgIPL_sFEWI12P3IcsLsid4KL8A2D0';
+
+
+/**
+ * URL da API do Home Assistant para obter estados das entidades e/ou integrações.
+ * @type {String}
+ */
+//const api = '/api/devices';
+//const api = 'zigbee2mqtt/bridge/devices';
+const api = '/api/states'; 
+
 
 /**
  * Protocolo HTTP usado (http: ou https:)
- * @type {String}
+ * @type {String} http[s]:
  */
 const http_port = window.location.protocol; 
 
 /**
  * IP e porta do servidor Home Assistant.
- * @type {String|Number}
+ * @type {String|Number}  http[s]://...
  */
 const ip_e_porta = `${http_port}//${location.host}`; 
 
@@ -29,4 +38,5 @@ const ip_e_porta = `${http_port}//${location.host}`;
  */
 const tipos_dispositivos = ["LAMPADA", "TOMADA", "AR_CONDICIONADO", "VENTILADOR", "CONTROLO_REMOTO"];
 
-export { tkn, http_port, ip_e_porta, tipos_dispositivos };
+
+export { api, http_port, ip_e_porta, tipos_dispositivos };

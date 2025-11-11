@@ -1,0 +1,5 @@
+rm -rf dist \
+&& npm run build \
+&& rm ~/Desktop/config/www/painel/* \
+&& cp -f ~/Desktop/domotica/webpack/homeassistant/dist/* ~/Desktop/config/www/painel/
+       
