@@ -29,7 +29,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 criar_card(entityId, {
                     nome: device.nome,
                     historico: device.historico,
-                    tipo: device.tipo,
+                    //tipo: device.tipo,
+                    tipo: 'picture', // Força icon de imagem, tipo deve ser definido manualmenete
                     status: device.status,
                 });                  
             }

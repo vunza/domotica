@@ -139,12 +139,27 @@ class SubmenuManager {
     
     }
 
-    addDevice() {
+    /**
+     * Funcao para adicionar dispoziivos zigbee
+     */
+    async addDevice() {
         console.log('🔄 Abrindo modal para adicionar dispositivo...');
         // Sua lógica para adicionar dispositivo
         alert('Adicionar Dispositivo - Implemente esta funcionalidade');
+
+        try {
+            // Buscar o token do arquivo JSON local
+            const response = await fetch('/local/json_files/token_api.json');
+            const { token } = await response.json();       
+            
+            
+        } catch (error) {
+            console.error('Erro:', error);
+        }       
     }
-    
+
+
+            
     removeDevice() {
         console.log('🗑️ Abrindo modal para remover dispositivo...');
         // Sua lógica para remover dispositivo

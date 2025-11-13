@@ -1,0 +1,124 @@
+<script>
+        const HassUrl = 'ws://192.168.0.5:8123/api/websocket'; // Use wss:// if using SSL
+const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmMzQ5OWM3MGU0Njk0MGE4ODcxZDZkNzNjYzVmYTZmMyIsImlhdCI6MTc2MjYxMzg0MCwiZXhwIjoyMDc3OTczODQwfQ.Bz85g2WiikIz6F60epo3cIK4ufyAa4KQgVfSQSTHcpE';
+
+let socket;
+let messageId = 1;
+
+function connectToHA() {
+    socket = new WebSocket(HassUrl);
+
+    socket.addEventListener('open', () => {
+        console.log('WebSocket connection opened');
+    });
+
+    socket.addEventListener('message', (event) => {
+        const message = JSON.parse(event.data);
+
+        switch (message.type) {
+            case 'auth_required':
+                console.log('Authentication required, sending token...');
+                authenticate();
+                break;
+
+            case 'auth_ok':
+                console.log('✅ Authentication successful');
+                subscribeToZHAEvents();   // <-- importante!
+                enablePairingMode();
+                break;
+
+            case 'auth_invalid':
+                console.error('❌ Authentication failed:', message.message);
+                break;
+
+            case 'result':
+                console.log('📦 Service call result:', message.success ? 'Success' : 'Failure', message.result);
+                break;
+
+            case 'event':
+                console.log('📡 Received event:', message.event.event_type);
+                handleZHAEvent(message.event);
+                break;
+        }
+    });
+
+    socket.addEventListener('close', () => {
+        console.log('WebSocket connection closed');
+    });
+
+    socket.addEventListener('error', (event) => {
+        console.error('WebSocket error:', event);
+    });
+}
+
+function authenticate() {
+    sendMessage({
+        type: 'auth',
+        access_token: accessToken,
+    });
+}
+
+function subscribeToZHAEvents() {
+    const events = [
+        'zha_event',
+        'zha_device_joined',
+        'zha_device_initialized',
+        'device_registry_updated'
+    ];
+
+    for (const ev of events) {
+        sendMessage({
+            id: messageId++,
+            type: 'subscribe_events',
+            event_type: ev
+        });
+        console.log(`📬 Subscribed to: ${ev}`);
+    }
+}
+
+function enablePairingMode() {
+    sendMessage({
+        id: messageId++,
+        type: 'call_service',
+        domain: 'zha',
+        service: 'permit',
+        service_data: {
+            duration: 60
+        }
+    });
+    console.log('🚪 ZHA permit join enabled for 60s.');
+}
+
+function sendMessage(message) {
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify(message));
+    } else {
+        console.error('⚠️ WebSocket is not open. Message not sent.');
+    }
+}
+
+function handleZHAEvent(event) {
+    switch (event.event_type) {
+        case 'zha_event':
+            console.log(`💡 Evento ZHA recebido: ${JSON.stringify(event.data)}`);
+            break;
+
+        case 'zha_device_joined':
+            console.log(`🆕 Novo dispositivo entrou na rede: ${event.data.ieee}`);
+            break;
+
+        case 'zha_device_initialized':
+            console.log(`✅ Dispositivo inicializado: ${event.data.name}`);
+            break;
+
+        case 'device_registry_updated':
+            console.log(`📋 Registro atualizado: ${JSON.stringify(event.data)}`);
+            break;
+    }
+}
+
+// Iniciar
+connectToHA();
+
+
+    </script>
