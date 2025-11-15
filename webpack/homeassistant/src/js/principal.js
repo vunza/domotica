@@ -9,52 +9,64 @@
 import '../css/styles.scss';
 //import img from '../assets/orquidea.jpeg';
 import {criar_card} from './cria_cards.js';
-import {getZigbeeDevices} from './get_devs_entities_data.js';
 import {BottomNavigation} from './menu_inferior.js';
 import {SubmenuOverlay} from './submenu_overlay.js';
-import {api, tipos_dispositivos as devType } from './vars_globais.js';
+import {api, getDevicesWIthWebSocket, getToken, getEntitiesDataWithApi } from './vars_funcs_globais.js';
 
 
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
 
-    // Busca dispositivos Zigbee e cria cards dinamicamente.
-    getZigbeeDevices(api).then((data) => {
+    try {
+        // Obter Token de acesso ao HA
+        const api_token = '/local/json_files/token_api.json';
+        const token = await getToken(api_token);
 
-        data.forEach((device) => {              
-            
-            if( (device.tipo == 'lampada' || device.tipo == 'switch') && !device.id.includes('child_lock')) {
+        // Guarda lista de Entidades, para ser comparada com a lista de ispositivos
+        let entities_list = [];
+        getEntitiesDataWithApi(token, api).then( (entidades)=>{
+            entidades.forEach( (entity) => entities_list.push(entity.id));            
+        });
+
+        //const existe = entities_list.some(item => item.includes(substring));
+
+        // Obter Dispositivos
+        getDevicesWIthWebSocket(token).then( (devices) => {              
+            // Criar Crads dos dispositivos
+            devices.forEach(element => {
                 
-                const entityId = device.main_entity.entity_id; // Ex.: light.tz3000_5ftkaulg_ts0011
-                criar_card(entityId, {
-                    nome: device.nome,
-                    historico: device.historico,
-                    //tipo: device.tipo,
-                    tipo: 'picture', // Força icon de imagem, tipo deve ser definido manualmenete
-                    status: device.status,
-                });                  
-            }
+                // Filtra elementos por id, dominio, 
+                const ieee = element.name;
+                const dominios = ["switch", "light"]; // Para entidaes com os dominios indicados
+                const posicoes = ["left", "center", "right"];  // Para Dispositivos com mais de um canal
 
-            // Ignora dispositivos de sensor
-            /*if(device.id.includes('_lux')|| device.id.includes('_motion')|| 
-                    device.id.includes('_battery')|| device.id.includes('_temperature')||
-                    device.id.includes('_learn')|| device.id.includes('_indicator')) {
-                    return;
-                }
-                else if(device.tipo == 'lampada' || device.tipo == 'switch') {
-                    criar_card(device.id, {
-                        nome: device.nome,
-                        historico: device.historico,
-                        tipo: device.tipo,
-                        status: device.status
+                const resultado = entities_list.filter(item => {
+                    const temIEEE = item.includes(ieee);
+                    const temDominio = dominios.some(d => item.startsWith(d + "."));
+                    const temPosicao = posicoes.some(p => item.endsWith("_" + p)) || 
+                                    !item.includes("_"); // permite sem left/center/right
+
+                    return temIEEE && temDominio && temPosicao;
+                });    
+
+              
+                // Criar Cards dos Dispositivos
+                resultado.forEach( (Id) => {
+                    criar_card(Id, {
+                        nome: Id,
+                        historico:  new Date().toLocaleTimeString(),               
+                        tipo: 'picture', // Força icon de imagem, tipo deve ser definido manualmenete
+                        status: 'online'
                     });
-                }*/
+                });               
+               
+            });         
         });
-        })
-        .catch((error) => {
-        console.error("Erro ao obter dados dos dispositivos:", error);
-        return [];
-        });
+        
+    } catch (error) {
+        console.log(`Erro ao criar Cards: ${error}`);
+    }
+    
 
     // Inicializa a navegação inferior
     const bottomNav = new BottomNavigation();
@@ -86,8 +98,8 @@ window.click_on_image_card = async function(id){
 
     try {
         // Buscar o token do arquivo JSON local
-        const response = await fetch('/local/json_files/token_api.json');
-        const { token } = await response.json();
+        const api_token = '/local/json_files/token_api.json';
+        const token = await getToken(api_token);
 
         // Agora use o token para fazer uma requisição à API
         const result = await fetch(`/api/services/${dominio}/toggle`, {
@@ -97,11 +109,10 @@ window.click_on_image_card = async function(id){
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ entity_id: entityId })
-        });
-
-        //console.log('Resultado:', result);
+        });        
 
     } catch (error) {
         console.error('Erro:', error);
     }
 }
+

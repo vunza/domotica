@@ -1,6 +1,6 @@
 import {criar_card} from './cria_cards.js';
-import {getZigbeeDevices} from './get_devs_entities_data.js';
-import {api} from './vars_globais.js';
+//import {getZigbeeDevices} from './get_devs_entities_data.js';
+import {api, ip_e_porta, getToken, enablePermitJoin, mostrarLogs, getEntitiesDataWithApi} from './vars_funcs_globais.js';
 
 /**
  * Gerencia o submenu overlay
@@ -111,8 +111,8 @@ class SubmenuManager {
     
     /**
      * Visualiza os dispositivos em modo de configuração, através do submenu overlay
-     */
-    configureDevices() {
+    */
+    async configureDevices() {
 
         /**
          * Limpa o container dos cards dos dispositivos.
@@ -120,22 +120,25 @@ class SubmenuManager {
         let container = document.getElementById('card_wrapper');
         container.innerHTML = ''; 
 
-        // Busca dispositivos Zigbee e cria cards dinamicamente.    
-        getZigbeeDevices(api).then(data => {
-            data.forEach(device => {           
+        const api_token = '/local/json_files/token_api.json';
+        const token = await getToken(api_token);
 
-                criar_card(device.id, {
-                    nome: device.nome,
-                    historico: device.historico,
-                    tipo: device.tipo,
-                    status: device.status
-                }); 
+        // // Busca dispositivos Zigbee e cria cards dinamicamente.    
+        // getZigbeeDevices(api, token).then(data => {
+        //     data.forEach(device => {           
 
-            });
-        }).catch(error => {
-            console.error('Erro ao obter a lista de dispositivos:', error);
-            return [];
-        });
+        //         criar_card(device.id, {
+        //             nome: device.nome,
+        //             historico: device.historico,
+        //             tipo: device.tipo,
+        //             status: device.status
+        //         }); 
+
+        //     });
+        // }).catch(error => {
+        //     console.error('Erro ao obter a lista de dispositivos:', error);
+        //     return [];
+        // });
     
     }
 
@@ -143,27 +146,73 @@ class SubmenuManager {
      * Funcao para adicionar dispoziivos zigbee
      */
     async addDevice() {
-        console.log('🔄 Abrindo modal para adicionar dispositivo...');
-        // Sua lógica para adicionar dispositivo
-        alert('Adicionar Dispositivo - Implemente esta funcionalidade');
 
-        try {
-            // Buscar o token do arquivo JSON local
-            const response = await fetch('/local/json_files/token_api.json');
-            const { token } = await response.json();       
+        let container_entities = document.getElementById('card_wrapper');
+        let container_permit_join = document.getElementById('div_container_permit_join');
+        container_entities.innerHTML = '';
+        container_permit_join.style.display = 'block';
+        const logsContainerEl = document.getElementById('logs-container');
+        mostrarLogs(logsContainerEl, 'Prima o Botão para procurar.', 'info');
+
+        // Evento click para o botao que activa permit_join
+        document.getElementById('connect_btn').addEventListener('click', async ()=>{
+            const api_token = '/local/json_files/token_api.json';
+            const topico_permit_join = "zigbee2mqtt/bridge/request/permit_join"
+            const api_mqtt_publish = '/api/services/mqtt/publish';
+            const tempo_permit_join = 6;
+
+            // Obter Token
+            const TOKEN = await getToken(api_token);
+           
+            // Cria lista de dispositivos existentes.  
+            // let old_devs_list = [];  
+            // getZigbeeDevices(api, TOKEN).then(data => {
+            //     data.forEach(device => {           
+            //         old_devs_list.push(device.id);
+            //     });
+            // }).catch(error => {
+            //     console.error('Erro ao obter a lista de dispositivos:', error);
+            //     return [];
+            // });
+
             
             
-        } catch (error) {
-            console.error('Erro:', error);
-        }       
+            // Inicializa processo de pareamento, apos concluido obtem nova lista de dispositivos e a compara com "old_devs_list"
+            enablePermitJoin(ip_e_porta, api_mqtt_publish, TOKEN, topico_permit_join, tempo_permit_join).then((dados) => {
+        
+                // // Obtem nova lista de dispositivos
+                // getZigbeeDevices(api, TOKEN).then(data => {                     
+                //     data.forEach(device => {    
+                        
+                //         // Verifica novo pareamento                    
+                //         const existe = old_devs_list.find( d => d === device.id);             
+
+                //         if (!existe) {                                                                   
+                //             mostrarLogs(logsContainerEl, device.id, 'info');                        
+                //         }
+                //     });
+                // }).catch(error => {
+                //     console.error('Erro ao obter a lista de dispositivos:', error);
+                //     return [];
+                // });            
+            
+            });
+        });
     }
 
 
-            
-    removeDevice() {
+     /**
+     * Funcao para remover dispoziivos zigbee
+     */        
+    async removeDevice() {
         console.log('🗑️ Abrindo modal para remover dispositivo...');
         // Sua lógica para remover dispositivo
-        alert('Remover Dispositivo - Implemente esta funcionalidade');
+        //alert('Remover Dispositivo - Implemente esta funcionalidade');
+
+        const api_token = '/local/json_files/token_api.json';
+        // Obter Token
+        const TOKEN = await getToken(api_token);
+        getEntitiesDataWithApi(TOKEN, api).then(devs => console.log(devs));
     }
     
     openSettings() {
@@ -184,6 +233,9 @@ class SubmenuManager {
         alert('Sobre - Implemente esta funcionalidade');
     }
 }
+
+
+
 
 // Integração com a navegação existente
 class SubmenuOverlay {

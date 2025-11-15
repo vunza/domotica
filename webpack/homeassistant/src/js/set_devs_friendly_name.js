@@ -4,14 +4,14 @@
  * @param {String} ip_porta IP e Porta do Servidor
  * @param {String} entityId ID do Dspositivo/Entidade
  * @param {String} friendlyName Novo nome amigavel para o Dispositivo
+ * @param {String} entityState Estado do Dspositivo/Entidade
+ * @param {String} entityType Tipo do Dspositivo/Entidade
+ * @param {String} token Token de acesso ao HA
  * @returns {void}
  */
-async function alterarFriendlyNome(ip_porta, entityId, friendlyName, entityState, entityType) {
+async function alterarFriendlyNome(ip_porta, entityId, friendlyName, entityState, entityType, token) {
 
-    try {
-        // Buscar o token do arquivo JSON local
-        const response = await fetch('/local/json_files/token_api.json');
-        const { token } = await response.json();
+    try {      
         
         // Executa o script para alteração do Nome
         const url = `${ip_porta}/api/services/shell_command/atualiza_friendly`;
