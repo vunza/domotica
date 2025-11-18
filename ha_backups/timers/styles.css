@@ -1,0 +1,567 @@
+.cores{
+  background-color: #2196F3;
+  background-color: #B03A2E;
+  background-color: #39be5a;   
+  background-color: #4a4d4a; 
+  background-color: #1c1c1c;
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;  
+    /* Impede Seleccção e Copia */
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;   
+}
+
+body {
+    /* font-family: Arial, sans-serif; */
+    padding: 5px;
+    /* max-width: 400px; */
+    height: 100%;
+    margin: 0 auto;
+    background-color: #f9f9f9;  
+    background-color: #7e7f81;  
+    background-color: #1c1c1c;             
+}
+
+
+
+
+#div_container{
+  display: none;   
+}
+
+
+.container {  
+    max-width: 400px;       
+    margin: 10px auto;
+    background: white;
+    background-color: #7e7f81;        
+    border-radius: 8px;
+    padding: 2px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    border: 1px solid rgba(140, 140, 140, .5);
+    border: 1px solid #7e7f81;
+}
+
+
+.auth-panel {
+    display: none;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f0f7ff;
+    border-radius: 5px;
+    /* border: 1px solid #d0e3ff;     */
+}
+
+input[type="number"], input[type="password"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 60px;
+    text-align: center;
+}
+input[type="password"] {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+button {
+    padding: 8px 16px;
+    background: #03a9f4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+button:hover {
+    background: #0288d1;
+}
+
+
+.hidden {
+  display: none;    
+}
+
+.oculto {
+  display: none;
+}
+
+
+
+/************************************* Seelect options *****************************************/
+
+select {
+    /* styling */
+    background-color: white;
+    border: thin solid blue;
+    border-radius: 4px;
+    display: inline-block;
+    font: inherit;
+    line-height: 1.5em;
+    padding: 5px 40px 5px 5px;
+  
+    /* reset */  
+    margin: 0;      
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    /* -webkit-appearance: none;
+    -moz-appearance: none; */
+  }
+  
+  
+  /* arrows */  
+  select.round {
+    background-image:
+      linear-gradient(45deg, transparent 50%, gray 50%),
+      linear-gradient(135deg, gray 50%, transparent 50%),
+      radial-gradient(#ddd 70%, transparent 72%);
+    background-position:
+      calc(100% - 20px) calc(1em + 2px),
+      calc(100% - 15px) calc(1em + 2px),
+      calc(100% - .5em) .5em;
+    background-size:
+      5px 5px,
+      5px 5px,
+      1.5em 1.5em;
+    background-repeat: no-repeat;
+  }
+  
+  select.round:focus {
+    background-image:
+      linear-gradient(45deg, white 50%, transparent 50%),
+      linear-gradient(135deg, transparent 50%, white 50%),
+      radial-gradient(gray 70%, transparent 72%);
+    background-position:
+      calc(100% - 15px) 1em,
+      calc(100% - 20px) 1em,
+      calc(100% - .5em) .5em;
+    background-size:
+      5px 5px,
+      5px 5px,
+      1.5em 1.5em;
+    background-repeat: no-repeat;
+    border-color: green;
+    outline: 0;
+  }
+   
+  
+  select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 #000;
+  }
+
+
+/************************************* input time *****************************************/
+input[type="time"] {
+    background-color: #f9f9f9; /* fundo */
+    border: 2px solid #4CAF50; /* borda */
+    border-radius: 8px; /* borda arredondada */
+    padding: 6px; /* espaço interno */
+    font-size: 14px; /* tamanho da fonte */
+    color: #333; /* cor do texto */
+    width: 115px; /* largura */
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* sombra */
+  }
+  
+  /* Quando o input recebe foco */
+  input[type="time"]:focus {
+    border-color: #2e7d32;
+    outline: none; /* tira a borda azul padrão */
+    background-color: #fff;
+  }
+
+/************************************* Tabela *****************************************/
+#table_control {
+    position: relative;
+    display: flex;
+    margin: auto;
+    /* top: 10px;     */
+    color: white;        
+    /* padding: 5px; */
+    border-radius: 5px;    
+    appearance: none;
+    border-collapse: collapse;
+    justify-content: center;    
+}
+
+th, td {   
+    text-align: left;   
+    padding: 5px;
+    /* border: 1px solid rgb(160 160 160);           */
+}
+
+/* td_weekdays */
+#td_weekdays {
+  padding: 10px 0px 10px 0px;
+  text-align: center; /* Centraliza o conteúdo inline (opcional) */
+}
+
+#div_semana {
+  display: flex;
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center;     /* Centraliza verticalmente */
+  gap: 1px;               /*Espaçamento entre os itens */
+  flex-wrap: wrap;        /* Permite quebra de linha se necessário */
+}
+
+#div_semana label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* Centraliza os elementos do label */
+  cursor: pointer;
+}
+
+#div_semana span {
+  font-weight: bold;
+}
+
+
+#td_btn_guardar{
+  padding: 10px 0px 0px 0px;
+  text-align: center;     
+}
+
+
+
+tr {
+  display: flex;          /* Transforma a linha em um container flex */
+  align-items: center;   /* Centraliza verticalmente */
+  justify-content: center; /* Centraliza horizontalmente */
+}
+
+td {
+  padding: 8px;          /* Espaçamento interno para melhor visualização */
+}
+
+/* Ajustes para os elementos internos (opcional) */
+.time-control, .ha-select1 {
+  margin: 0 auto;        
+}
+
+/* #time_hora{
+  width: 100px;
+} */
+
+#btn_salvar_timer{
+    width: 100px;
+    height: 35px;
+    background-color: #39be5a;
+    color: white;
+    border: 1px solid #0a0a0a;
+    border-radius: 5px;
+    padding: 5px 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+#btn_fechar_popup{
+    width: 100px;
+    height: 35px;
+    background-color: #f44336;
+    color: white;
+    border: 1px solid #0a0a0a;
+    border-radius: 5px;
+    padding: 5px 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#div_header{
+  display: inline-flex;
+  width: 100%;
+  justify-content:center; 
+  text-align: center; 
+  /* border: 1px solid red; */
+}
+
+#div_edit_name{
+  position: relative;
+  margin-left: 5px;
+  border-radius: 50%;
+  align-content: center;
+  width: 30px;
+  height:30px;
+  padding: 5px;
+  background-color: rgba(0,0,0,0.5); 
+  cursor: pointer;
+  /* border: 1px solid blue; */
+}
+
+#div_save_name{
+  display: none;
+  position: relative;
+  margin-left: 5px;
+  border-radius: 50%;
+  align-content: center;
+  width: 30px;
+  height:30px;
+  padding: 5px;
+  background-color: rgba(0,0,0,0.5); 
+  cursor: pointer;
+  /* border: 1px solid blue; */
+}
+
+#txt_nome_dispositivo_aux{
+  display: none;
+}
+
+#fieldset_renomear{
+  border-radius: 5px;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+#legenda_fieldset_renomear{
+  color: white; 
+  font-size: 18px;
+}
+
+#div_nome_dispositivo{    
+    width: 280px;
+    height: 30px;      
+    background-color: white;
+    border: 2px solid gray;
+    border-radius: 5px;
+    padding: 5px 0 0 2px; 
+    font-size: 16px;
+    text-align: left;
+}
+
+
+
+
+/***************************************** Style the tab ***************************************/
+ .tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    margin-top: 0px;
+    margin-bottom: 10px;
+    border: none;   
+  }
+
+  #fieldset_automatizacoes{
+    border-radius: 5px;
+    padding: 5px;
+  }
+
+  #legenda_fieldset_automatizacoes{
+    color: orange;
+    font-size: 18px;
+  }
+
+  
+  #btn_timer_1, #btn_timer_2, #btn_timer_3{
+    border: 1px solid white;
+    width: 35px;   
+    height: 35px;
+    border-radius: 50%;
+    margin: 0 5px;
+    color: white;
+  }
+  
+  /* Style the buttons that are used to open the tab content */
+  .tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 10px 10px;
+    width: 50%;
+    color: black;
+  }
+  
+  /* Change background color of buttons on hover */
+  .tab button:hover {
+    background-color: #ddd;
+  }
+  
+  /* Create an active/current tablink class */
+  .tab button.active {
+    background-color: #39be5a;   
+  }
+  
+
+
+/*************************************** Style toolpit ***************************************/
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: auto;
+  background-color: #555; 
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* seta para baixo*/
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -8px;
+  border-width: 8px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+
+/************************************* Dias da semana *****************************************/
+#div_semana {
+    position: relative;
+    margin-bottom: 15px;
+    display: flex;
+    height: 40px;
+    width: 100%;
+  }
+
+
+#div_semana label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    padding: 5px 6px;
+}
+
+#div_semana input[type="checkbox"] {
+    margin-bottom: 5px;
+}
+
+#div_semana span {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 3px;
+}
+
+.day-name {
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+    margin-top: 35px;
+}
+
+/* span:hover {
+  background: rgb(67, 67, 240);
+} */
+
+label input {
+    display: none;
+}
+
+label span {
+    border: 2px solid #ccc;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    overflow: hidden;
+    line-height: 1.4;
+    text-align: center;
+    border-radius: 100%;
+    font-size: 18pt;
+    color: white;
+}
+
+input:checked+span {
+    background: rgb(7, 7, 7);
+    border-color: rgb(190, 209, 16);
+}
+
+
+/* Estilo quando checkbox está marcado */
+#div_semana input[type="checkbox"]:checked+span+.day-name {
+    color: var(--primary-color, rgb(10, 25, 226));
+    font-weight: bold;
+}
+
+
+/****************** MENU CONTEXTUAL ********************/
+.menu_contextual {
+  position: absolute;
+  --mouse-x: 0;
+  --mouse-y: 0;
+  display: none;
+  position: fixed;
+  margin: 0;
+  left: 0;
+  top: 0;
+  /* The following line is responsible for all the magic */
+  transform: translateX(min(var(--mouse-x), calc(100vw - 100%))) translateY(min(var(--mouse-y), calc(100vh - 100%)));
+  width: 200px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  padding: 0px 5px 5px 5px;
+  border-radius: 5px;
+  background: #4e94ab;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+
+.menu_contextual ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  /*justify-content: center|left|...;*/
+}
+
+
+.menu_contextual li {
+  border-bottom: 1px solid #fff;
+}
+
+.menu_contextual li a {
+  display: block;
+  padding: 5px;
+  color: #000000;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+a>svg {
+  position: relative;
+  top: 5px;
+}
+
+
+
+/*/////////////////////////////////////////////*/
+
+ 

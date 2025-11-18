@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controlo Remoto TV Satélite</title>
+    <link rel="stylesheet" type="text/css" href="all.min.css" />
+    <style>
+
+        :root {
+            --clr: #1c1c1c;
+            --largura_ctrl_r: 170px;
+        }
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--clr);
+        }
+
+        .remote {
+            width: 320px;
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            border-radius: 25px;
+            padding: 25px;
+            background: rgb(100,100,100) radial-gradient(circle at 50% 0, rgba(255,255,255,.65), rgba(255,255,255,.35));
+            box-shadow:
+            0 3px 8px rgba(0,0,0,.8),
+            inset rgba(0,0,0,.6) 0 -3px 8px,
+            inset rgba(252,255,255,.7) 0 3px 8px;
+            color: white;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .brand {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background-color: #e74c3c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .display {
+            background: rgba(0, 100, 0, 0.9);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 25px;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .channel-info {
+            font-size: 1.2rem;
+        }
+
+        .channel-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .main-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #444;
+            border: none;
+            border-radius: 10px;
+            height: 50px;
+            color: white;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-power {
+            background: #e74c3c;
+            grid-column: 1;
+        }
+
+        .btn-mute {
+            background: #f39c12;
+            grid-column: 5;
+        }
+
+        .btn-ok {
+            grid-column: 3;
+            grid-row: 2;
+            background: #3498db;
+            height: 60px;
+            border-radius: 15px;
+        }
+
+        .nav-buttons {
+            grid-column: span 5;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .nav-btn {            
+            background: #444;
+            border: none;
+            border-radius: 10px;
+            height: 50px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .nav-btn.up {
+            grid-column: 2;
+        }
+
+        .number-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .number-btn {
+            background: #444;
+            border: none;
+            border-radius: 10px;
+            height: 50px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+        }
+
+        .number-btn.zero {
+            grid-column: 2;
+        }
+
+        .function-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .func-btn {
+            background: #444;
+            border: none;
+            border-radius: 10px;
+            height: 50px;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+        }
+
+        .func-btn i {
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="remote">
+        <div class="header">
+            <div class="brand">TV SAT PRO</div>
+            <div class="brand-logo">SAT</div>
+        </div>
+        
+        <div class="display">
+            <div class="channel-info">RTP 1</div>
+            <div class="channel-number">101</div>
+        </div>
+        
+        <div class="main-buttons">
+            <button class="btn btn-power"><i class="fas fa-power-off"></i></button>
+            <button class="btn"><i class="fas fa-tv"></i></button>
+            <button class="btn"><i class="fas fa-bell"></i></button>
+            <button class="btn"><i class="fas fa-info-circle"></i></button>
+            <button class="btn btn-mute"><i class="fas fa-volume-mute"></i></button>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn left"><i class="fas fa-chevron-left"></i></button>
+                <button class="nav-btn up"><i class="fas fa-chevron-up"></i></button>
+                <button class="nav-btn right"><i class="fas fa-chevron-right"></i></button>
+                <button class="btn btn-ok">OK</button>
+                <button class="nav-btn down"><i class="fas fa-chevron-down"></i></button>
+            </div>
+        </div>
+        
+        <div class="number-buttons">
+            <button class="number-btn">1</button>
+            <button class="number-btn">2</button>
+            <button class="number-btn">3</button>
+            <button class="number-btn">4</button>
+            <button class="number-btn">5</button>
+            <button class="number-btn">6</button>
+            <button class="number-btn">7</button>
+            <button class="number-btn">8</button>
+            <button class="number-btn">9</button>
+            <button class="number-btn"><i class="fas fa-asterisk"></i></button>
+            <button class="number-btn zero">0</button>
+            <button class="number-btn"><i class="fas fa-pound-sign"></i></button>
+        </div>
+        
+        <div class="function-buttons">
+            <button class="func-btn">
+                <i class="fas fa-list"></i>
+                <span>Guia</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-film"></i>
+                <span>VOD</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-undo"></i>
+                <span>Voltar</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-home"></i>
+                <span>Menu</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-archive"></i>
+                <span>Grav.</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-cog"></i>
+                <span>Config</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Funcionalidade básica
+        const numberBtns = document.querySelectorAll('.number-btn');
+        const displayNumber = document.querySelector('.channel-number');
+        const displayInfo = document.querySelector('.channel-info');
+        const powerBtn = document.querySelector('.btn-power');
+        
+        // Canais fictícios para demonstração
+        const channels = {
+            '101': 'RTP 1',
+            '102': 'RTP 2',
+            '103': 'SIC',
+            '104': 'TVI',
+            '105': 'CNN Portugal',
+            '106': 'Sport TV',
+            '107': 'FOX Movies',
+            '108': 'Discovery',
+            '109': 'National Geographic',
+            '110': 'Cartoon Network'
+        };
+        
+        let currentNumber = '';
+        
+        numberBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const value = this.textContent.trim();
+                
+                if (value === '#' || value === '*') return;
+                
+                currentNumber += value;
+                
+                if (currentNumber.length > 3) {
+                    currentNumber = value; // Reinicia se mais de 3 dígitos
+                }
+                
+                displayNumber.textContent = currentNumber;
+                
+                // Atualiza informação do canal após pequeno delay
+                setTimeout(() => {
+                    if (channels[currentNumber]) {
+                        displayInfo.textContent = channels[currentNumber];
+                    } else {
+                        displayInfo.textContent = "Canal não disponível";
+                    }
+                }, 300);
+            });
+        });
+        
+        powerBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+        
+        // Simula mudança de canal com as setas
+        document.querySelector('.nav-btn.up').addEventListener('click', function() {
+            let num = parseInt(currentNumber) + 1;
+            if (num > 110) num = 101;
+            currentNumber = num.toString();
+            updateChannel();
+        });
+        
+        document.querySelector('.nav-btn.down').addEventListener('click', function() {
+            let num = parseInt(currentNumber) - 1;
+            if (num < 101) num = 110;
+            currentNumber = num.toString();
+            updateChannel();
+        });
+        
+        function updateChannel() {
+            displayNumber.textContent = currentNumber;
+            displayInfo.textContent = channels[currentNumber] || "Canal não disponível";
+        }
+    </script>
+</body>
+</html>

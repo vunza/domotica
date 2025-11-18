@@ -36,7 +36,7 @@ const ip_e_porta = `${http_port}//${location.host}`;
  * Tipos de Dispositivos
  * @type {Array<String>}
  */
-const tipos_dispositivos = ["LAMPADA", "TOMADA", "AR_CONDICIONADO", "VENTILADOR", "CONTROLO_REMOTO"];
+const tipos_dispositivos = ["hub_zb", "lampada", "bomba", "switch", "interruptor"];
 
 
 /**
@@ -204,7 +204,7 @@ function mostrarLogs(logsContainerEl, message, type = 'info') {
  * Obtem os dados (Id, Dominio, Nome, etc.) de todas entidades do Home Assistant.
  * @param {String} token Para autenticação na API do Home Assistant.
  * @param {String} api Endpoint dos estados de todas Entidades do HA ('/api/states' -- em uso)
- * @returns {Promise<Array>} Uma promessa que resolve para um array de objetos contendo os dados das entidades.
+ * @returns {Promise<Object[]>} Promise que resolve com um array de objetos JSON contendo os dados das entidades.
  */
 async function getEntitiesDataWithApi(token, api) {
     const response = await fetch(api, {
@@ -240,6 +240,78 @@ async function getEntitiesDataWithApi(token, api) {
         };
     });
 }
+
+
+
+/**
+ * Função para obter estao de uma entidade, requerido pela função "actualizaFriendlyName".
+ * @param {String} token Token de acesso ao HA.
+ * @param {String} ip_porta URL Base do HA no formato http[s]://ip-do-ha:porta.
+ * @param {String} entityId ID da Entidade em questão (Ex.: 'switch.0xa4c138e342bdfb48').
+ * @returns {Promise<String>} Promise que resolve com uma string do estado da entidade (on|off).  
+ */
+async function obterEstadoEntidade(token, ip_porta, entityId) {     
+    const url = `${ip_porta}/api/states/${entityId}`;
+    
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            }
+        });
+        const data = await response.json();        
+        return data.state; 
+    } catch (error) {
+        console.error("Erro ao obter estado:", error);
+        throw error; // Propaga o erro
+    }
+}
+
+
+/**
+ * Função para alterar o friendly_name de uma entidae.
+ * @param {String} token Token de acesso ao HA.
+ * @param {String} ip_porta URL Base do HA no formato http[s]://ip-do-ha:porta.
+ * @param {String} entityId ID a Entidade a alterar o friendly_name.
+ * @param {String} friendlyName friendly_name a ser atribuido a entidade.
+ * @param {String} entityState String que comtem o estado da entidade (on|off), obtido da função "obterEstadoEntidade".
+ * @param {String} deviceType String que comtem o tipo de dispositivo (array "tipos_dispositivos"), para determina o icon para a Card.
+* @returns {string} Srting de confirmação do envio do comando.
+ */
+async function actualizaFriendlyName(token, ip_porta, entityId, friendlyName, entityState, deviceType) {   
+   
+    const url = `${ip_porta}/api/services/shell_command/atualiza_friendly`;
+
+    fetch(url, {
+    method: "POST",
+    headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        entity_id: entityId,
+        friendly_name: friendlyName,
+        entity_state: entityState,
+        device_type: deviceType // Ler via: data.attributes.device_type
+    })
+    })
+    .then(response => {
+    if (!response.ok) {
+        throw new Error("Erro na requisição");
+    }
+    return response.json();
+    })
+    .then(data => {
+      console.log("Comando enviado com sucesso!");
+    })
+    .catch(error => {
+      console.error("Erro:", error);
+    });
+
+}
+
 
 
 /** 

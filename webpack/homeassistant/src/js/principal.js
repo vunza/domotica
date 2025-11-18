@@ -17,48 +17,64 @@ import {api, getDevicesWIthWebSocket, getToken, getEntitiesDataWithApi } from '.
 
 document.addEventListener("DOMContentLoaded", async function () {
 
+    // Cria Cards em função dos dispositivos do HA    
     try {
         // Obter Token de acesso ao HA
         const api_token = '/local/json_files/token_api.json';
         const token = await getToken(api_token);
 
-        // Guarda lista de Entidades, para ser comparada com a lista de ispositivos
+        // Guarda lista de objectos com os dados das Entidades, para ser comparada com a lista de ispositivos
         let entities_list = [];
-        getEntitiesDataWithApi(token, api).then( (entidades)=>{
-            entidades.forEach( (entity) => entities_list.push(entity.id));            
+        getEntitiesDataWithApi(token, api).then( (entidades)=>{   
+            //console.log(entidades);
+            entidades.forEach((entity) => {
+                entities_list.push({
+                    id: entity.id,
+                    friendly_name: entity.nome,
+                    historico: entity.historico,
+                    status: entity.status, // online|offline
+                    state: entity.state, // on|off
+                    device_id: entity.device_id
+                });
+            });              
+                        
         });
 
-        //const existe = entities_list.some(item => item.includes(substring));
-
+       
+       
         // Obter Dispositivos
-        getDevicesWIthWebSocket(token).then( (devices) => {              
+        getDevicesWIthWebSocket(token).then( (devices) => {   
+                   
             // Criar Crads dos dispositivos
             devices.forEach(element => {
-                
+                  
                 // Filtra elementos por id, dominio, 
                 const ieee = element.name;
-                const dominios = ["switch", "light"]; // Para entidaes com os dominios indicados
+                const dominios = ["switch", "light", "sensor", "text"]; // Para entidaes com os dominios indicados
                 const posicoes = ["left", "center", "right"];  // Para Dispositivos com mais de um canal
+                const hubsir = ["learn_ir_code", "battery", "ir_code_to_send", "learned_ir_code"];  // Para Hubs ir
 
                 const resultado = entities_list.filter(item => {
-                    const temIEEE = item.includes(ieee);
-                    const temDominio = dominios.some(d => item.startsWith(d + "."));
-                    const temPosicao = posicoes.some(p => item.endsWith("_" + p)) || 
-                                    !item.includes("_"); // permite sem left/center/right
+                    const temIEEE = item.device_id.includes(ieee);
+                    const temDominio = dominios.some(d => item.id.startsWith(d + "."));
+                    const temPosicao = posicoes.some(p => item.id.endsWith("_" + p)) || 
+                                       //hubsir.some(l => item.id.endsWith("_" + l)) || 
+                                    !item.id.includes("_"); // permite sem left/center/right
 
                     return temIEEE && temDominio && temPosicao;
-                });    
+                });  
 
               
                 // Criar Cards dos Dispositivos
-                resultado.forEach( (Id) => {
-                    criar_card(Id, {
-                        nome: Id,
-                        historico:  new Date().toLocaleTimeString(),               
+                resultado.forEach( (item) => {
+                    //console.log(item.id);
+                    criar_card(item.id, {
+                        nome: item.friendly_name,
+                        historico:  item.historico,               
                         tipo: 'picture', // Força icon de imagem, tipo deve ser definido manualmenete
-                        status: 'online'
+                        status: item.status
                     });
-                });               
+                });              
                
             });         
         });

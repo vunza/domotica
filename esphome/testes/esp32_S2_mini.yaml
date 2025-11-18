@@ -1,0 +1,111 @@
+# esphome:
+#   name: esp32-web-server
+#   platform: ESP32
+#   board: nodemcu-32s
+
+# wifi:
+#   ssid: "TPLINK"
+#   password: "gregorio@2012"
+
+# # Habilitar el servidor web
+# web_server:
+#   port: 80
+
+# # Habilitar logs
+# logger:
+
+# # Habilitar OTA (Actualizaciones Over-The-Air)
+# ota:
+
+# # Ejemplo de sensor (temperatura interna)
+# sensor:
+#   - platform: internal_temperature
+#     name: "Temperatura Interna"
+#     id: temp_interna
+#     unit_of_measurement: "°C"
+#     update_interval: 30s
+
+# # Ejemplo de output (LED integrado)
+# output:
+#   - platform: gpio
+#     pin: GPIO23
+#     id: led
+
+# # Ejemplo de light para controlar el LED
+# light:
+#   - platform: binary
+#     name: "LED Integrado"
+#     output: led
+
+# # Ejemplo de interruptor binario
+# switch:
+#   - platform: restart
+#     name: "Reiniciar Dispositivo"
+
+
+# # Actualización automática cada segundo para mejor respuesta
+# interval:
+#   - interval: 1s
+#     then:
+#       - component.update: temp_interna
+
+
+
+esphome:
+  name: medidor_tensao
+  platform: ESP32
+  board: esp32dev
+
+wifi:
+  ssid: "TPLINK"
+  password: "gregorio@2012"
+
+# >>> NÃO REPITA OUTRA VEZ ESTE BLOCO <<<
+web_server:
+  port: 80
+  include_internal: true
+  css_url: ""
+  js_url: ""
+
+# página customizada
+web_server_page:
+  path: /tensao
+  content: |-
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Leitura de Tensão</title>
+    </head>
+    <body>
+      <h1>Tensão Atual:</h1>
+      <p id="valor">Carregando...</p>
+
+      <script>
+        setInterval(async () => {
+          try {
+            const r = await fetch("/sensor/tensao_entrada");
+            const j = await r.json();
+            document.getElementById('valor').innerText = j.value + " V";
+          } catch (e) {
+            console.error(e);
+          }
+        }, 1000);
+      </script>
+    </body>
+    </html>
+
+
+logger:
+api:
+ota:
+
+sensor:
+  - platform: adc
+    pin: GPIO34
+    name: "Tensão Entrada"
+    id: tensao_adc
+    update_interval: 1s
+    attenuation: 11db
+    filters:
+      - multiply: 11.0   # Ajuste conforme o divisor SZYTF

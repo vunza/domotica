@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações Controlos Remotos</title>      
+    <!-- <link rel="stylesheet" type="text/css" href="all.min.css" /> -->
+    <!-- <link rel="stylesheet" type="text/css" href="styles.css"> -->
+
+    <!-- Cria versão diferente a cada carregamento -->   
+    <script>
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'styles.css?v=' + new Date().getTime();
+        document.head.appendChild(link);
+    </script>
+</head>
+<body>     
+
+    <!-- div-msg-feedback-back --> 
+    <div id="div-msg-feedback-back" style="display: none;">           
+        <div id="div-msg-feedback-wrapper">                
+            <div id="div-msg-feedback-header">                                 
+                <font color='black'><b>INFORMAÇÃO</b></font>
+            </div>
+            <br>
+            <div class="div_msg_feedback" id="div-msg-feedback"></div>
+        </div>
+    </div><!-- div-msg-feedback-back -->
+
+     <script>     
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Exemplo de uso
+            getDevices().then(devices => {
+                // Filtrar devices pelo modelo (Hub IR) e/fabricante
+                const hubIRDevices = devices.filter(dev => dev.model?.toLowerCase().includes("remote"));
+                //const hubIRDevices = devices.filter(dev => dev.manufacturer?.toLowerCase().includes("moes"));
+                console.log("Devices do Hub IR:", hubIRDevices[0].name);
+                alert("Devices do Hub IR: " + hubIRDevices[0].name);
+            });
+        });
+        
+    </script>
+    
+    <!-- <script type="text/javascript" src="mqtt.min.js"></script> -->
+    <script type="text/javascript" src="scripts.js?v=202406454"></script>
+    <!-- Cria versão diferente a cada carregamento -->
+    <!-- <script>
+        const script = document.createElement('script');
+        script.src = 'scripts.js?v=' + new Date().getTime();
+        script.type = 'text/javascript';
+        document.head.appendChild(script);
+    </script>     -->
+
+</body>
+</html>

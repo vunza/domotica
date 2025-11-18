@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta http-equiv="refresh" content="30">  Atualiza a cada 30 segundos -->
+    <!-- <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"> -->
+    <meta http-equiv="Cache-Control" content="max-age=604800, public">
+    <tibtn_tmrse></tibtn_tmrse>   
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Cria versão diferente a cada carregamento -->
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <!-- <script>
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'styles.css?v=' + new Date().getTime();
+        document.head.appendChild(link);
+    </script> -->
+
+</head>
+<body>
+
+        
+       
+
+    <div id="div_container" class="container" style="display: none;">       
+       
+        <!-- Painel de Autenticação -->
+        <div id="authPanel" class="auth-panel">
+            <!-- <h3>Autenticação Necessária</h3>
+            <p>Por favor, insira seu token de acesso do Home Assistant:</p>
+            <input type="password" id="authTokenInput" placeholder="Token de Acesso Longo">
+            <button onclick="authenticate()">Autenticar</button>
+            <p><small>Obtenha seu token em: <strong>Perfil → Tokens de Acesso</strong></small></p> -->
+        </div>
+
+
+        <!-- Interface para Renomear Entidades -->
+        <fieldset id="fieldset_renomear" class="">
+        <legend id="legenda_fieldset_renomear"><b>&nbsp; &nbsp;</b></legend>      
+        <div id="div_header" class="header">    
+            <input type="text" id="txt_nome_dispositivo_aux" value="" autocomplete="off" placeholder="Nome do Dispositivo" disabled>        
+            <!-- <input type="text" id="txt_nome_dispositivo" maxlength="30" oninput="changeTxtHandler(this.id);" autocomplete="off" placeholder="Nome do Dispositivo" disabled> -->
+            <div id="div_nome_dispositivo" onkeyup="changeTxtHandler(this.id);" contenteditable="true"></div>
+            <div id="div_edit_name" onclick="enableDeviceNameEdiction();">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>
+            </div>   
+            <div id="div_save_name" onclick="saveDeviceName();">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            </div> 
+        </div>       
+        </fieldset>
+
+
+       <!-- Interface para configuraċão de automações -->
+       <fieldset id="fieldset_automatizacoes" class="">
+        <legend id="legenda_fieldset_automatizacoes"><b>&nbsp;Automatizações&nbsp;</b></legend>    
+
+        <div id="controlPanel" class="hidden"> 
+            
+            <table id="table_control" class="table-control">
+                <tr >
+                    <td id="td_tabs_timers" colspan="2">                        
+                        <div class="tab">
+                            <button id="btn_timer_1" class="tablinks" onclick="obterDadosAutomacoes(this)">1</button>
+                            <button id="btn_timer_2"  class="tablinks" onclick="obterDadosAutomacoes(this)">2</button>
+                            <button id="btn_timer_3"  class="tablinks" onclick="obterDadosAutomacoes(this)">3</button>
+                            
+                        </div>
+                    </td>
+                </tr>
+                <tr id="tr_timer_action">
+                    <td>
+                        <!-- Hora -->
+                         <div>                            
+                            <!-- <label for="time_hora">⏰</label> -->
+                            <input class="time-control" id="time_hora" type="time" value=""/>   
+                         </div>                          
+                    </td>
+                    <td>
+                        <!-- Lista de accoes -->
+                        <select id="action-select" class="ha-select1 round">
+                            <option value="" disabled selected value="">ACÇÕES  </option>
+                        </select>   
+                        
+                    </td>
+                </tr>
+                <tr >
+                    <td id="td_weekdays" colspan="2">
+                        <!-- Dias da semana  -->
+                        <div id="div_semana">
+                            <label>
+                                <input id="0" type="checkbox" name="sel_week_day" />
+                                <span>D</span>
+                                <div class="day-name">Dom</div>
+                            </label>
+                            <label>
+                                <input id="1" type="checkbox" name="sel_week_day" />
+                                <span>S</span>
+                                <div class="day-name">Seg</div>
+                            </label>
+                            <label>
+                                <input id="2" type="checkbox" name="sel_week_day" />
+                                <span>T</span>
+                                <div class="day-name">Ter</div>
+                            </label>
+                            <label>
+                                <input id="3" type="checkbox" name="sel_week_day" />
+                                <span>Q</span>
+                                <div class="day-name">Qua</div>
+                            </label>
+                            <label>
+                                <input id="4" type="checkbox" name="sel_week_day" />
+                                <span>Q</span>
+                                <div class="day-name">Qui</div>
+                            </label>
+                            <label>
+                                <input id="5" type="checkbox" name="sel_week_day" />
+                                <span>S</span>
+                                <div class="day-name">Sex</div>
+                            </label>
+                            <label>
+                                <input id="6" type="checkbox" name="sel_week_day" />
+                                <span>S</span>
+                                <div class="day-name">Sáb</div>
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr >
+                    <td id="td_btn_guardar" colspan="2"> 
+                        <button  class="tooltip" id="btn_salvar_timer" onclick="setTime()">Agendar<span id="span_tooltip" class="tooltiptext">Tooltip</span></button> 
+                        <button id="btn_fechar_popup" onclick="closeBrowserModPopup();">Fechar</button>
+                    </td>                 
+                </tr>
+
+            </table>            
+        </div>  
+    </fieldset> 
+    
+
+    </div>     
+   
+    <!-- div_menu_contextual -->
+     <div class="menu_contextual" id='div_menu_contextual' style="display: none;">
+        <ul>
+            <li id="li_rnm"><a id="a_rnm" onclick="menuContexto(this.id);" href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon><line x1="3" y1="22" x2="21" y2="22"></line></svg> Renomear</a></li>
+            <li id="li_tmr"><a id="a_tmr" onclick="menuContexto(this.id);" href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"></circle><polyline points="12 9 12 12 13.5 13.5"></polyline><path d="M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7l.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83"></path></svg> Temporizadores</a></li>
+            <li id="li_cfg"><a id="a_cfg" onclick="menuContexto(this.id);" href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg> Cofigurações</a></li>        
+        </ul>        
+    </div><!-- div_menu_contextual -->
+    
+    <!-- Cria versão diferente a cada carregamento -->
+    <script type="text/javascript" src="scripts.js?v=1.2.4"></script>
+    <!-- <script>
+        const script = document.createElement('script');
+        script.src = 'scripts.js?v=' + new Date().getTime();
+        script.type = 'text/javascript';
+        document.head.appendChild(script);
+    </script>      -->
+
+</body>
+</html> 
+
+ 
+
+

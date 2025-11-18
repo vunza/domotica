@@ -33,7 +33,7 @@ const criar_card = (Id, deviceData = {}) => {
             'hub_zb': svgs.hub_zb,
             'lampada': svgs.lampada,
             'bomba': svgs.bomba,
-            'switch': svgs.plug,
+            'tomada': svgs.plug,
             'interruptor': svgs.interruptor
         };
         return icons[type] || svgs.picture;

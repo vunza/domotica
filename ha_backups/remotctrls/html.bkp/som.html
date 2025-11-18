@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controlo Remoto de Som</title>
+    <link rel="stylesheet" type="text/css" href="all.min.css">
+    
+    <style>
+
+        :root {
+            --clr: #1c1c1c;
+            --largura_ctrl_r: 170px;
+        }
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--clr);
+        }
+
+        .remote {
+            width: 300px;
+            background: linear-gradient(145deg, #1a1a1a, #333333);
+            border-radius: 25px;
+            padding: 25px;
+            background: rgb(100,100,100) radial-gradient(circle at 50% 0, rgba(255,255,255,.65), rgba(255,255,255,.35));
+            box-shadow:
+            0 3px 8px rgba(0,0,0,.8),
+            inset rgba(0,0,0,.6) 0 -3px 8px,
+            inset rgba(252,255,255,.7) 0 3px 8px;
+            color: white;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .brand {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .power-btn {
+            background: #e74c3c;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-family: 'Digital', monospace;
+        }
+
+        .song-info {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .volume-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .volume-bar {
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            flex-grow: 1;
+            margin: 0 10px;
+            position: relative;
+        }
+
+        .volume-level {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 70%;
+            background: #3498db;
+            border-radius: 5px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #444;
+            border: none;
+            border-radius: 10px;
+            height: 50px;
+            color: white;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-play {
+            grid-column: 3;
+            background: #3498db;
+        }
+
+        .btn-prev {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .btn-next {
+            grid-column: 5;
+            grid-row: 1;
+        }
+
+        .btn-eq {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .btn-repeat {
+            grid-column: 4;
+            grid-row: 2;
+        }
+
+        .btn-shuffle {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .btn-fav {
+            grid-column: 5;
+            grid-row: 2;
+        }
+
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: #444;
+            border: none;
+            border-radius: 10px;
+            height: 40px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .nav-btn.up {
+            grid-column: 2;
+        }
+
+        .nav-btn.ok {
+            grid-column: 2;
+            grid-row: 2;
+            background: #444;
+        }
+
+        .bottom-section {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .source-btn {
+            background: #444;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .source-btn.active {
+            background: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="remote">
+        <div class="header">
+            <div class="brand">MUSIC PRO</div>
+            <div class="power-btn">
+                <i class="fas fa-power-off"></i>
+            </div>
+        </div>
+        
+        <div class="display">
+            <div class="song-info">Imagine Dragons - Believer</div>
+            <div class="time-info">2:45 / 3:30</div>
+            <div class="volume-display">
+                <i class="fas fa-volume-down"></i>
+                <div class="volume-bar">
+                    <div class="volume-level"></div>
+                </div>
+                <i class="fas fa-volume-up"></i>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-prev"><i class="fas fa-step-backward"></i></button>
+            <button class="btn btn-play"><i class="fas fa-play"></i></button>
+            <button class="btn btn-next"><i class="fas fa-step-forward"></i></button>
+            <button class="btn btn-shuffle"><i class="fas fa-random"></i></button>
+            <button class="btn btn-eq"><i class="fas fa-sliders-h"></i></button>
+            <button class="btn btn-repeat"><i class="fas fa-redo"></i></button>
+            <button class="btn btn-fav"><i class="fas fa-heart"></i></button>
+        </div>
+        
+        <div class="nav-buttons">
+            <button class="nav-btn left"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn up"><i class="fas fa-chevron-up"></i></button>
+            <button class="nav-btn right"><i class="fas fa-chevron-right"></i></button>
+            <button class="nav-btn ok">OK</button>
+            <button class="nav-btn down"><i class="fas fa-chevron-down"></i></button>
+        </div>
+        
+        <div class="bottom-section">
+            <button class="source-btn active"><i class="fas fa-bluetooth-b"></i> BT</button>
+            <button class="source-btn"><i class="fas fa-wifi"></i> Wi-Fi</button>
+            <button class="source-btn"><i class="fas fa-usb"></i> USB</button>
+            <button class="source-btn"><i class="fas fa-compact-disc"></i> CD</button>
+        </div>
+    </div>
+
+    <script>
+        // Funcionalidade básica
+        const playBtn = document.querySelector('.btn-play');
+        const powerBtn = document.querySelector('.power-btn');
+        const sourceBtns = document.querySelectorAll('.source-btn');
+        const volumeLevel = document.querySelector('.volume-level');
+        let isPlaying = false;
+        let volume = 70;
+
+        playBtn.addEventListener('click', function() {
+            isPlaying = !isPlaying;
+            this.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        });
+
+        powerBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+
+        sourceBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                sourceBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Controle de volume simulado
+        document.querySelector('.fa-volume-up').addEventListener('click', function() {
+            if (volume < 100) {
+                volume += 10;
+                volumeLevel.style.width = volume + '%';
+            }
+        });
+
+        document.querySelector('.fa-volume-down').addEventListener('click', function() {
+            if (volume > 0) {
+                volume -= 10;
+                volumeLevel.style.width = volume + '%';
+            }
+        });
+
+    </script>
+</body>
+</html>

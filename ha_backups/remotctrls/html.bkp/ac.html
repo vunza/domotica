@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Remoto de Ar Condicionado</title>
+    <link rel="stylesheet" type="text/css" href="all.min.css" />
+    <style>
+
+        :root {
+            --clr: #1c1c1c;
+            --largura_ctrl_r: 170px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--clr);
+        }
+
+        .remote {
+            width: 300px;
+            border-radius: 15px;
+            padding: 20px;            
+            color: white;
+            background: rgb(100,100,100) radial-gradient(circle at 50% 0, rgba(255,255,255,.65), rgba(255,255,255,.35));
+            box-shadow:
+            0 3px 8px rgba(0,0,0,.8),
+            inset rgba(0,0,0,.6) 0 -3px 8px,
+            inset rgba(252,255,255,.7) 0 3px 8px;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .display {
+            background-color: rgba(0,0,0,0.9);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .temperature {
+            font-size: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mode-display {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #444;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn.active {
+            background: #0078d7;
+            box-shadow: 0 0 10px rgba(0,120,215,0.5);
+        }
+
+        .temp-control {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .temp-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #444;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .temp-btn:hover {
+            background: rgba(255,255,255,0.2);           
+        }
+
+        .power-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .power-btn:hover {
+            background: #c0392b;
+        }
+
+        .power-btn i {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="remote">
+        <div class="brand">AR CONDICIONADO</div>
+        
+        <div class="display">
+            <div class="temperature">
+                <span id="temp-value">24</span>°C
+            </div>
+            <div class="mode-display" id="mode-display">Modo: Resfriar</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="mode-btn">
+                <i class="fas fa-snowflake"></i>
+                Modo
+            </button>
+            <button class="btn" id="fan-btn">
+                <i class="fas fa-fan"></i>
+                Ventilação
+            </button>
+            <button class="btn" id="swing-btn">
+                <i class="fas fa-arrows-alt-v"></i>
+                Oscilar
+            </button>
+            <button class="btn" id="timer-btn">
+                <i class="far fa-clock"></i>
+                Timer
+            </button>
+            <button class="btn" id="turbo-btn">
+                <i class="fas fa-bolt"></i>
+                Turbo
+            </button>
+            <button class="btn" id="sleep-btn">
+                <i class="fas fa-moon"></i>
+                Sleep
+            </button>
+        </div>
+        
+        <div class="temp-control">
+            <button class="temp-btn" id="temp-down"><i class="fas fa-minus"></i></button>
+            <div style="flex-grow: 1; text-align: center;">Temperatura</div>
+            <button class="temp-btn" id="temp-up"><i class="fas fa-plus"></i></button>
+        </div>
+        
+        <button class="power-btn" id="power-btn">
+            <i class="fas fa-power-off"></i>
+            Ligar/Desligar
+        </button>
+    </div>
+
+    <script>
+        // Variáveis de estado
+        let powerOn = false;
+        let currentTemp = 24;
+        let currentMode = 'cool'; // cool, heat, fan, dry, auto
+        
+        // Elementos DOM
+        const tempValue = document.getElementById('temp-value');
+        const modeDisplay = document.getElementById('mode-display');
+        const powerBtn = document.getElementById('power-btn');
+        const tempUpBtn = document.getElementById('temp-up');
+        const tempDownBtn = document.getElementById('temp-down');
+        const modeBtn = document.getElementById('mode-btn');
+        const fanBtn = document.getElementById('fan-btn');
+        const swingBtn = document.getElementById('swing-btn');
+        const timerBtn = document.getElementById('timer-btn');
+        const turboBtn = document.getElementById('turbo-btn');
+        const sleepBtn = document.getElementById('sleep-btn');
+        
+        // Funções de controle
+        function togglePower() {
+            powerOn = !powerOn;
+            powerBtn.style.backgroundColor = powerOn ? '#e74c3c' : '#2ecc71';
+            powerBtn.innerHTML = powerOn 
+                ? '<i class="fas fa-power-off"></i> Desligar' 
+                : '<i class="fas fa-power-off"></i> Ligar';
+            updateDisplay();
+        }
+        
+        function changeTemp(amount) {
+            if (!powerOn) return;
+            
+            currentTemp += amount;
+            if (currentTemp < 16) currentTemp = 16;
+            if (currentTemp > 30) currentTemp = 30;
+            
+            tempValue.textContent = currentTemp;
+        }
+        
+        function cycleMode() {
+            if (!powerOn) return;
+            
+            const modes = [
+                {name: 'Resfriar', icon: 'fa-snowflake'},
+                {name: 'Aquecer', icon: 'fa-sun'},
+                {name: 'Ventilar', icon: 'fa-fan'},
+                {name: 'Desumidificar', icon: 'fa-tint'},
+                {name: 'Automático', icon: 'fa-cog'}
+            ];
+            
+            const currentIndex = modes.findIndex(m => m.name === modeDisplay.textContent.replace('Modo: ', ''));
+            const nextIndex = (currentIndex + 1) % modes.length;
+            
+            modeDisplay.textContent = `Modo: ${modes[nextIndex].name}`;
+            modeBtn.innerHTML = `<i class="fas ${modes[nextIndex].icon}"></i> Modo`;
+        }
+        
+        function updateDisplay() {
+            tempValue.style.opacity = powerOn ? 1 : 0.5;
+            modeDisplay.style.opacity = powerOn ? 1 : 0.5;
+        }
+        
+        // Event listeners
+        powerBtn.addEventListener('click', togglePower);
+        tempUpBtn.addEventListener('click', () => changeTemp(1));
+        tempDownBtn.addEventListener('click', () => changeTemp(-1));
+        modeBtn.addEventListener('click', cycleMode);
+        
+        // Inicialização
+        updateDisplay();
+    </script>
+</body>
+</html>

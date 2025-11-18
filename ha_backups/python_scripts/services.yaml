@@ -1,0 +1,11 @@
+# Nome do script	
+teste:	
+  name: Switch esp8266
+  description: Recebe estado do esp8266
+  fields: # Parametros passados no script
+    Nome:
+      description: Nome a ser impresso no terminal por via de logger.error()
+      example: "Miguel"
+    Entidade:
+      description: Entidade/switch a qual se obtem o estado
+      example: "switch.teste_switch"	
