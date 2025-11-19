@@ -1,171 +1,172 @@
 
 
-#include <Wire.h>
-#include <INA226_WE.h>
-#include <LiquidCrystal_I2C.h>
-#include <WiFi.h>
-#include <WebServer.h>
+// #include <headers.h>
 
-#define INA226_ADDRESS 0x40
+// #define INA226_ADDRESS 0x40
 
-INA226_WE ina226(INA226_ADDRESS);
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+// INA226_WE ina226(INA226_ADDRESS);
+// LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-float corrente_mA = 0;
-float tensao_V = 0;
+// float corrente_mA = 0;
+// float tensao_V = 0;
 
-// ======= CONFIGURAÇÃO WiFi ==========
-const char* ssid = "ESP32";
-const char* password = "12345678";
+// // ======= CONFIGURAÇÃO WiFi ==========
+// const char* ssid = "ESP32";
+// const char* password = "12345678";
 
-WebServer server(80);
+// WebServer server(80);
 
-// ======= FUNÇÃO PARA RETORNAR JSON =======
-void sendSensorData() {
-  String json = "{";
-  json += "\"corrente\":" + String(corrente_mA, 2) + ",";
-  json += "\"tensao\":" + String(tensao_V, 2);
-  json += "}";
-  server.send(200, "application/json", json);
-}
+// // ======= FUNÇÃO PARA RETORNAR JSON =======
+// void sendSensorData() {
+//   String json = "{";
+//   json += "\"corrente\":" + String(corrente_mA, 2) + ",";
+//   json += "\"tensao\":" + String(tensao_V, 2);
+//   json += "}";
+//   server.send(200, "application/json", json);
+// }
 
-// ======= PÁGINA WEB COM GAUGES =======
-const char webpage[] PROGMEM = R"rawliteral(
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>INA226 Monitor</title>
+// // ======= PÁGINA WEB COM GAUGES =======
+// const char webpage[] PROGMEM = R"rawliteral(
+// <!DOCTYPE html>
+// <html>
+// <head>
+// <meta name="viewport" content="width=device-width, initial-scale=1" />
+// <title>INA226 Monitor</title>
 
-<style>
-body {
-  background: #111;
-  color: white;
-  font-family: Arial;
-  text-align: center;
-}
-.gauge {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  margin: 20px auto;
-  background: #222;
-  border: 6px solid #444;
-  position: relative;
-}
-.value {
-  position: absolute;
-  top: 65px;
-  width: 100%;
-  font-size: 32px;
-  font-weight: bold;
-}
-.label {
-  position: absolute;
-  top: 110px;
-  width: 100%;
-  font-size: 16px;
-}
-</style>
+// <style>
+// body {
+//   background: #111;
+//   color: white;
+//   font-family: Arial;
+//   text-align: center;
+// }
+// .gauge {
+//   width: 200px;
+//   height: 200px;
+//   border-radius: 50%;
+//   margin: 20px auto;
+//   background: #222;
+//   border: 6px solid #444;
+//   position: relative;
+// }
+// .value {
+//   position: absolute;
+//   top: 65px;
+//   width: 100%;
+//   font-size: 32px;
+//   font-weight: bold;
+// }
+// .label {
+//   position: absolute;
+//   top: 110px;
+//   width: 100%;
+//   font-size: 16px;
+// }
+// </style>
 
-</head>
-<body>
+// </head>
+// <body>
 
-<h2>Monitor INA226</h2>
+// <h2>Monitor INA226</h2>
 
-<div class="gauge" id="gCorrente">
-  <div class="value" id="correnteValue">--</div>
-  <div class="label">Corrente (mA)</div>
-</div>
+// <div class="gauge" id="gCorrente">
+//   <div class="value" id="correnteValue">--</div>
+//   <div class="label">Corrente (mA)</div>
+// </div>
 
-<div class="gauge" id="gTensao">
-  <div class="value" id="tensaoValue">--</div>
-  <div class="label">Tensão (V)</div>
-</div>
+// <div class="gauge" id="gTensao">
+//   <div class="value" id="tensaoValue">--</div>
+//   <div class="label">Tensão (V)</div>
+// </div>
 
-<script>
-function corGauge(valor, limite1, limite2) {
-  if (valor < limite1) return "green";
-  if (valor < limite2) return "orange";
-  return "red";
-}
+// <script>
+// function corGauge(valor, limite1, limite2) {
+//   if (valor < limite1) return "green";
+//   if (valor < limite2) return "orange";
+//   return "red";
+// }
 
-function atualizar() {
-  fetch("/data")
-    .then(response => response.json())
-    .then(data => {
-      document.getElementById("correnteValue").innerHTML = data.corrente;
-      document.getElementById("tensaoValue").innerHTML = data.tensao;
+// function atualizar() {
+//   fetch("/data")
+//     .then(response => response.json())
+//     .then(data => {
+//       document.getElementById("correnteValue").innerHTML = data.corrente;
+//       document.getElementById("tensaoValue").innerHTML = data.tensao;
 
-      // cores dinâmicas
-      document.getElementById("gCorrente").style.borderColor =
-        corGauge(data.corrente, 200, 500);
+//       // cores dinâmicas
+//       document.getElementById("gCorrente").style.borderColor =
+//         corGauge(data.corrente, 200, 500);
 
-      document.getElementById("gTensao").style.borderColor =
-        corGauge(data.tensao, 3.3, 5);
-    });
-}
+//       document.getElementById("gTensao").style.borderColor =
+//         corGauge(data.tensao, 3.3, 5);
+//     });
+// }
 
-setInterval(atualizar, 1000);
-</script>
+// setInterval(atualizar, 1000);
+// </script>
 
-</body>
-</html>
-)rawliteral";
+// </body>
+// </html>
+// )rawliteral";
 
-// ==========================================
+// // ==========================================
 
-void setup() {
-  Serial.begin(115200);
+// void setup() {
+//   Serial.begin(115200);
 
-  // LCD
-  lcd.init();
-  lcd.backlight();
+//   // LCD
+//   lcd.init();
+//   lcd.backlight();
 
-  // I2C + INA226
-  Wire.begin();
-  ina226.init();
+//   // I2C + INA226
+//   Wire.begin();
+//   ina226.init();
 
-  // WiFi AP mode
-  WiFi.softAP(ssid, password);
-  Serial.println("WiFi iniciado");
-  Serial.println(WiFi.softAPIP());
+//   // WiFi AP mode
+//   /*WiFi.softAP(ssid, password);
+//   Serial.println("WiFi iniciado");
+//   Serial.println(WiFi.softAPIP());*/
 
-  // Rotas do servidor
-  server.on("/", []() {
-    server.send(200, "text/html", webpage);
-  });
+//   // WIFI_STA mode
+//   WiFi.mode(WIFI_STA);
+//   WiFi.begin("TPLINK", "gregorio@2012");
+//   Serial.println("Connecting to WiFi...");
 
-  server.on("/data", sendSensorData);
+//   // Rotas do servidor
+//   server.on("/", []() {
+//     server.send(200, "text/html", webpage);
+//   });
 
-  server.begin();
-  Serial.println("Servidor Web iniciado");
-}
+//   server.on("/data", sendSensorData);
 
-// ==========================================
+//   server.begin();
+//   Serial.println("Servidor Web iniciado");
+// }
 
-void loop() {
+// // ==========================================
 
-  ina226.readAndClearFlags();
+// void loop() {
+
+//   ina226.readAndClearFlags();
   
-  corrente_mA = ina226.getCurrent_mA();
-  tensao_V = ina226.getBusVoltage_V();
+//   corrente_mA = ina226.getCurrent_mA();
+//   tensao_V = ina226.getBusVoltage_V();
 
-  // LCD
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("I: ");
-  lcd.print(corrente_mA);
-  lcd.print(" mA");
+//   // LCD
+//   lcd.clear();
+//   lcd.setCursor(0, 0);
+//   lcd.print("I: ");
+//   lcd.print(corrente_mA);
+//   lcd.print(" mA");
 
-  lcd.setCursor(0, 1);
-  lcd.print("V: ");
-  lcd.print(tensao_V);
-  lcd.print(" V");
+//   lcd.setCursor(0, 1);
+//   lcd.print("V: ");
+//   lcd.print(tensao_V);
+//   lcd.print(" V");
 
-  server.handleClient();
-  delay(1000);
-}
+//   server.handleClient();
+//   delay(1000);
+// }
 
 
 
@@ -173,44 +174,43 @@ void loop() {
 ///////////////////////////////
 //TESTED OK, MESURES I AND V //
 ///////////////////////////////
-// #include <Wire.h>
-// #include <INA226_WE.h>
-// #include <LiquidCrystal_I2C.h>
-// #define INA226_I2C_ADDRESS 0x40
- 
-// INA226_WE ina226(INA226_I2C_ADDRESS);
-// LiquidCrystal_I2C MyLCD(0x27, 16, 2);
-// float current_mA = 0;
-// float voltage_V = 0;
- 
-// void setup(void) 
-// {
-//   MyLCD.init();
-//   MyLCD.backlight();
-//   MyLCD.setCursor(0, 0);
-//   Wire.begin();
-//   ina226.init();
-// }
- 
-// void loop(void) 
-// {
-//   ina226.readAndClearFlags();
-//   current_mA = ina226.getCurrent_mA();
-//   MyLCD.setCursor(0, 0);  // Coluna 0, linha 0
-//   MyLCD.print("I = ");
-//   MyLCD.print(current_mA);
-//   MyLCD.print(" mA");
-//   //delay(2500);
+#include <headers.h>
 
-//   voltage_V = ina226.getBusVoltage_V();
-//   MyLCD.setCursor(0, 1); // Coluna 0, linha 1
-//   MyLCD.print("V = ");
-//   MyLCD.print(voltage_V);
-//   MyLCD.print(" V");
+#define INA226_I2C_ADDRESS 0x40
+ 
+INA226_WE ina226(INA226_I2C_ADDRESS);
+LiquidCrystal_I2C MyLCD(0x27, 16, 2);
+float current_mA = 0;
+float voltage_V = 0;
+ 
+void setup(void) 
+{
+  MyLCD.init();
+  MyLCD.backlight();
+  MyLCD.setCursor(0, 0);
+  Wire.begin();
+  ina226.init();
+}
+ 
+void loop(void) 
+{
+  ina226.readAndClearFlags();
+  current_mA = ina226.getCurrent_mA();
+  MyLCD.setCursor(0, 0);  // Coluna 0, linha 0
+  MyLCD.print("I = ");
+  MyLCD.print(current_mA);
+  MyLCD.print(" mA");
+  //delay(2500);
 
-//   delay(2500);
-//   MyLCD.clear();
-// }
+  voltage_V = ina226.getBusVoltage_V();
+  MyLCD.setCursor(0, 1); // Coluna 0, linha 1
+  MyLCD.print("V = ");
+  MyLCD.print(voltage_V);
+  MyLCD.print(" V");
+
+  delay(2500);
+  MyLCD.clear();
+}
 
 
 
