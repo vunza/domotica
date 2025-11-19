@@ -1,0 +1,4 @@
+
+$ gzip filename.txt 
+
+$ gunzip filename.txt.gz

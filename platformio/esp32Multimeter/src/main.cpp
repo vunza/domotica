@@ -1,4 +1,175 @@
 
+
+#include <Wire.h>
+#include <INA226_WE.h>
+#include <LiquidCrystal_I2C.h>
+#include <WiFi.h>
+#include <WebServer.h>
+
+#define INA226_ADDRESS 0x40
+
+INA226_WE ina226(INA226_ADDRESS);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+float corrente_mA = 0;
+float tensao_V = 0;
+
+// ======= CONFIGURAÇÃO WiFi ==========
+const char* ssid = "ESP32";
+const char* password = "12345678";
+
+WebServer server(80);
+
+// ======= FUNÇÃO PARA RETORNAR JSON =======
+void sendSensorData() {
+  String json = "{";
+  json += "\"corrente\":" + String(corrente_mA, 2) + ",";
+  json += "\"tensao\":" + String(tensao_V, 2);
+  json += "}";
+  server.send(200, "application/json", json);
+}
+
+// ======= PÁGINA WEB COM GAUGES =======
+const char webpage[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>INA226 Monitor</title>
+
+<style>
+body {
+  background: #111;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+}
+.gauge {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  margin: 20px auto;
+  background: #222;
+  border: 6px solid #444;
+  position: relative;
+}
+.value {
+  position: absolute;
+  top: 65px;
+  width: 100%;
+  font-size: 32px;
+  font-weight: bold;
+}
+.label {
+  position: absolute;
+  top: 110px;
+  width: 100%;
+  font-size: 16px;
+}
+</style>
+
+</head>
+<body>
+
+<h2>Monitor INA226</h2>
+
+<div class="gauge" id="gCorrente">
+  <div class="value" id="correnteValue">--</div>
+  <div class="label">Corrente (mA)</div>
+</div>
+
+<div class="gauge" id="gTensao">
+  <div class="value" id="tensaoValue">--</div>
+  <div class="label">Tensão (V)</div>
+</div>
+
+<script>
+function corGauge(valor, limite1, limite2) {
+  if (valor < limite1) return "green";
+  if (valor < limite2) return "orange";
+  return "red";
+}
+
+function atualizar() {
+  fetch("/data")
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById("correnteValue").innerHTML = data.corrente;
+      document.getElementById("tensaoValue").innerHTML = data.tensao;
+
+      // cores dinâmicas
+      document.getElementById("gCorrente").style.borderColor =
+        corGauge(data.corrente, 200, 500);
+
+      document.getElementById("gTensao").style.borderColor =
+        corGauge(data.tensao, 3.3, 5);
+    });
+}
+
+setInterval(atualizar, 1000);
+</script>
+
+</body>
+</html>
+)rawliteral";
+
+// ==========================================
+
+void setup() {
+  Serial.begin(115200);
+
+  // LCD
+  lcd.init();
+  lcd.backlight();
+
+  // I2C + INA226
+  Wire.begin();
+  ina226.init();
+
+  // WiFi AP mode
+  WiFi.softAP(ssid, password);
+  Serial.println("WiFi iniciado");
+  Serial.println(WiFi.softAPIP());
+
+  // Rotas do servidor
+  server.on("/", []() {
+    server.send(200, "text/html", webpage);
+  });
+
+  server.on("/data", sendSensorData);
+
+  server.begin();
+  Serial.println("Servidor Web iniciado");
+}
+
+// ==========================================
+
+void loop() {
+
+  ina226.readAndClearFlags();
+  
+  corrente_mA = ina226.getCurrent_mA();
+  tensao_V = ina226.getBusVoltage_V();
+
+  // LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("I: ");
+  lcd.print(corrente_mA);
+  lcd.print(" mA");
+
+  lcd.setCursor(0, 1);
+  lcd.print("V: ");
+  lcd.print(tensao_V);
+  lcd.print(" V");
+
+  server.handleClient();
+  delay(1000);
+}
+
+
+
+
 ///////////////////////////////
 //TESTED OK, MESURES I AND V //
 ///////////////////////////////
@@ -47,35 +218,35 @@
 //TESTED OK , WITHOUT LCD - I //
 ////////////////////////////////
 
-#include <Wire.h>
-#include "INA226.h"
+// #include <Wire.h>
+// #include "INA226.h"
 
-INA226 INA(0x40);
+// INA226 INA(0x40);
 
-// Initialising the INA226 sensor
-void setup() {
-  Serial.begin(9600);
+// // Initialising the INA226 sensor
+// void setup() {
+//   Serial.begin(9600);
 
-  Wire.begin();
-  if (!INA.begin()) { Serial.println("could not connect. Fix and Reboot"); }
-  INA.setMaxCurrentShunt(1, 0.002);
-}
+//   Wire.begin();
+//   if (!INA.begin()) { Serial.println("could not connect. Fix and Reboot"); }
+//   INA.setMaxCurrentShunt(1, 0.002);
+// }
 
-// Polling & displaying the sensor readings every 2 seconds
-void loop() {
-  Serial.print("\nBus Voltage:");
-  Serial.print(INA.getBusVoltage(), 3);
+// // Polling & displaying the sensor readings every 2 seconds
+// void loop() {
+//   Serial.print("\nBus Voltage:");
+//   Serial.print(INA.getBusVoltage(), 3);
 
-  Serial.print(" -- Shunt Voltage(mV): ");
-  Serial.print(INA.getShuntVoltage_mV(), 3);
+//   Serial.print(" -- Shunt Voltage(mV): ");
+//   Serial.print(INA.getShuntVoltage_mV(), 3);
 
-  Serial.print(" -- Current(mA): ");
-  Serial.print(INA.getCurrent_mA() / 10, 3);
+//   Serial.print(" -- Current(mA): ");
+//   Serial.print(INA.getCurrent_mA() / 10, 3);
 
-  Serial.print(" -- Power(mW): ");
-  Serial.print(INA.getPower_mW(), 3);
-  delay(2000);
-}
+//   Serial.print(" -- Power(mW): ");
+//   Serial.print(INA.getPower_mW(), 3);
+//   delay(2000);
+// }
 
 
 
