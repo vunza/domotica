@@ -208,7 +208,7 @@ void loop(void)
   MyLCD.print(voltage_V);
   MyLCD.print(" V");
 
-  delay(2500);
+  delay(3000);
   MyLCD.clear();
 }
 
