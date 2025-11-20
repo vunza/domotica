@@ -33,8 +33,13 @@ LCDDisplay displayLCD(0x27, 16, 2);
 
 
 // DHT11 temperature and humidity sensor
-#define DHTPIN 2      // GPIO2 = D4 no ESP8266
-#define DHTTYPE DHT11 // Pode usar DHT22 se quiser
+#ifdef ESP32
+  #define DHTPIN 4   
+#elif defined(ESP8266)
+  #define DHTPIN 12      
+#endif    
+   
+#define DHTTYPE DHT11 
 DHT11Sensor sensorDHT11(DHTPIN, DHTTYPE);
 
 
@@ -116,76 +121,41 @@ void loop() {
 
       g_temperature = sensorDHT11.getTemperature();
       g_humidity = sensorDHT11.getHumidity();
-      
+
       // Vizualiza dados no visor LCD  
       displayLCD.showReadings(g_current, g_voltage);
-    }
 
+
+      // Visualiza dadod no terminal
+      /*Serial.print("\nCorrente (mA): ");
+      Serial.print(corrente);
+      Serial.print(" -- Tensão (V): ");
+      Serial.print(tensao);
+
+
+      // Lê dados do sensor DHT11
+      float temperatura = sensorDHT11.getTemperature();
+      float humidade    = sensorDHT11.getHumidity();
+
+      if (isnan(temperatura) || isnan(humidade)) {
+        imprimeln(F("Falha ao ler o DHT11!"));    
+      } else {
+          imprime(F(" -- Temperatura (C): "));
+          imprime(temperatura);
+          imprime(F(" -- Humidade (%): "));
+          imprime(humidade);
+      }*/
+
+    }  
+
+
+    // Impede que o watchdog timer (WDT) reinicie o microcontrolador.   
+    #ifdef ESP32
+        vTaskDelay(1);
+    #elif defined(ESP8266)
+        yield();     
+    #endif    
 
     
-   
-    
-    // Visualiza dadod no terminal
-    /*Serial.print("\nCorrente (mA): ");
-    Serial.print(corrente);
-    Serial.print(" -- Tensão (V): ");
-    Serial.print(tensao);
-
-
-    // Lê dados do sensor DHT11
-    float temperatura = sensorDHT11.getTemperature();
-    float humidade    = sensorDHT11.getHumidity();
-
-    if (isnan(temperatura) || isnan(humidade)) {
-      imprimeln(F("Falha ao ler o DHT11!"));    
-    } else {
-        imprime(F(" -- Temperatura (C): "));
-        imprime(temperatura);
-        imprime(F(" -- Humidade (%): "));
-        imprime(humidade);
-    }*/
-
-    yield();
 }
 
-
-
-
-// #include <Arduino.h>
-// #include <Adafruit_Sensor.h>  
-// #include <DHT.h>
-// #include <DHT_U.h>
-
-// #define DHTPIN 2      // GPIO2 = D4 no ESP8266
-// #define DHTTYPE DHT11 // Pode usar DHT22 se quiser
-
-// DHT11Sensor dht(DHTPIN, DHTTYPE);
-
-
-// void setup() {
-//   Serial.begin(115200);
-//   dht.begin();
-//   Serial.println("Lendo DHT11...");
-// }
-
-// void loop() {
-//   float temperatura = dht.getTemperature();
-//   float humidade    = dht.getHumidity();
-
-//   // Se falhar a leitura
-//   if (isnan(temperatura) || isnan(humidade)) {
-//     Serial.println("Falha ao ler o DHT11!");
-//     delay(2000);
-//     return;
-//   }
-
-//   Serial.print("Temperatura: ");
-//   Serial.print(temperatura);
-//   Serial.println(" °C");
-
-//   Serial.print("Humidade: ");
-//   Serial.print(humidade);
-//   Serial.println(" %");
-
-//   delay(3000);
-// }

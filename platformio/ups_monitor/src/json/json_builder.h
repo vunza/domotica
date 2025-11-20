@@ -11,7 +11,7 @@ private:
 
 public:
     JsonBuilder() {
-        json.reserve(128);  // otimizar memória
+        json.reserve(128);  // otimiza memória
         json = "{";
     }
 
@@ -28,7 +28,9 @@ public:
         if (!firstField) json += ",";
         firstField = false;
 
-        json += "\"" + key + "\":" + String(value, decimals);
+        char buffer[20];
+        dtostrf(value, 1, decimals, buffer);  // SEM AMBIGUIDADE
+        json += "\"" + key + "\":" + buffer;
     }
 
     void add(const String &key, int value) {
@@ -47,5 +49,6 @@ public:
         firstField = true;
     }
 };
+
 
 #endif
