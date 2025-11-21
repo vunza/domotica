@@ -37,17 +37,7 @@ void WebServer::begin() {
               { request->send(LittleFS, "/script.js", "text/javascript"); });
 
     // Route serve sensor INA226 data as JSON
-    server->on("/api/sensores", HTTP_GET, [](AsyncWebServerRequest *request){       
-        
-        /*String json = "{";
-        json += "\"voltage\":" + String(g_voltage, 3) + ",";
-        json += "\"current\":" + String(g_current, 3) + ",";
-        json += "\"temperature\":" + String(g_temperature, 3) + ",";
-        json += "\"humidity\":" + String(g_humidity, 3);
-        json += "}";
-        
-        request->send(200, "application/json", json);
-        */
+    server->on("/api/sensores", HTTP_GET, [](AsyncWebServerRequest *request){            
 
         JsonBuilder json;
         json.add("voltage", g_voltage, 3);

@@ -1,4 +1,4 @@
-// wifi_manager.cpp
+// src/network/wifi_manager.cpp
 #include "wifi_manager.h"
 
 // Conectar ao ponto de acesso WiFi

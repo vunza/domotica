@@ -154,8 +154,6 @@ void loop() {
         vTaskDelay(1);
     #elif defined(ESP8266)
         yield();     
-    #endif    
-
-    
+    #endif     
 }
 
