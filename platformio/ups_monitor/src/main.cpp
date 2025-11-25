@@ -59,15 +59,23 @@ const char* password = "gregorio@2012";
 
 
 
-//////////////
-// setup() //
-/////////////
+//////////////////////////
+// Configuração inicial //
+//////////////////////////
 void setup() {
     // Iniciar comunicação serial
     Serial.begin(115200);
     delay(1000);
     imprimeln();
     imprimeln(F("Iniciando..."));
+
+    #ifdef ESP32
+       Wire.begin(21, 22);  // SDA=21, SCL=22 no ESP32
+    #elif defined(ESP8266)
+        Wire.begin(4, 5);      // SDA=4, SCL=5 no D1 mini  
+    #endif  
+    
+    Wire.setClock(100000); // 100 kHz → máximo de estabilidade com 2 I2C
 
     // Inicializar dispositivo
     device.initialize();
@@ -93,9 +101,9 @@ void setup() {
 }
 
 
-////////////
-// loop() //
-////////////
+////////////////////
+// loop principal //
+////////////////////
 void loop() {
     // NOTA: AsyncElegantOTA não precisa de nada no loop
 
@@ -108,52 +116,47 @@ void loop() {
         if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA){
             wifiManager.checkConnection();
         }        
-    #endif    
+    #endif  
     
     
-    // Atualiza sensores a cada 2 segundos
     if (millis() - lastUpdate > 3000) {
-      lastUpdate = millis();
+        lastUpdate = millis();
 
-      sensorINA226.update();
-      g_voltage = sensorINA226.readVoltage();
-      g_current = sensorINA226.readCurrent();
+        sensorINA226.update();
+        yield(); // importante
 
-      g_temperature = sensorDHT11.getTemperature();
-      g_humidity = sensorDHT11.getHumidity();
+        g_voltage = sensorINA226.readVoltage();
+        g_current = sensorINA226.readCurrent();
+        yield();
 
-      // Vizualiza dados no visor LCD  
-      displayLCD.showReadings(g_current, g_voltage);
+        g_temperature = sensorDHT11.getTemperature();
+        g_humidity = sensorDHT11.getHumidity();
+        yield();
 
-
-      // Visualiza dadod no terminal
-      /*Serial.print("\nCorrente (mA): ");
-      Serial.print(corrente);
-      Serial.print(" -- Tensão (V): ");
-      Serial.print(tensao);
+        displayLCD.showReadings(g_current, g_voltage);
+        yield();
 
 
-      // Lê dados do sensor DHT11
-      float temperatura = sensorDHT11.getTemperature();
-      float humidade    = sensorDHT11.getHumidity();
-
-      if (isnan(temperatura) || isnan(humidade)) {
-        imprimeln(F("Falha ao ler o DHT11!"));    
-      } else {
-          imprime(F(" -- Temperatura (C): "));
-          imprime(temperatura);
-          imprime(F(" -- Humidade (%): "));
-          imprime(humidade);
-      }*/
-
-    }  
+        // Visualiza dadod no terminal
+        /*Serial.print("\nCorrente (mA): ");
+        Serial.print(corrente);
+        Serial.print(" -- Tensão (V): ");
+        Serial.print(tensao);
 
 
-    // Impede que o watchdog timer (WDT) reinicie o microcontrolador.   
-    #ifdef ESP32
-        vTaskDelay(1);
-    #elif defined(ESP8266)
-        yield();     
-    #endif     
+        // Lê dados do sensor DHT11
+        float temperatura = sensorDHT11.getTemperature();
+        float humidade    = sensorDHT11.getHumidity();
+
+        if (isnan(temperatura) || isnan(humidade)) {
+            imprimeln(F("Falha ao ler o DHT11!"));    
+        } else {
+            imprime(F(" -- Temperatura (C): "));
+            imprime(temperatura);
+            imprime(F(" -- Humidade (%): "));
+            imprime(humidade);
+        }*/
+    }   
+    
 }
 
