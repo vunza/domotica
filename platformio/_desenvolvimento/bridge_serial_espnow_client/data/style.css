@@ -1,0 +1,150 @@
+:root {
+  --clr: #222327;
+  --larg_min_tela: 720px;
+  --larg_card: 310px;
+  --larg_card_wrapper: 350px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+  /* Impede Seleccção e Copia */
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: lightskyblue;
+    background-color: white;
+}
+
+button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+#content{
+    display: block;
+    position: absolute;
+    width: 95%;
+    height: 95%; 
+    margin: auto;
+    left: 50%;
+    transform: translate(-50%, 0%); 
+}
+
+
+.back_btn-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    bottom: 200px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: pointer;
+    gap: 8px;
+}
+
+.icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background-color: rgb(20, 20, 20);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+}
+
+.close-icon {
+    transition: transform 0.3s ease;
+}
+
+.close-text {
+    color: #f80a0a;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    margin: 0;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    bottom: -40px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+/* Efeitos de Hover */
+.back_btn-container:hover .icon-wrapper {
+    background-color: rgb(35, 35, 35);
+    transform: scale(1.1);
+    border-color: #f80a0a;
+}
+
+.back_btn-container:hover .close-icon {
+    transform: rotate(90deg);
+}
+
+.back_btn-container:hover .close-text {
+    color: #ff6666;
+    transform: translateY(-2px);
+}
+
+.back_btn-container:hover .tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Efeito de clique */
+.back_btn-container:active .icon-wrapper {
+    transform: scale(0.95);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .back_btn-container {
+        bottom: 150px;
+    }
+    
+    .icon-wrapper {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .close-text {
+        font-size: 14px;
+    }
+}

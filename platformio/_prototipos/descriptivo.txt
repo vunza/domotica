@@ -1,0 +1,4 @@
+only_ota -- gera codigo ota
+hardware_serial -- usa serial hardware (apenas esp32)
+iot_server -- serve uma pagina html, na porta 8090, com cards e menu de navegação inferior
+ha_client_autodiscovery -- esp com funcionalidae para autodiscovery no home assistant
