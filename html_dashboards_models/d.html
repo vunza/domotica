@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emparelhamento Zigbee2MQTT</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #03a9f4;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, button {
+            width: 100%; padding: 10px;
+            border-radius: 4px; box-sizing: border-box;
+        }
+        input { border: 1px solid #ddd; }
+        button {
+            background-color: #03a9f4; color: white; border: none;
+            cursor: pointer; font-weight: bold; margin-top: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #0288d1; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        .status {
+            margin-top: 20px; padding: 10px; border-radius: 4px;
+            text-align: center; font-weight: bold;
+        }
+        .connected { background-color: #e8f5e9; color: #2e7d32; }
+        .disconnected { background-color: #ffebee; color: #c62828; }
+        .log {
+            margin-top: 20px; height: 150px; overflow-y: auto;
+            border: 1px solid #ddd; padding: 10px; border-radius: 4px;
+            background-color: #f9f9f9; font-family: monospace; font-size: 0.9em;
+        }
+        .log-entry { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #eee; }
+        .log-time { color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Emparelhamento Zigbee2MQTT</h1>
+
+        <div class="form-group">
+            <label for="host">Host do Home Assistant:</label>
+            <input type="text" id="host" placeholder="homeassistant.local:8123" value="homeassistant.local:8123">
+        </div>
+
+        <div class="form-group">
+            <label for="token">Token de Acesso:</label>
+            <input type="password" id="token" placeholder="Cole seu token Long-Lived Access">
+        </div>
+
+        <div class="form-group">
+            <label for="duration">Duração (segundos):</label>
+            <input type="number" id="duration" value="60" min="30" max="300">
+        </div>
+
+        <button id="connectBtn" onclick="connect()">Conectar</button>
+        <button id="startBtn" onclick="startPairing()" disabled>Iniciar Pareamento</button>
+        <button id="stopBtn" onclick="stopPairing()" disabled>Parar Pareamento</button>
+        <button id="disconnectBtn" onclick="disconnect()" disabled>Desconectar</button>
+
+        <div id="status" class="status disconnected">Desconectado</div>
+
+        <div class="log" id="log">
+            <div class="log-entry">Aguardando conexão...</div>
+        </div>
+    </div>
+
+<script>
+let ws = null;
+let messageId = 1;
+let isConnected = false;
+
+// ---------------------------
+// LOG
+// ---------------------------
+function log(message) {
+    const logDiv = document.getElementById('log');
+    const time = new Date().toLocaleTimeString();
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+    logDiv.appendChild(entry);
+    logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+// ---------------------------
+// STATUS VISUAL
+// ---------------------------
+function updateStatus(status, connected) {
+    const statusDiv = document.getElementById('status');
+    statusDiv.textContent = status;
+    statusDiv.className = `status ${connected ? 'connected' : 'disconnected'}`;
+
+    document.getElementById('connectBtn').disabled = connected;
+    document.getElementById('startBtn').disabled = !connected;
+    document.getElementById('stopBtn').disabled = !connected;
+    document.getElementById('disconnectBtn').disabled = !connected;
+}
+
+// ---------------------------
+// CONECTAR
+// ---------------------------
+function connect() {
+    const host = document.getElementById('host').value;
+    const token = document.getElementById('token').value;
+
+    if (!host || !token) {
+        alert("Preencha host e token!");
+        return;
+    }
+
+    const wsUrl = `ws://${host}/api/websocket`;
+    ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+        log("WebSocket conectado");
+        ws.send(JSON.stringify({ type: "auth", access_token: token }));
+    };
+
+    ws.onerror = (err) => {
+        log("Erro WebSocket: " + err);
+        updateStatus("Erro", false);
+    };
+
+    ws.onclose = () => {
+        log("Conexão fechada");
+        updateStatus("Desconectado", false);
+        isConnected = false;
+    };
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "auth_ok") {
+            log("Autenticado ✔️");
+            updateStatus("Conectado e autenticado", true);
+            isConnected = true;
+        }
+
+        if (data.type === "auth_invalid") {
+            log("Token inválido ❌");
+            updateStatus("Token inválido", false);
+        }
+
+        if (data.type === "result") {
+            if (data.success) log("Comando OK ✔️");
+            else log("Erro: " + JSON.stringify(data.error));
+        }
+    };
+}
+
+// ---------------------------
+// INICIAR PERMIT JOIN (Z2M)
+// ---------------------------
+function startPairing() {
+    if (!isConnected) return;
+
+    const duration = parseInt(document.getElementById('duration').value) || 60;
+
+    const message = {
+        id: messageId++,
+        type: "call_service",
+        domain: "mqtt",
+        service: "publish",
+        service_data: {
+            topic: "zigbee2mqtt/bridge/request/permit_join",
+            payload: JSON.stringify({ value: true, time: duration })
+        }
+    };
+
+    ws.send(JSON.stringify(message));
+    log(`Permit Join ativado por ${duration} segundos`);
+}
+
+// ---------------------------
+// PARAR PERMIT JOIN (Z2M)
+// ---------------------------
+function stopPairing() {
+    if (!isConnected) return;
+
+    const message = {
+        id: messageId++,
+        type: "call_service",
+        domain: "mqtt",
+        service: "publish",
+        service_data: {
+            topic: "zigbee2mqtt/bridge/request/permit_join",
+            payload: JSON.stringify({ value: false })
+        }
+    };
+
+    ws.send(JSON.stringify(message));
+    log("Permit Join desativado");
+}
+
+// ---------------------------
+// DESCONECTAR
+// ---------------------------
+function disconnect() {
+    if (ws) ws.close();
+    isConnected = false;
+    updateStatus("Desconectado", false);
+    log("Desconectado");
+}
+</script>
+
+</body>
+</html> 

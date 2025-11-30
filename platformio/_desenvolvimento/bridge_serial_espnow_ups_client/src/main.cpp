@@ -174,14 +174,14 @@ void loop() {
     #endif  
  
     
-    
+    // Envia Dados cada X segundos
     if (millis() - lastUpdate > 5000) {
         lastUpdate = millis();
 
         sensorINA226.update();
         yield(); // importante
 
-        g_voltage = sensorINA226.readVoltage();
+        g_voltage = sensorINA226.readVoltage() * (0.986874487285); // Com factor de ceorrecção
         g_current = sensorINA226.readCurrent();
         yield();
 
@@ -212,4 +212,3 @@ void loop() {
     }
     
 }
-

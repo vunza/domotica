@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emparelhamento Zigbee - Home Assistant + Zigbee2MQTT</title>
+    <style>
+        :root {
+            --primary: #41bdf5;
+            --success: #88c459;
+            --warning: #ffa600;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #f5f7fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+        }
+        
+        .card h2 i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .connected { color: var(--success); }
+        .disconnected { color: var(--danger); }
+        .pairing { color: var(--warning); }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 120px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button i {
+            margin-right: 8px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            background-color: #bdc3c7;
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .devices-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .device-card {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        
+        .device-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .device-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: var(--dark);
+        }
+        
+        .device-type {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .device-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        
+        .device-detail {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #7f8c8d;
+            font-size: 0.85em;
+        }
+        
+        .no-devices {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .logs-container {
+            height: 250px;
+            overflow-y: auto;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .log-time {
+            color: var(--primary);
+        }
+        
+        .log-info { color: #ecf0f1; }
+        .log-success { color: var(--success); }
+        .log-warning { color: var(--warning); }
+        .log-error { color: var(--danger); }
+        
+        .timer {
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: var(--warning);
+            padding: 12px;
+            background: rgba(255, 166, 0, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+        
+        .instructions h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 30px;
+            font-size: 0.9em;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-home-automation"></i> Emparelhamento Zigbee</h1>
+            <p class="subtitle">Home Assistant + Zigbee2MQTT</p>
+        </header>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h2><i class="fas fa-plug"></i> Conexão</h2>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">Status Home Assistant</div>
+                        <div id="ha-status" class="status-value disconnected">Desconectado</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Status Zigbee2MQTT</div>
+                        <div id="z2m-status" class="status-value disconnected">Indisponível</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Status Pareamento</div>
+                        <div id="pairing-status" class="status-value">Inativo</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Dispositivos</div>
+                        <div id="devices-count" class="status-value">0</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ha-host">Home Assistant URL:</label>
+                    <input type="text" id="ha-host" value="http://192.168.0.5:8123" placeholder="http://homeassistant.local:8123">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ha-token">Token de Acesso:</label>
+                    <input type="password" id="ha-token" placeholder="Cole seu token de acesso do Home Assistant">
+                </div>
+                
+                <div class="btn-group">
+                    <button id="connect-btn" onclick="testConnection()">
+                        <i class="fas fa-link"></i> Testar Conexão
+                    </button>
+                    <button id="refresh-devices-btn" onclick="getDevices()" disabled>
+                        <i class="fas fa-sync"></i> Atualizar Dispositivos
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-bluetooth-b"></i> Controle de Emparelhamento</h2>
+                
+                <div id="timer" class="timer"></div>
+                
+                <div class="form-group">
+                    <label for="pairing-duration">Duração do Pareamento (segundos):</label>
+                    <input type="number" id="pairing-duration" value="60" min="30" max="300">
+                </div>
+                
+                <div class="btn-group">
+                    <button id="start-pairing-btn" class="btn-success" onclick="enablePermitJoin()" disabled>
+                        <i class="fas fa-play"></i> Iniciar Pareamento
+                    </button>
+                    <button id="stop-pairing-btn" class="btn-warning" onclick="disablePermitJoin()" disabled>
+                        <i class="fas fa-stop"></i> Parar Pareamento
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-microchip"></i> Dispositivos Zigbee</h2>
+            <div id="devices-container" class="devices-container">
+                <div class="no-devices">Nenhum dispositivo Zigbee encontrado. Teste a conexão primeiro.</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-list-alt"></i> Logs de Atividade</h2>
+            <div id="logs-container" class="logs-container">
+                <div class="log-entry log-info">Sistema inicializado. Configure a conexão com o Home Assistant para começar.</div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Instruções de Uso</h3>
+            <ol>
+                <li>Insira a URL do Home Assistant (ex: http://192.168.0.5:8123) e seu token de acesso</li>
+                <li>Clique em "Testar Conexão" para verificar a comunicação com o Home Assistant</li>
+                <li>Defina a duração do pareamento (60 segundos é recomendado)</li>
+                <li>Clique em "Iniciar Pareamento" e adicione seu dispositivo Zigbee</li>
+                <li>O dispositivo aparecerá na lista quando for detectado pela rede Zigbee</li>
+                <li>Use "Atualizar Dispositivos" para ver a lista atualizada</li>
+                <li>Clique em "Parar Pareamento" para interromper o modo de descoberta</li>
+            </ol>
+        </div>
+        
+        <footer>
+            <p>Interface de Emparelhamento Zigbee - Integração Home Assistant + Zigbee2MQTT</p>
+        </footer>
+    </div>
+
+    <script>
+        // Estado da aplicação
+        const state = {
+            haConnected: false,
+            pairing: false,
+            pairingEndTime: null,
+            pairingTimer: null,
+            devices: []
+        };
+
+        // Elementos DOM
+        const haStatusEl = document.getElementById('ha-status');
+        const z2mStatusEl = document.getElementById('z2m-status');
+        const pairingStatusEl = document.getElementById('pairing-status');
+        const devicesCountEl = document.getElementById('devices-count');
+        const devicesContainerEl = document.getElementById('devices-container');
+        const logsContainerEl = document.getElementById('logs-container');
+        const timerEl = document.getElementById('timer');
+        const connectBtn = document.getElementById('connect-btn');
+        const startPairingBtn = document.getElementById('start-pairing-btn');
+        const stopPairingBtn = document.getElementById('stop-pairing-btn');
+        const refreshDevicesBtn = document.getElementById('refresh-devices-btn');
+
+        // Funções de utilidade
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            logsContainerEl.appendChild(entry);
+            logsContainerEl.scrollTop = logsContainerEl.scrollHeight;
+        }
+
+        function updateStatus() {
+            // Atualizar status do Home Assistant
+            haStatusEl.textContent = state.haConnected ? 'Conectado' : 'Desconectado';
+            haStatusEl.className = `status-value ${state.haConnected ? 'connected' : 'disconnected'}`;
+            
+            // Atualizar status do pareamento
+            pairingStatusEl.textContent = state.pairing ? 'Ativo' : 'Inativo';
+            pairingStatusEl.className = `status-value ${state.pairing ? 'pairing pulse' : ''}`;
+            
+            // Atualizar contagem de dispositivos
+            const count = state.devices.length;
+            devicesCountEl.textContent = count;
+            
+            // Atualizar estado dos botões
+            startPairingBtn.disabled = !state.haConnected || state.pairing;
+            stopPairingBtn.disabled = !state.haConnected || !state.pairing;
+            refreshDevicesBtn.disabled = !state.haConnected;
+        }
+
+        function updateTimer() {
+            if (!state.pairing || !state.pairingEndTime) return;
+            
+            const now = new Date().getTime();
+            const remaining = Math.max(0, Math.floor((state.pairingEndTime - now) / 1000));
+            
+            timerEl.textContent = `Pareamento ativo - Tempo restante: ${remaining} segundos`;
+            timerEl.style.display = 'block';
+            
+            if (remaining <= 0) {
+                stopPairingTimer();
+                log('Tempo de pareamento expirado', 'warning');
+            }
+        }
+
+        function startPairingTimer(duration) {
+            state.pairing = true;
+            state.pairingEndTime = new Date().getTime() + (duration * 1000);
+            state.pairingTimer = setInterval(updateTimer, 1000);
+            updateTimer();
+            updateStatus();
+        }
+
+        function stopPairingTimer() {
+            state.pairing = false;
+            if (state.pairingTimer) {
+                clearInterval(state.pairingTimer);
+                state.pairingTimer = null;
+            }
+            timerEl.style.display = 'none';
+            updateStatus();
+        }
+
+        // Função principal para ativar o permit_join
+        async function enablePermitJoin() {
+            const HA_URL = document.getElementById('ha-host').value;
+            const TOKEN = document.getElementById('ha-token').value;
+            const duration = parseInt(document.getElementById('pairing-duration').value) || 60;
+            
+            if (!HA_URL || !TOKEN) {
+                log('Por favor, configure a URL e Token do Home Assistant', 'error');
+                return;
+            }
+            
+            try {
+                log(`Ativando permit_join por ${duration} segundos...`);
+                
+                const response = await fetch(`${HA_URL}/api/services/mqtt/publish`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        topic: "zigbee2mqtt/bridge/request/permit_join",
+                        payload: JSON.stringify({
+                            value: true,
+                            time: duration
+                        })
+                    })
+                });
+
+                if (response.ok) {
+                    log("✅ Permit join ativado com sucesso!", 'success');
+                    startPairingTimer(duration);
+                    
+                    // Verificar se o Zigbee2MQTT está respondendo
+                    checkZ2MStatus();
+                    
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erro ao ativar permit join: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        // Função para desativar o permit_join
+        async function disablePermitJoin() {
+            const HA_URL = document.getElementById('ha-host').value;
+            const TOKEN = document.getElementById('ha-token').value;
+            
+            if (!HA_URL || !TOKEN) {
+                log('Por favor, configure a URL e Token do Home Assistant', 'error');
+                return;
+            }
+            
+            try {
+                log('Desativando permit_join...');
+                
+                const response = await fetch(`${HA_URL}/api/services/mqtt/publish`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        topic: "zigbee2mqtt/bridge/request/permit_join",
+                        payload: JSON.stringify({
+                            value: false,
+                            time: 0
+                        })
+                    })
+                });
+
+                if (response.ok) {
+                    log("✅ Permit join desativado com sucesso!", 'success');
+                    stopPairingTimer();
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erro ao desativar permit join: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        // Função para testar a conexão com o Home Assistant
+        async function testConnection() {
+            const HA_URL = document.getElementById('ha-host').value;
+            const TOKEN = document.getElementById('ha-token').value;
+            
+            if (!HA_URL || !TOKEN) {
+                log('Por favor, configure a URL e Token do Home Assistant', 'error');
+                return;
+            }
+            
+            try {
+                log('Testando conexão com Home Assistant...');
+                
+                const response = await fetch(`${HA_URL}/api/`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${TOKEN}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (response.ok) {
+                    state.haConnected = true;
+                    log("✅ Conexão com Home Assistant estabelecida com sucesso!", 'success');
+                    updateStatus();
+                    
+                    // Verificar status do Zigbee2MQTT
+                    checkZ2MStatus();
+                    
+                    // Carregar dispositivos
+                    getDevices();
+                    
+                } else {
+                    state.haConnected = false;
+                    const errorText = await response.text();
+                    log(`❌ Erro na conexão: ${errorText}`, 'error');
+                    updateStatus();
+                }
+            } catch (error) {
+                state.haConnected = false;
+                log(`❌ Erro de conexão: ${error.message}`, 'error');
+                updateStatus();
+            }
+        }
+
+        // Verificar status do Zigbee2MQTT
+        async function checkZ2MStatus() {
+            const HA_URL = document.getElementById('ha-host').value;
+            const TOKEN = document.getElementById('ha-token').value;
+            
+            try {
+                const response = await fetch(`${HA_URL}/api/states`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${TOKEN}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (response.ok) {
+                    const states = await response.json();
+                    const z2mState = states.find(state => state.entity_id && state.entity_id.includes('zigbee2mqtt'));
+                    
+                    if (z2mState) {
+                        z2mStatusEl.textContent = 'Disponível';
+                        z2mStatusEl.className = 'status-value connected';
+                        log('Zigbee2MQTT está disponível no Home Assistant', 'success');
+                    } else {
+                        z2mStatusEl.textContent = 'Não encontrado';
+                        z2mStatusEl.className = 'status-value disconnected';
+                        log('Zigbee2MQTT não encontrado no Home Assistant', 'warning');
+                    }
+                }
+            } catch (error) {
+                z2mStatusEl.textContent = 'Erro';
+                z2mStatusEl.className = 'status-value disconnected';
+                log(`Erro ao verificar Zigbee2MQTT: ${error.message}`, 'error');
+            }
+        }
+
+        // Obter lista de dispositivos Zigbee
+        async function getDevices() {
+            const HA_URL = document.getElementById('ha-host').value;
+            const TOKEN = document.getElementById('ha-token').value;
+            
+            if (!state.haConnected) {
+                log('Não conectado ao Home Assistant', 'error');
+                return;
+            }
+            
+            try {
+                log('Buscando dispositivos Zigbee...');
+                
+                // Buscar entidades Zigbee2MQTT
+                const response = await fetch(`${HA_URL}/api/states`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${TOKEN}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (response.ok) {
+                    const states = await response.json();
+                    const zigbeeDevices = states.filter(state => 
+                        state.entity_id && state.entity_id.startsWith('sensor.') && 
+                        state.entity_id.includes('zigbee2mqtt')
+                    );
+                    
+                    state.devices = zigbeeDevices;
+                    renderDevices();
+                    log(`Encontrados ${zigbeeDevices.length} dispositivos Zigbee`, 'success');
+                    
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erro ao buscar dispositivos: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        // Renderizar lista de dispositivos
+        function renderDevices() {
+            if (state.devices.length === 0) {
+                devicesContainerEl.innerHTML = '<div class="no-devices">Nenhum dispositivo Zigbee encontrado</div>';
+                return;
+            }
+            
+            devicesContainerEl.innerHTML = '';
+            
+            state.devices.forEach(device => {
+                const deviceCard = document.createElement('div');
+                deviceCard.className = 'device-card';
+                
+                const deviceHeader = document.createElement('div');
+                deviceHeader.className = 'device-header';
+                
+                const deviceName = document.createElement('div');
+                deviceName.className = 'device-name';
+                deviceName.textContent = device.attributes?.friendly_name || device.entity_id;
+                
+                const deviceType = document.createElement('div');
+                deviceType.className = 'device-type';
+                deviceType.textContent = 'Dispositivo Zigbee';
+                
+                deviceHeader.appendChild(deviceName);
+                deviceHeader.appendChild(deviceType);
+                
+                const deviceDetails = document.createElement('div');
+                deviceDetails.className = 'device-details';
+                
+                const details = [
+                    { label: 'ID da Entidade', value: device.entity_id },
+                    { label: 'Estado', value: device.state },
+                    { label: 'Última Atualização', value: new Date(device.last_updated).toLocaleString() }
+                ];
+                
+                details.forEach(detail => {
+                    const detailEl = document.createElement('div');
+                    detailEl.className = 'device-detail';
+                    
+                    const label = document.createElement('span');
+                    label.className = 'detail-label';
+                    label.textContent = detail.label;
+                    
+                    const value = document.createElement('span');
+                    value.textContent = detail.value;
+                    
+                    detailEl.appendChild(label);
+                    detailEl.appendChild(value);
+                    deviceDetails.appendChild(detailEl);
+                });
+                
+                deviceCard.appendChild(deviceHeader);
+                deviceCard.appendChild(deviceDetails);
+                devicesContainerEl.appendChild(deviceCard);
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Interface de Emparelhamento Zigbee inicializada', 'info');
+            
+            // Verificar se há parâmetros na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const host = urlParams.get('host');
+            const token = urlParams.get('token');
+            
+            if (host) {
+                document.getElementById('ha-host').value = host;
+            }
+            
+            if (token) {
+                document.getElementById('ha-token').value = token;
+            }
+        });
+    </script>
+</body>
+</html>
