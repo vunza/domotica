@@ -11,9 +11,25 @@ bool INA226Sensor::begin() {
         return false;
     }
 
-    // Ajuste opcional: média, tempo de conversão etc.
-    // ina.setAverage(INA226_AVG_16);
-    // ina.setConversionTime(INA226_CONV_TIME_1100);
+
+    ////////////////////////////
+    // CALIBRAÇÃO DA CORRENTE //
+    ////////////////////////////
+    ina.setAverage(INA226_AVERAGE_16);        // Média de 16 amostras (reduz ruído)
+    //ina.setConversionTime(CONV_TIME_1100US); // Tempo de conversão
+    ina.setMeasureMode(INA226_CONTINUOUS);    // Modo de medição contínua
+
+    float resistenciaShunt = 0.1;   // Resistência de shunt (R100)
+    float correnteMaxima = 3.0;     // Corrente máxima esperada em Amperes (ex: 2A)
+    
+    // Esta função configura o registro CAL interno do chip.
+    // É essencial chamá-la antes de setCorrectionFactor().
+    ina.setResistorRange(resistenciaShunt, correnteMaxima);  
+    delay(2000);
+    
+    // APLICAÇÃO DO FATOR DE CORREÇÃO (CALIBRAÇÃO FINA)
+    float meuFatorDeCorrecao =  1.2334;; // corrente_multimetro / corrente_ina    
+    ina.setCorrectionFactor(meuFatorDeCorrecao);    
 
     return true;
 }

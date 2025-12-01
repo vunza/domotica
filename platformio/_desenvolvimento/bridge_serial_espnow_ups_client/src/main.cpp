@@ -62,8 +62,6 @@ const char* ssid = "TPLINK";
 const char* password = "gregorio@2012";
 
 
-
-
 //////////////////////////
 // Configuração inicial //
 //////////////////////////
@@ -145,10 +143,11 @@ void setup() {
     webServer.begin();
 
     // Inicializar OTA elegante
-    ElengantOTA::begin(&servidorHTTP); 
+    ElengantOTA::begin(&servidorHTTP);  
     
     // Inicializar sensor INA226
     sensorINA226.begin(); 
+  
     
     // Inicializa display LCD
     displayLCD.begin();
@@ -182,7 +181,7 @@ void loop() {
         yield(); // importante
 
         g_voltage = sensorINA226.readVoltage() * (0.986874487285); // Com factor de ceorrecção
-        g_current = sensorINA226.readCurrent();
+        g_current = sensorINA226.readCurrent()/1000.0;
         yield();
 
         g_temperature = sensorDHT11.getTemperature();
