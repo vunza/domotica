@@ -1,15 +1,56 @@
+document.getElementById("otaFrame").addEventListener("load", function () {
+    const iframeDoc = this.contentDocument || this.contentWindow.document;
 
-async function atualizar(){
-    try {
-        const r = await fetch('/sensor.json');
-        const json = await r.json();
-
-        document.getElementById("tensao").innerText = json.tensao.toFixed(2);
-        document.getElementById("corrente").innerText = json.corrente.toFixed(2);
-    } catch(e){
-        console.log("Erro ao ler sensores", e);
+    if (!iframeDoc) {
+        console.error("Não foi possível acessar o conteúdo do object.");
+        return;
     }
-}
 
-setInterval(atualizar, 2000);
-atualizar();
+    // Remover <div>> que comtem <span>
+    // Espera um pouco para o AsyncElegantOTA montar o conteúdo via JS
+    setTimeout(() => {
+        // Opção 1: pegar todos os SPANs e remover o DIV pai de cada um
+        const spans = iframeDoc.querySelectorAll('div span');
+        let removidos = 0;
+
+        spans.forEach(span => {
+            const div = span.closest('div');
+            if (div && div.parentNode) {
+                div.parentNode.removeChild(div);
+                removidos++;
+            }
+        });
+
+        console.log(`Removidos ${removidos} <div> que continham <span> dentro.`);
+
+    }, 500); // 500ms de atraso – ajuste se precisar
+    
+
+    // Criar um <style> dentro da página carregada
+    const style = iframeDoc.createElement("style");
+    style.textContent = `
+        .mt-2 {
+            margin-top: 0px !important;            
+        }
+
+        .mt-3 {
+            margin-top: 0px !important;            
+        }
+
+        .pt-2 {
+            padding-top: 0 !important;
+        }
+        
+    `;
+
+    // Inserir o CSS dentro do HEAD do documento carregado
+    iframeDoc.head.appendChild(style);
+
+    console.log("CSS com !important aplicado dentro da página OTA!");
+});
+
+
+
+
+
+

@@ -24,6 +24,9 @@ void WebServer::begin() {
     server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/index.html", "text/html"); });
 
+     server->on("/f", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(LittleFS, "/f.html", "text/html"); });          
+
     server->on("/painel", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/painel.html", "text/html"); });          
 

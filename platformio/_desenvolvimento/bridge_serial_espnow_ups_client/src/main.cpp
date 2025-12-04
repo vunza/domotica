@@ -78,7 +78,7 @@ void setup() {
         Wire.begin(4, 5);      // SDA=4, SCL=5 no D1 mini  
     #endif  
     
-    Wire.setClock(100000); // 100 kHz → máximo de estabilidade com 2 I2C
+    /*Wire.setClock(100000); // 100 kHz → máximo de estabilidade com 2 I2C
 
     // Inicializar dispositivo
     device.initialize();
@@ -128,7 +128,7 @@ void setup() {
     // Callback para envio de dados esp-now
     espnow.onSend([](const uint8_t *mac, bool ok){
         
-    });
+    });*/
 
 
 
@@ -146,11 +146,11 @@ void setup() {
     ElengantOTA::begin(&servidorHTTP);  
     
     // Inicializar sensor INA226
-    sensorINA226.begin(); 
+    //sensorINA226.begin(); 
   
     
     // Inicializa display LCD
-    displayLCD.begin();
+    //displayLCD.begin();
     
 }
 

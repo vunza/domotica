@@ -1,8 +1,16 @@
+
 :root {
   --clr: #222327;
   --larg_min_tela: 720px;
   --larg_card: 310px;
   --larg_card_wrapper: 350px;
+  --primary-color: #2563eb;
+  --primary-dark: #1d4ed8;
+  --secondary-color: #64748b;
+  --warning-color: #f59e0b;
+  --dark-color: #1e293b;
+  --light-color: #f8fafc;
+  --border-radius: 12px;
 }
 
 * {
@@ -39,29 +47,26 @@ button {
 }
 
 
-#content{
+#content_elegant_ota{
     display: block;
     position: absolute;
-    width: 95%;
-    height: 95%; 
-    margin: auto;
+    width: 100%;
+    height: 130px; 
+    margin: 0px auto;
     left: 50%;
     transform: translate(-50%, 0%); 
 }
 
 
-.back_btn-container {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    bottom: 200px;
-    left: 50%;
-    transform: translateX(-50%);
-    cursor: pointer;
-    gap: 8px;
+/* OTA iframe Container */
+.ota-container {
+    margin-top: 0px;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
 }
+
+
 
 .icon-wrapper {
     display: flex;
@@ -146,5 +151,149 @@ button {
     
     .close-text {
         font-size: 14px;
+    }
+}
+
+
+#div_container_renomear_device{
+    height: 200px;
+    margin-top: 5px;
+}
+
+#div_container_ota{
+    height: 200px;
+}
+
+#div_container_sair_ota{
+    height: 80px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;    
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: pointer;
+    gap: 8px;    
+}
+
+#div_container_geral{
+    width: 100%;
+    margin: 0 auto;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;   
+    border: 1px solid var( --dark-color);    
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: var(--dark-color);
+    color: white;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo svg {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+
+.device-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 50px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+
+/* Renomear Dsispositivo */
+.card {
+    width: 100%;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    display: flex;   
+    align-items: center;
+    gap: 15px;
+    padding: 20px 30px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+}
+
+
+.card-body-rename {
+    padding: 20px;
+}
+
+
+.div_container{
+    display: flex;
+    position: relative;
+    width: 98%;
+    height: 95vh;
+    margin-bottom: 10px;
+    border-radius: 10px;  
+    left: 50%;
+    transform: translate(-50%, 0%);  
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 25px;    
+}
+
+.form-group label {
+    display: flex;
+    font-weight: 600;
+    margin-bottom: 2px;
+    color: var(--dark-color);
+    justify-content: left;
+    align-items: center;    
+}
+
+input, textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: var(--border-radius);
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
     }
 }
