@@ -22,17 +22,14 @@ void WebServer::begin() {
     // ---- SERVE ARQUIVOS DO SPIFFS ----
     // Route for root / web page
     server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(LittleFS, "/index.html", "text/html"); });
-
-     server->on("/f", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(LittleFS, "/f.html", "text/html"); });          
+              { request->send(LittleFS, "/index.html", "text/html"); });      
 
     server->on("/painel", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/painel.html", "text/html"); });          
 
     // Route to load ota.html file          
-    server->on("/ota", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(LittleFS, "/ota.html", "text/html"); });
+    server->on("/config", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(LittleFS, "/config.html", "text/html"); });
 
     // Route to load style.css file
     server->on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -43,11 +40,49 @@ void WebServer::begin() {
               { request->send(LittleFS, "/script.js", "text/javascript"); });
 
     // Rota para reiniciar o ESP
-    server->on("/api/reset_esp", HTTP_GET, [](AsyncWebServerRequest *request){        
+    server->on("/api/restart_device", HTTP_GET, [](AsyncWebServerRequest *request){        
         ESP.restart();
         request->send(200, "text/plain", "OK");     
-    });     
+    });    
     
+        
+    // Rota para renonmear o ESP, recebe dados atravez da requisicao POST
+    server->on("/api/rename_esp", HTTP_POST, [](AsyncWebServerRequest *request){},NULL,[](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+
+        String body = "";
+        for (size_t i = 0; i < len; i++) body += (char)data[i];
+
+        imprimeln(F("JSON Recebido:"));
+        imprimeln(body);
+
+        // Extrair o campo "name"
+        String nome = "";
+        uint8_t p1 = body.indexOf("\"name\"");
+        if (p1 >= 0) {
+            uint8_t aspas1 = body.indexOf("\"", p1 + 6);
+            uint8_t aspas2 = body.indexOf("\"", aspas1 + 1);
+            nome = body.substring(aspas1 + 1, aspas2);
+        }
+
+        if (nome.length() > 0) {
+            eeprom.writeString(EEPROM_ADDR_DEVICE_NAME, nome);
+            imprime(F("Novo nome salvo: "));
+            imprimeln(nome);
+            request->send(200, "text/plain", "OK: Nome atualizado para " + nome);
+        } else {
+            request->send(400, "text/plain", "Erro: JSON invalido");
+        }
+    });
+
+    
+    
+    // Rota para obter o nome do ESP
+    server->on("/api/get_esp_name", HTTP_GET, [](AsyncWebServerRequest *request){  
+        
+        // Envia o nome do Dispositivo mais o tamanho do Nome, separados por virgula
+        request->send(200, "text/plain",  String(device_name) + "," + String(DEVICE_NAME_SIZE));     
+    });
+
     
     // Route serve sensor INA226 data as JSON
     server->on("/api/sensores", HTTP_GET, [](AsyncWebServerRequest *request){            

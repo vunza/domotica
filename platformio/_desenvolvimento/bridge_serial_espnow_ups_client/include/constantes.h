@@ -1,0 +1,8 @@
+#ifndef CONSTANTES_H
+#define CONSTANTES_H
+
+#define EEPROM_ADDR_DEVICE_NAME 0
+#define DEVICE_NAME_SIZE 24
+
+
+#endif // CONSTANTES_H

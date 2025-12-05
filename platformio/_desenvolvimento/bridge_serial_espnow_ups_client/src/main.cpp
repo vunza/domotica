@@ -43,16 +43,19 @@ LCDDisplay displayLCD(0x27, 16, 2);
 DHT11Sensor sensorDHT11(DHTPIN, DHTTYPE);
 
 
-EspNowManager espnow;
+//EspNowManager espnow;
 EspNowData dados;
 uint8_t broadcastMac[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
+// EEPROM
+EEPROMManager eeprom;
 
 // Variáveis globais para cache dos sensores
 float g_voltage = 0.0;
 float g_current = 0.0;
 float g_temperature = 0.0;
 float g_humidity = 0.0;
+char device_name[DEVICE_NAME_SIZE];
 
 unsigned long lastUpdate = 0;
  
@@ -77,6 +80,15 @@ void setup() {
     #elif defined(ESP8266)
         Wire.begin(4, 5);      // SDA=4, SCL=5 no D1 mini  
     #endif  
+
+
+    // Inicializa a EEPROM com 512 bytes por defeito
+    eeprom.begin();
+
+    // Obtem Nome do Dispositivo e o guarda num array
+    eeprom.readString(EEPROM_ADDR_DEVICE_NAME).toCharArray(device_name, DEVICE_NAME_SIZE);
+    imprime(F("Nome do Dispositivo: "));
+    imprimeln(device_name);
     
     /*Wire.setClock(100000); // 100 kHz → máximo de estabilidade com 2 I2C
 
@@ -174,7 +186,7 @@ void loop() {
  
     
     // Envia Dados cada X segundos
-    if (millis() - lastUpdate > 5000) {
+    /*if (millis() - lastUpdate > 5000) {
         lastUpdate = millis();
 
         sensorINA226.update();
@@ -206,8 +218,7 @@ void loop() {
       
         strcpy(dados.mac_source, mac);
         strcpy(dados.msg_type, "DATA");
-        espnow.send(broadcastMac, (uint8_t*)&dados, sizeof(EspNowData));
-        
-    }
+        espnow.send(broadcastMac, (uint8_t*)&dados, sizeof(EspNowData));        
+    }*/
     
 }
