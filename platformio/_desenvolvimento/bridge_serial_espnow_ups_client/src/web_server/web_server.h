@@ -9,12 +9,14 @@
 #include "json/json_builder.h"
 #include "eeprom_manager/eeprom_manager.h"
 
+// Variaveis globais
 extern float g_voltage;
 extern float g_current;
 extern float g_temperature;
 extern float g_humidity;
 extern EEPROMManager eeprom;
-extern char device_name[DEVICE_NAME_SIZE];
+extern DeviceData dados_dispositivo;
+
 
 class WebServer {
 public:

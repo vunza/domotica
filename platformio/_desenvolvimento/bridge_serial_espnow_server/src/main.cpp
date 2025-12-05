@@ -16,10 +16,12 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 */
 
 
+// Variáveis globais para cache dos sensores
 float g_voltage = 0.0;
 float g_current = 0.0;
 float g_temperature = 0.0;
 float g_humidity = 0.0;
+DeviceData dados_dispositivo;
 
 
 WiFiManager wifiManager;
@@ -31,9 +33,11 @@ WebServer webServer(&servidorHTTP);
 unsigned long lastUpdate = 0;
 
 EspNowManager espnow;
-EspNowData dados;
+EspNowData dados_espnow;
 uint8_t broadcastMac[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
+// EEPROM
+EEPROMManager eeprom;
 
 
 //////////////////////////
@@ -50,6 +54,16 @@ void setup() {
     imprimeln();
     imprimeln(F("Iniciando..."));   
 
+
+    // Inicializa a EEPROM com 512 bytes
+    eeprom.begin(EEPROM_SIZE);   
+    
+    // Obtem Nome do Dispositivo e o guarda no array "DeviceData"
+    eeprom.EEPROM_readStruct(EEPROM_START_ADDR, dados_dispositivo);
+
+    imprime(F("Nome do Dispositivo: "));
+    imprimeln(dados_dispositivo.device_name);
+
     
     // Iniciar ESP-NOW    
     espnow.begin(); // canal = 1 e modo = WIFI_STA por defeito
@@ -62,17 +76,17 @@ void setup() {
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
         
         // Passa dados recebidos para a estructura
-        memcpy(&dados, data, sizeof(EspNowData));
+        memcpy(&dados_espnow, data, sizeof(EspNowData));
 
         // Checa e processa o tipo de mensagens
-        if( strcmp(dados.msg_type, "DATA") == 0 ) {   
+        if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
 
             // Converte em json os dados recebidos dos sensores           
             JsonBuilder json;
-            json.add("ups1_current", dados.u1_current, 2);
-            json.add("ups1_voltage", dados.u1_voltage, 2);
-            json.add("ups1_temperature", dados.u1_temperature, 2);
-            json.add("ups1_humidity", dados.u1_humidity);   
+            json.add("ups1_current", dados_espnow.u1_current, 2);
+            json.add("ups1_voltage", dados_espnow.u1_voltage, 2);
+            json.add("ups1_temperature", dados_espnow.u1_temperature, 2);
+            json.add("ups1_humidity", dados_espnow.u1_humidity);   
             String dados = json.build();
 
             // Evia pela serial os dados processados

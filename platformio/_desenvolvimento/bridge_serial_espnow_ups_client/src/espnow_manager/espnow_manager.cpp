@@ -57,7 +57,7 @@ bool EspNowManager::begin(uint8_t channel, bool useAP) {
 
 #endif
 
-    Serial.println("[ESPNOW] Iniciado com sucesso");
+    imprimeln(F("[ESPNOW] Iniciado com sucesso"));
     return true;
 }
 

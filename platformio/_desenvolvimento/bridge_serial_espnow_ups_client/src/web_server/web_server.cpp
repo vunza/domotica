@@ -27,7 +27,7 @@ void WebServer::begin() {
     server->on("/painel", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/painel.html", "text/html"); });          
 
-    // Route to load ota.html file          
+    // Route to load onfig.html file          
     server->on("/config", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/config.html", "text/html"); });
 
@@ -65,7 +65,15 @@ void WebServer::begin() {
         }
 
         if (nome.length() > 0) {
-            eeprom.writeString(EEPROM_ADDR_DEVICE_NAME, nome);
+            // Guardar no Array os dados do dispositivo que estao na EEPROM (para preservar os dados antigos necessarios)
+            eeprom.EEPROM_readStruct(EEPROM_START_ADDR, dados_dispositivo);
+
+            // Actualizar Array com os dados novos
+            strcpy(dados_dispositivo.device_name, nome.c_str()); 
+            
+            // Guarda os dados novos na EEPROM
+            eeprom.EEPROM_writeStruct(EEPROM_START_ADDR, dados_dispositivo);            
+
             imprime(F("Novo nome salvo: "));
             imprimeln(nome);
             request->send(200, "text/plain", "OK: Nome atualizado para " + nome);
@@ -79,8 +87,11 @@ void WebServer::begin() {
     // Rota para obter o nome do ESP
     server->on("/api/get_esp_name", HTTP_GET, [](AsyncWebServerRequest *request){  
         
+        // Ler, na EEPROM, os dados do Dispositivo e os guarda no Array "DeviceData"
+        eeprom.EEPROM_readStruct(EEPROM_START_ADDR, dados_dispositivo);
+
         // Envia o nome do Dispositivo mais o tamanho do Nome, separados por virgula
-        request->send(200, "text/plain",  String(device_name) + "," + String(DEVICE_NAME_SIZE));     
+        request->send(200, "text/plain",  String(dados_dispositivo.device_name) + "," + String(DEVICE_NAME_SIZE));     
     });
 
     

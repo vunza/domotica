@@ -10,6 +10,7 @@
 #include "displays/lcd_display.h"
 #include "sensors/DTH11Sensor.h"
 #include "espnow_manager/espnow_manager.h"
+#include "eeprom_manager/eeprom_manager.h"
 
 //#include <Arduino.h>
 // #include <LittleFS.h>

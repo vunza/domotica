@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const resposta = await renomearDispositivo(api_rename_device, novoNome);
 
         // Obter Nome do Dispositivo
-        const respoonse = await callAPI(api_restart_dev);
+        //const respoonse = await callAPI(api_restart_dev);
 
         // Recarrega o Navegador
         window.location.reload();

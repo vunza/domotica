@@ -12,6 +12,8 @@ bool EspNowManager::begin(uint8_t channel, bool useAP) {
 
     WiFi.disconnect(true);
     WiFi.mode(useAP ? WIFI_AP : WIFI_STA);
+    //WiFi.mode(WIFI_AP_STA);
+    //WiFi.softAP("ESP32", "123456789", channel, true, 0, false); // para que o esp-now funcione   
     delay(100);
 
     // Ajusta o canal de rádio

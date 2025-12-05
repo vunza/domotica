@@ -24,7 +24,6 @@ AsyncWebServer servidorHTTP(80);
 WebServer webServer(&servidorHTTP);
 
 // Sensor INA226
-#define INA226_I2C_ADDRESS 0x40 
 INA226Sensor sensorINA226(INA226_I2C_ADDRESS);
 
 
@@ -43,8 +42,8 @@ LCDDisplay displayLCD(0x27, 16, 2);
 DHT11Sensor sensorDHT11(DHTPIN, DHTTYPE);
 
 
-//EspNowManager espnow;
-EspNowData dados;
+EspNowManager espnow;
+EspNowData dados_espnow;
 uint8_t broadcastMac[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 // EEPROM
@@ -55,7 +54,7 @@ float g_voltage = 0.0;
 float g_current = 0.0;
 float g_temperature = 0.0;
 float g_humidity = 0.0;
-char device_name[DEVICE_NAME_SIZE];
+DeviceData dados_dispositivo;
 
 unsigned long lastUpdate = 0;
  
@@ -82,15 +81,17 @@ void setup() {
     #endif  
 
 
-    // Inicializa a EEPROM com 512 bytes por defeito
-    eeprom.begin();
-
-    // Obtem Nome do Dispositivo e o guarda num array
-    eeprom.readString(EEPROM_ADDR_DEVICE_NAME).toCharArray(device_name, DEVICE_NAME_SIZE);
-    imprime(F("Nome do Dispositivo: "));
-    imprimeln(device_name);
+    // Inicializa a EEPROM com 512 bytes
+    eeprom.begin(EEPROM_SIZE);   
     
-    /*Wire.setClock(100000); // 100 kHz → máximo de estabilidade com 2 I2C
+    // Obtem Nome do Dispositivo e o guarda no array "DeviceData"
+    eeprom.EEPROM_readStruct(EEPROM_START_ADDR, dados_dispositivo);
+
+    imprime(F("Nome do Dispositivo: "));
+    imprimeln(dados_dispositivo.device_name);
+   
+    
+    Wire.setClock(100000); // 100 kHz → máximo de estabilidade com 2 I2C
 
     // Inicializar dispositivo
     device.initialize();
@@ -105,17 +106,17 @@ void setup() {
     // Callback para recepção de dados esp-now
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
         // Passa dados recebidos para a estructura
-        memcpy(&dados, data, sizeof(EspNowData));
+        memcpy(&dados_espnow, data, sizeof(EspNowData));
 
         // Checa e processa o tipo de mensagens
-        if( strcmp(dados.msg_type, "DATA") == 0 ) {   
+        if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
 
             
         }
-        else if( strcmp(dados.msg_type, "NORMAL_MODE") == 0 ) {   
+        else if( strcmp(dados_espnow.msg_type, "NORMAL_MODE") == 0 ) {   
             ESP.restart(); // Rinicia o ESP para iniciar o modo e operação normal            
         }
-        else if( strcmp(dados.msg_type, "OTA_MODE") == 0 ) {   
+        else if( strcmp(dados_espnow.msg_type, "OTA_MODE") == 0 ) {   
             // TODO: Atribuir nome sugestivo.
             // TODO: Checar se a mensagem destina-se ao dispositivo.
             // Credeciais de acesso a rede WiFi
@@ -140,7 +141,7 @@ void setup() {
     // Callback para envio de dados esp-now
     espnow.onSend([](const uint8_t *mac, bool ok){
         
-    });*/
+    });
 
 
 
@@ -158,11 +159,11 @@ void setup() {
     ElengantOTA::begin(&servidorHTTP);  
     
     // Inicializar sensor INA226
-    //sensorINA226.begin(); 
+    sensorINA226.begin(); 
   
     
     // Inicializa display LCD
-    //displayLCD.begin();
+    displayLCD.begin();
     
 }
 
@@ -186,7 +187,7 @@ void loop() {
  
     
     // Envia Dados cada X segundos
-    /*if (millis() - lastUpdate > 5000) {
+    if (millis() - lastUpdate > 5000) {
         lastUpdate = millis();
 
         sensorINA226.update();
@@ -209,16 +210,16 @@ void loop() {
         macStr.toCharArray(mac, 18);
 
         
-        String(g_voltage, 2).toCharArray(dados.u1_voltage, sizeof(dados.u1_voltage));
-        String(g_current, 2).toCharArray(dados.u1_current, sizeof(dados.u1_current));
-        String(g_temperature, 2).toCharArray(dados.u1_temperature, sizeof(dados.u1_temperature));
-        String(g_humidity).toCharArray(dados.u1_humidity, sizeof(dados.u1_humidity));  
+        String(g_voltage, 2).toCharArray(dados_espnow.u1_voltage, sizeof(dados_espnow.u1_voltage));
+        String(g_current, 2).toCharArray(dados_espnow.u1_current, sizeof(dados_espnow.u1_current));
+        String(g_temperature, 2).toCharArray(dados_espnow.u1_temperature, sizeof(dados_espnow.u1_temperature));
+        String(g_humidity).toCharArray(dados_espnow.u1_humidity, sizeof(dados_espnow.u1_humidity));  
         
         //sizeof(dados);
       
-        strcpy(dados.mac_source, mac);
-        strcpy(dados.msg_type, "DATA");
-        espnow.send(broadcastMac, (uint8_t*)&dados, sizeof(EspNowData));        
-    }*/
+        strcpy(dados_espnow.mac_source, mac);
+        strcpy(dados_espnow.msg_type, "DATA");
+        espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));        
+    }
     
 }

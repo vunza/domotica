@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "ctrl_debug.h"
+#include "eeprom_manager/eeprom_manager.h"
 
 #if defined(ESP32)
   #include <WiFi.h>
