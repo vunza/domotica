@@ -105,8 +105,9 @@ async function callAPI(api) {
 ////////////////////////////////////////////////////
 // TERMINAR OTA POR VIA DO RESTART DO DISPOSITIVO //
 ////////////////////////////////////////////////////
-async function btnRestartDevice(){
+async function btnRestartDevice(){    
     const resposta = await callAPI(api_restart_dev);
+    window.location.href = "/painel";
 }
 
 

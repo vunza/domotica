@@ -107,6 +107,7 @@ async function callAPI(api) {
 ////////////////////////////////////////////////////
 async function btnRestartDevice(){
     const resposta = await callAPI(api_restart_dev);
+    window.location.href = "/painel";
 }
 
 

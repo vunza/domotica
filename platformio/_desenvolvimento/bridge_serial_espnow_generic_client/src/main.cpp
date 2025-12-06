@@ -139,16 +139,24 @@ void loop() {
         if(temp >= 50 ) temp = 0.0;
         if(humi >= 100 ) humi = 0.0;
 
-        String(++volt, 2).toCharArray(dados_espnow.u1_voltage, sizeof(dados_espnow.u1_voltage));
-        String(++volt/5, 2).toCharArray(dados_espnow.u1_current, sizeof(dados_espnow.u1_current));
-        String(++temp, 2).toCharArray(dados_espnow.u1_temperature, sizeof(dados_espnow.u1_temperature));
-        String(++temp*2).toCharArray(dados_espnow.u1_humidity, sizeof(dados_espnow.u1_humidity));  
+       // Eliminar corrente negativa
+        if(g_current < 0) g_current = 0.00;
         
+        // Converte os dados a Char Array.
+        String(g_voltage, 2).toCharArray(dados_espnow.u1_voltage, sizeof(dados_espnow.u1_voltage));
+        String(g_current, 2).toCharArray(dados_espnow.u1_current, sizeof(dados_espnow.u1_current));
+        String(g_temperature, 2).toCharArray(dados_espnow.u1_temperature, sizeof(dados_espnow.u1_temperature));
+        String(g_humidity).toCharArray(dados_espnow.u1_humidity, sizeof(dados_espnow.u1_humidity));
+               
+        // Ponto parachecar/ver o tamanho do Array
         //sizeof(dados);
-      
-        strcpy(dados_espnow.mac_source, mac);
-        strcpy(dados_espnow.msg_type, "DATA");
-        espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+
+        // Envia dados, apenas, se forem diferentes de "nan"
+        if (!isnan(g_voltage) && !isnan(g_current) && !isnan(g_temperature)  && !isnan(g_humidity)){      
+            strcpy(dados_espnow.mac_source, mac);
+            strcpy(dados_espnow.msg_type, "DATA");
+            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));  
+        }      
     } 
 
 }
