@@ -13,7 +13,7 @@
 #endif
 
 
-#pragma pack(push, 1)
+
 typedef struct {
     char msg_type[10];  // REGIST | DATA | COMMAND | RESPONSE
     char mac_destination[18];  
@@ -23,7 +23,7 @@ typedef struct {
     char u1_temperature[15];
     char u1_humidity[15];   
 } EspNowData;
-#pragma pack(pop)
+
 
 
 class EspNowManager {

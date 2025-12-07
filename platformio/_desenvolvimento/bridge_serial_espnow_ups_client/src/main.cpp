@@ -210,7 +210,7 @@ void loop() {
         macStr.toCharArray(mac, 18);
 
         // Eliminar corrente negativa
-        if(g_current < 0) g_current = 0.00;
+        if(g_current < 0 || g_current <= 0.09 ) g_current = 0.00;
         
         // Converte os dados a Char Array.
         String(g_voltage, 2).toCharArray(dados_espnow.u1_voltage, sizeof(dados_espnow.u1_voltage));

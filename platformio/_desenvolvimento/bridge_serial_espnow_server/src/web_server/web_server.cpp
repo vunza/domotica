@@ -110,8 +110,7 @@ void WebServer::begin() {
         json.add("ups1_temperature", 0.00, 2);
         json.add("ups1_humidity", 0, 2);    
         
-        String dados = json.build();
-        Serial.println(dados); 
+        String dados = json.build();        
 
         request->send(200, "application/json", dados);     
     });         

@@ -53,6 +53,14 @@ void setup() {
 
     imprimeln();
     imprimeln(F("Iniciando..."));   
+ 
+    // Desactiva Debug
+    #if defined(ESP32)
+        esp_log_level_set("*", ESP_LOG_NONE);
+    #elif defined(ESP8266)
+        Serial.setDebugOutput(false);
+    #endif
+
 
 
     // Inicializa a EEPROM com 512 bytes
@@ -86,11 +94,17 @@ void setup() {
             json.add("ups1_current", dados_espnow.u1_current, 2);
             json.add("ups1_voltage", dados_espnow.u1_voltage, 2);
             json.add("ups1_temperature", dados_espnow.u1_temperature, 2);
-            json.add("ups1_humidity", dados_espnow.u1_humidity);   
+            json.add("ups1_humidity", dados_espnow.u1_humidity);             
             String dados = json.build();
 
-            // Evia pela serial os dados processados
-            Serial.println(dados); 
+            // evita enviar JSON quebrado
+            if (!dados.startsWith("{") || !dados.endsWith("}")) {
+                return; 
+            }
+            
+            // Evia pela serial os dados processados            
+            Serial.println(dados.c_str());
+            json.reset();
         }
     });
 
