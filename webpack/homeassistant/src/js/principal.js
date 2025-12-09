@@ -8,8 +8,8 @@
 
 import '../css/styles.scss';
 //import img from '../assets/orquidea.jpeg';
-import {criar_card} from './cria_cards.js';
-import {BottomNavigation} from './menu_inferior.js';
+import {createCardElement} from './cria_cards.js';
+//import {BottomNavigation} from './menu_inferior.js';
 import {SubmenuOverlay} from './submenu_overlay.js';
 import {api, getDevicesWIthWebSocket, getToken, getEntitiesDataWithApi } from './vars_funcs_globais.js';
 
@@ -64,16 +64,19 @@ document.addEventListener("DOMContentLoaded", async function () {
                     return temIEEE && temDominio && temPosicao;
                 });  
 
-              
+                              
                 // Criar Cards dos Dispositivos
                 resultado.forEach( (item) => {
-                    //console.log(item.id);
-                    criar_card(item.id, {
-                        nome: item.friendly_name,
-                        historico:  item.historico,               
-                        tipo: 'picture', // Força icon de imagem, tipo deve ser definido manualmenete
-                        status: item.status
-                    });
+
+                    const card = {
+                        id: item.id,
+                        title: item.friendly_name,
+                        content: item.historico,
+                        type: "thermometer"
+                    };
+                    
+                    // Cria Card
+                    createCardElement(card);
                 });              
                
             });         
@@ -84,9 +87,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     
 
+    // TODO: Tratar o Menu contextual
     // Inicializa a navegação inferior
-    const bottomNav = new BottomNavigation();
-    const submenuOverlay = new SubmenuOverlay();
+    /*const bottomNav = new BottomNavigation();
+    const submenuOverlay = new SubmenuOverlay();*/
 
     // Verifica hash da URL inicial
     const hash = window.location.hash.substring(1);
