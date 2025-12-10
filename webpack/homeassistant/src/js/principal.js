@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const api_token = '/local/json_files/token_api.json';
         const token = await getToken(api_token);
 
-        // Guarda lista de objectos com os dados das Entidades, para ser comparada com a lista de ispositivos
+        // Guarda lista de objectos com os dados das Entidades, para ser comparada com a lista de dispositivos
         let entities_list = [];
         getEntitiesDataWithApi(token, api).then( (entidades)=>{   
             //console.log(entidades);
@@ -43,11 +43,14 @@ document.addEventListener("DOMContentLoaded", async function () {
        
        
         // Obter Dispositivos
-        getDevicesWIthWebSocket(token).then( (devices) => {   
+        getDevicesWIthWebSocket(token).then( (devices) => {              
                    
             // Criar Crads dos dispositivos
             devices.forEach(element => {
                   
+                // (*J*) Ponto para ver o tipo de Dispositivo
+                //console.log(element.model);
+                
                 // Filtra elementos por id, dominio, 
                 const ieee = element.name;
                 const dominios = ["switch", "light", "sensor", "text"]; // Para entidaes com os dominios indicados
@@ -58,13 +61,30 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const temIEEE = item.device_id.includes(ieee);
                     const temDominio = dominios.some(d => item.id.startsWith(d + "."));
                     const temPosicao = posicoes.some(p => item.id.endsWith("_" + p)) || 
-                                       //hubsir.some(l => item.id.endsWith("_" + l)) || 
+                                       hubsir.some(l => item.id.endsWith("_" + l)) || 
                                     !item.id.includes("_"); // permite sem left/center/right
 
                     return temIEEE && temDominio && temPosicao;
                 });  
 
-                              
+
+                // Confere os Tipos de Dispositivo    
+                const texto = element.model;          
+                let tipo = null;
+                if (texto != null && texto.includes('switch')) {
+                    tipo = 'light';
+                } 
+                else if (texto != null && texto.includes('Plug')) {
+                    tipo = 'plug';
+                }
+                else if (texto != null && texto.includes('smart IR remote')) {
+                    tipo = 'hub_zb';
+                }
+                else {
+                    tipo = 'picture';
+                }
+
+                    
                 // Criar Cards dos Dispositivos
                 resultado.forEach( (item) => {
 
@@ -72,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         id: item.id,
                         title: item.friendly_name,
                         content: item.historico,
-                        type: "thermometer"
+                        type: tipo
                     };
                     
                     // Cria Card

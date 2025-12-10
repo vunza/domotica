@@ -36,7 +36,7 @@ const ip_e_porta = `${http_port}//${location.host}`;
  * Tipos de Dispositivos
  * @type {Array<String>}
  */
-const tipos_dispositivos = ["hub_zb", "lampada", "bomba", "switch", "interruptor"];
+//const tipos_dispositivos = ["hub_zb", "lampada", "bomba", "switch", "interruptor"];
 
 
 /**
@@ -349,7 +349,6 @@ export {
   api, 
   http_port, 
   ip_e_porta, 
-  tipos_dispositivos, 
   getToken, 
   enablePermitJoin, 
   mostrarLogs,
