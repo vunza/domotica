@@ -344,6 +344,41 @@ function getZigbeeDeviceStatus(entities) {
 }
 
 
+/**
+ * Altera a cor do SVG associado a um dispositivo, com base no estado e tipo.
+ *
+ * Esta função procura a `<div>` cujo ID é composto por `dev_id + ".img"`,
+ * obtém o elemento `<svg>` dentro dela e ajusta a cor (fill) conforme:
+ *  - Lâmpada ligada  → amarelo (#e1e437)
+ *  - Lâmpada desligada → cinza claro (lightgray)
+ *
+ * @param {string} dev_id - Identificador base do dispositivo (sem o sufixo `.img`).
+ * @param {string} dev_state - Estado atual do dispositivo. Aceita "on" ou "off".
+ * @param {string} dev_type - Tipo do dispositivo. Esta função só aplica cores quando `light`.
+ *
+ * @example
+ * trocarCorSVG("switch.0xa4c138e342bdfb48", "on", "light");
+ * // Altera o SVG da div com ID "switch.0xa4c138e342bdfb48.img" para amarelo.
+ *
+ * @example
+ * trocarCorSVG("lampada_sala", "off", "light");
+ * // Altera o SVG da div "lampada_sala.img" para cinza claro.
+ */
+function trocarCorSVG(dev_id, dev_state, dev_type){
+
+  if(dev_state === 'on' && dev_type === 'light'){
+      const div = document.getElementById(`${dev_id}.img`);
+      const svg = div.querySelector('svg');
+      svg.style.fill = '#e1e437';
+  }
+  else if(dev_state === 'off' && dev_type === 'light'){
+      const div = document.getElementById(`${dev_id}.img`);
+      const svg = div.querySelector('svg');
+      svg.style.fill = 'lightgray';
+  }   
+}
+
+
 
 export { 
   api, 
@@ -353,5 +388,6 @@ export {
   enablePermitJoin, 
   mostrarLogs,
   getDevicesWIthWebSocket,
-  getEntitiesDataWithApi
+  getEntitiesDataWithApi,
+  trocarCorSVG
 };

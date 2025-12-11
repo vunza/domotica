@@ -11,7 +11,11 @@ import '../css/styles.scss';
 import {createCardElement} from './cria_cards.js';
 //import {BottomNavigation} from './menu_inferior.js';
 import {SubmenuOverlay} from './submenu_overlay.js';
-import {api, getDevicesWIthWebSocket, getToken, getEntitiesDataWithApi } from './vars_funcs_globais.js';
+import {api, getDevicesWIthWebSocket, getToken, getEntitiesDataWithApi, trocarCorSVG } from './vars_funcs_globais.js';
+
+
+// Lista das entidades
+let entities_list = [];
 
 
 
@@ -23,8 +27,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const api_token = '/local/json_files/token_api.json';
         const token = await getToken(api_token);
 
-        // Guarda lista de objectos com os dados das Entidades, para ser comparada com a lista de dispositivos
-        let entities_list = [];
+        // Guarda lista de objectos com os dados das Entidades, para ser comparada com a lista de dispositivos        
         getEntitiesDataWithApi(token, api).then( (entidades)=>{   
             //console.log(entidades);
             entidades.forEach((entity) => {
@@ -39,7 +42,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             });              
                         
         });
-
        
        
         // Obter Dispositivos
@@ -73,14 +75,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                 let tipo = null;
                 if (texto != null && texto.includes('switch')) {
                     tipo = 'light';
-                } 
-                else if (texto != null && texto.includes('Plug')) {
+                } else if (texto != null && texto.includes('Plug')) {
                     tipo = 'plug';
-                }
-                else if (texto != null && texto.includes('smart IR remote')) {
+                } else if (texto != null && texto.includes('smart IR remote')) {
                     tipo = 'hub_zb';
-                }
-                else {
+                } else {
                     tipo = 'picture';
                 }
 
@@ -97,6 +96,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                     
                     // Cria Card
                     createCardElement(card);
+
+                    // Troca a cor do SVG, em funcao do estado do item criado
+                    trocarCorSVG(item.id, item.state, tipo);
+
                 });              
                
             });         
@@ -105,6 +108,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     } catch (error) {
         console.log(`Erro ao criar Cards: ${error}`);
     }
+
     
 
     // TODO: Tratar o Menu contextual
@@ -124,16 +128,57 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 /**
- * Função que processa click sobre a imagem da card em questao.
- * Alterna o estado do dispositivo
- * @param {String} id Id da imagem clicada
+ * Manipula o clique em um card contendo um SVG, executa o serviço `toggle`
+ * no Home Assistant para a entidade associada e atualiza visualmente a cor
+ * do ícone conforme o novo estado do dispositivo.
+ *
+ * O ID do elemento recebido segue o padrão: `dominio.entidade.img`
+ * (ex.: `"light.tz3000_5ftkaulg_ts0011.img"`).  
+ * A função remove o sufixo `.img`, identifica o domínio e dispara
+ * a ação correspondente via API do Home Assistant.
+ *
+ * Em seguida, após o toggle, o estado real da entidade é obtido usando
+ * `obterEstadoAtualizado()`, garantindo que o estado refletido no frontend
+ * esteja sincronizado com o backend.  
+ * Finalmente, `trocarCorSVG()` aplica a cor correta ao SVG de acordo com
+ * o novo estado.
+ *
+ * @async
+ * @function click_on_image_card
+ *
+ * @param {string} id - ID completo do card clicado, incluindo o sufixo `.img`.
+ *                      Exemplo: `"light.lampada_cozinha.img"`.
+ *
+ * @returns {Promise<void>} Não retorna valores diretamente, mas atualiza a UI.
+ *
+ * @example
+ * <!-- HTML -->
+ * <div id="light.lampada_sala.img" onclick="click_on_image_card(this.id)">
+ *     <svg>...</svg>
+ * </div>
+ *
+ * @example
+ * // JS - chamada manual
+ * click_on_image_card("switch.tomada_tv.img");
+ *
+ * @description
+ * Fluxo da função:
+ *  1. Remove `.img` para obter o entity_id real.
+ *  2. Extrai o domínio (ex.: "light", "switch").
+ *  3. Carrega o token da API a partir do JSON local.
+ *  4. Envia um comando `toggle` para o Home Assistant.
+ *  5. Se o toggle for aceito:
+ *       - Obtém a lista de entidades via API.
+ *       - Localiza a entidade correspondente.
+ *       - Obtém o novo estado real (com polling inteligente).
+ *       - Atualiza a cor do SVG no card.
  */
 window.click_on_image_card = async function(id){
-    
-    // Retira "".img" do Id (id = light.tz3000_5ftkaulg_ts0011.img)
+
+    // Retira ".img" do Id (ex.: id = "light.tz3000_5ftkaulg_ts0011.img")
     const entityId = id.replace(".img", "");
 
-     // obtem o dominio "light" do Id (id = light.tz3000_5ftkaulg_ts0011.img)
+    // Obtém o domínio a partir do ID (ex.: "light")
     const dominio = id.split(".")[0];
 
     try {
@@ -141,7 +186,7 @@ window.click_on_image_card = async function(id){
         const api_token = '/local/json_files/token_api.json';
         const token = await getToken(api_token);
 
-        // Agora use o token para fazer uma requisição à API
+        // Envia o comando toggle para a API
         const result = await fetch(`/api/services/${dominio}/toggle`, {
             method: 'POST',
             headers: {
@@ -149,10 +194,74 @@ window.click_on_image_card = async function(id){
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ entity_id: entityId })
-        });        
+        });
+
+        // Se o comando foi enviado com sucesso...
+        if (result.ok) {
+            getEntitiesDataWithApi(token, api).then((entidades) => {
+                entidades.forEach((entity) => {
+
+                    if (entity.id === entityId) {
+
+                        const tipo = document.getElementById(entityId).tipo;
+
+                        obterEstadoAtualizado(entityId, token, entity.state)
+                            .then((novo_estado) => {
+                                trocarCorSVG(entity.id, novo_estado, tipo);
+                            });
+                    }
+
+                });
+            });
+        }
 
     } catch (error) {
         console.error('Erro:', error);
     }
-}
+};
 
+
+
+
+/**
+ * Obtém o estado atualizado de uma entidade no Home Assistant,
+ * repetindo leituras até que o estado mude ou o número máximo
+ * de tentativas seja atingido.
+ *
+ * A função é útil quando um serviço (ex.: toggle) é executado,
+ * mas o Home Assistant ainda não atualizou o estado imediatamente.
+ * Ela faz polling a cada 100ms até detectar mudança real.
+ *
+ * @async
+ * @function obterEstadoAtualizado
+ *
+ * @param {string} entityId - ID completo da entidade (ex.: "switch.sala").
+ * @param {string} token - Token de acesso (Long-Lived Access Token) para a API do Home Assistant.
+ * @param {string} estadoAnterior - Estado conhecido antes da execução do serviço (ex.: "on" ou "off").
+ *
+ * @returns {Promise<string>} Retorna o novo estado da entidade assim que detectar mudança.
+ * Caso não haja alteração após 10 tentativas, retorna o estadoAnterior como fallback.
+ *
+ * @example
+ * const novoEstado = await obterEstadoAtualizado(
+ *      "switch.sala",
+ *      token,
+ *      "off"
+ * );
+ * console.log(novoEstado); // "on", caso o estado tenha realmente mudado.
+ */
+async function obterEstadoAtualizado(entityId, token, estadoAnterior) {
+    for (let i = 0; i < 10; i++) {   // tenta até 10 vezes
+        const data = await fetch(`/api/states/${entityId}`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        }).then(r => r.json());
+
+        if (data.state !== estadoAnterior) {
+            return data.state;
+        }
+
+        await new Promise(r => setTimeout(r, 100)); // aguarda 100ms
+    }
+
+    return estadoAnterior; // fallback
+}

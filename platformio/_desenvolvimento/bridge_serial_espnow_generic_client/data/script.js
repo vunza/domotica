@@ -1,100 +1,153 @@
 ///////////////////////
 // Variaveis Globais //
 ///////////////////////
-const api_get_dev_name = '/api/get_esp_name'; 
-const api_restart_dev = '/api/restart_device'; 
+
+/**
+ * Endpoint para obter o nome atual do dispositivo ESP.
+ * @constant {string}
+ */
+const api_get_dev_name = '/api/get_esp_name';
+
+/**
+ * Endpoint responsável por reiniciar o dispositivo ESP.
+ * @constant {string}
+ */
+const api_restart_dev = '/api/restart_device';
+
+/**
+ * Endpoint que renomeia o dispositivo ESP.
+ * @constant {string}
+ */
 const api_rename_device = '/api/rename_esp';
+
+/**
+ * Número máximo de caracteres permitidos no nome do dispositivo,
+ * informado pelo firmware (constantes.h).
+ * @type {number|null}
+ */
 let device_name_sie = null;
+
+/**
+ * Nome atual do dispositivo, conforme retornado pela API.
+ * @type {string|null}
+ */
 let nome_do_dispositivo = null;
+
 
 
 /////////////////////////////////
 // Listner da Pagina Carregada //
 /////////////////////////////////
+
+/**
+ * Manipula toda a inicialização da página após o carregamento do DOM.
+ * - Carrega nome do dispositivo.
+ * - Configura o campo de edição.
+ * - Controla contador de caracteres.
+ * - Habilita/desabilita ícone de renomear.
+ * - Aplica estilos visuais.
+ */
 document.addEventListener("DOMContentLoaded", async function () {
 
-    // Cotrola o Numero de caracters no input para alterar o nome do ESP
+    // Controla caracteres no input para renomear o ESP
     const input = document.getElementById("device-name-input");
     const counter = document.getElementById("char-counter");
 
-    // Obter Nome do Dispositivo
+    // Obtém nome do dispositivo e tamanho máximo permitido
     const resposta = await callAPI(api_get_dev_name);
     const name_size = resposta.split(",");
-    device_name_sie = name_size[1]; // Definido no arquivo constantes.h
+    device_name_sie = name_size[1];
     nome_do_dispositivo = name_size[0];
 
-    // Altera propriedades do input
-    input.setAttribute( "autocomplete", "off" );
+    // Configura o input
+    input.setAttribute("autocomplete", "off");
     input.maxLength = device_name_sie;
     input.placeholder = `Máximo ${device_name_sie} Caracteres`;
-        
-    // Actualizar o nome do dispodsitivo no Header
-    document.getElementById('device-name').innerText = nome_do_dispositivo;
-   
 
+    // Atualiza o cabeçalho da página
+    document.getElementById('device-name').innerText = nome_do_dispositivo;
+
+    /**
+     * Atualiza contador de caracteres, ajusta classes de alerta
+     * e modifica o comportamento visual do ícone de renomear.
+     *
+     * @function updateCounter
+     */
     function updateCounter() {
         const svg_renomear_esp = document.getElementById("svg_renomear_esp");
         const len = input.value.length;
+
         counter.textContent = `${len} de ${device_name_sie} Caracteres`;
         counter.classList.remove("warning", "error");
 
-        // Verifica o nome indicado e o numero de caracteres
-        if (nome_do_dispositivo === input.value) {            
+        // Controle do ícone de renomeação
+        if (nome_do_dispositivo === input.value) {
             svg_renomear_esp.style.pointerEvents = 'none';
             svg_renomear_esp.style.opacity = 0.7;
             svg_renomear_esp.setAttribute('color', 'currentColor');
-        }else if (len > 0) {            
+
+        } else if (len > 0) {
             svg_renomear_esp.style.pointerEvents = 'auto';
             svg_renomear_esp.style.cursor = 'pointer';
-            svg_renomear_esp.setAttribute('color', 'green'); 
+            svg_renomear_esp.setAttribute('color', 'green');
             svg_renomear_esp.style.opacity = 1;
-        } else if (len == 0) {            
+
+        } else { // len == 0
             svg_renomear_esp.style.pointerEvents = 'none';
             svg_renomear_esp.style.opacity = 0.7;
             svg_renomear_esp.setAttribute('color', 'currentColor');
-        }        
+        }
 
-        // Altera cor do contador
+        // Altera cor do contador conforme limite
         if (len >= device_name_sie) {
             counter.classList.add("error");
         } else if (len >= device_name_sie * 0.75) {
             counter.classList.add("warning");
-        } 
+        }
     }
 
-    // Atualiza contagem ao carregar
+    // Chamada inicial do contador
     updateCounter();
 
-    // Evento input no input
-    input.addEventListener("input", updateCounter);  
+    // Atualiza contador durante digitação
+    input.addEventListener("input", updateCounter);
 
 
-    // Evento Click no icon dentro do input, para renomear dispositivo
-    svg_renomear_esp.addEventListener("click", async () => {  
+    /**
+     * Evento de clique no ícone que envia novo nome para a API
+     * e recarrega a página após renomear o ESP.
+     */
+    svg_renomear_esp.addEventListener("click", async () => {
 
-        // Renomear o Dispositivo
-        const novoNome = document.getElementById("device-name-input").value;     
-        const resposta = await renomearDispositivo(api_rename_device, novoNome);
+        const novoNome = document.getElementById("device-name-input").value;
+        await renomearDispositivo(api_rename_device, novoNome);
 
-        // Obter Nome do Dispositivo
-        //const respoonse = await callAPI(api_restart_dev);
-
-        // Recarrega o Navegador
+        // Recarrega página após renomear
         window.location.reload();
     });
 
-    
-}); // FIM do addEventListener()
+}); // fim do DOMLoaded
+
 
 
 ///////////////////////////////
 // OBTER NOME DO DISPOSITIVO //
 ///////////////////////////////
+
+/**
+ * Chama uma API e retorna o corpo da resposta como texto.
+ *
+ * @async
+ * @function callAPI
+ * @param {string} api - URL da API que será requisitada.
+ * @returns {Promise<string|null>} Texto retornado pela API, ou null se ocorrer erro.
+ */
 async function callAPI(api) {
     try {
         const response = await fetch(api);
         const texto = await response.text();
-        return texto;   
+        return texto;
+
     } catch (err) {
         console.error("Erro no fetch:", err);
         return null;
@@ -102,34 +155,64 @@ async function callAPI(api) {
 }
 
 
+
 ////////////////////////////////////////////////////
 // TERMINAR OTA POR VIA DO RESTART DO DISPOSITIVO //
 ////////////////////////////////////////////////////
-async function btnRestartDevice(){
-    const resposta = await callAPI(api_restart_dev);
+
+/**
+ * Envia comando de restart ao dispositivo e redireciona
+ * o navegador de volta ao painel principal.
+ *
+ * @async
+ * @function btnRestartDevice
+ * @returns {Promise<void>}
+ */
+async function btnRestartDevice() {
+    await callAPI(api_restart_dev);
     window.location.href = "/painel";
 }
 
 
 
+/**
+ * Envia requisição POST para renomear o dispositivo ESP.
+ *
+ * @function renomearDispositivo
+ * @param {string} api_rename_device - Endpoint para renomeação.
+ * @param {string} novoNome - Novo nome que será aplicado ao ESP.
+ * @returns {void}
+ */
 function renomearDispositivo(api_rename_device, novoNome) {
-    
+
     fetch(api_rename_device, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: novoNome })
-    }).then(r => r.text()).then(resp => {
-        console.log("Servidor respondeu: " + resp);
-    }).catch(err => console.error("Erro:", err));
+    })
+        .then(r => r.text())
+        .then(resp => console.log("Servidor respondeu: " + resp))
+        .catch(err => console.error("Erro:", err));
 }
-
 
 
 
 //////////////////////////////////////////////
 // Altera elementos da pagina de ElegantOTA //
 //////////////////////////////////////////////
+
+/**
+ * Manipula o documento carregado dentro do iframe OTA para:
+ * - remover elementos <div> contendo <span> internos,
+ * - aplicar CSS customizado dentro do iframe.
+ *
+ * Esse ajuste é necessário porque o AsyncElegantOTA injeta conteúdo via JS.
+ *
+ * @event load
+ * @listens HTMLIFrameElement#load
+ */
 document.getElementById("otaFrame").addEventListener("load", function () {
+
     const iframeDoc = this.contentDocument || this.contentWindow.document;
 
     if (!iframeDoc) {
@@ -137,10 +220,9 @@ document.getElementById("otaFrame").addEventListener("load", function () {
         return;
     }
 
-    // Remover <div>> que comtem <span>
-    // Espera um pouco para o AsyncElegantOTA montar o conteúdo via JS
+    // Remover divs que contêm spans (conteúdo gerado pelo OTA)
     setTimeout(() => {
-        // Opção 1: pegar todos os SPANs e remover o DIV pai de cada um
+
         const spans = iframeDoc.querySelectorAll('div span');
         let removidos = 0;
 
@@ -154,40 +236,22 @@ document.getElementById("otaFrame").addEventListener("load", function () {
 
         console.log(`Removidos ${removidos} <div> que continham <span> dentro.`);
 
-    }, 500); // 500ms de atraso – ajuste se precisar
-    
+    }, 500); // tempo para o OTA carregar conteúdo via JS
 
-    // Criar um <style> dentro da página carregada
+
+    // Injeta CSS customizado no iframe
     const style = iframeDoc.createElement("style");
     style.textContent = `
-        .mt-2 {
-            margin-top: 0px !important;            
-        }
+        .mt-2 { margin-top: 0px !important; }
+        .mt-3 { margin-top: 0px !important; }
+        .pt-2 { padding-top: 0 !important; }
 
-        .mt-3 {
-            margin-top: 0px !important;            
-        }
-
-        .pt-2 {
-            padding-top: 0 !important;
-        }
-   
         @media (max-width: 480px) {
-            .col-12{
-                width: fit-content !important;
-            }
+            .col-12 { width: fit-content !important; }
         }
-
     `;
 
-    // Inserir o CSS dentro do HEAD do documento carregado
     iframeDoc.head.appendChild(style);
 
     console.log("CSS com !important aplicado dentro da página OTA!");
 });
-
-
-
-
-
-
