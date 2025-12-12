@@ -159,19 +159,36 @@ async function getDevicesWIthWebSocket(token) {
 
        // 2º passo → confirmar autenticação
        else if (msg.type === "auth_ok") {
-         // pedir a lista de devices do device registry
-         ws.send(
-           JSON.stringify({
-             id: 1,
-             type: "config/device_registry/list",
-           })
-         );
-       }
 
+          // pedir a lista de devices do device registry
+          ws.send(
+            JSON.stringify({
+              id: 1,
+              type: "config/device_registry/list",
+            })
+          );
+
+          // Inscrever-se no evento de mudança de estado
+          ws.send(JSON.stringify({
+              id: 2,
+              type: "subscribe_events",
+              event_type: "state_changed"
+          }));
+
+       }
+       // Quando qualquer estado mudar
+       else if (msg.type === "event") {
+          const e = msg.event.data;            
+          // ctualiza estado do Dispositivo
+          const tipo = document.getElementById(e.entity_id);  
+          if(tipo){      
+            trocarCorSVG(e.entity_id, e.new_state.state, tipo.tipo);
+          } 
+      }
        // 3º passo → resposta com devices
        else if (msg.id === 1) {
          resolve(msg.result);
-         ws.close();
+         //ws.close();
        } else if (msg.type === "auth_invalid") {
          reject("Token inválido!");
          ws.close();

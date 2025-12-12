@@ -137,8 +137,8 @@ document.addEventListener("DOMContentLoaded", async function () {
  * A função remove o sufixo `.img`, identifica o domínio e dispara
  * a ação correspondente via API do Home Assistant.
  *
- * Em seguida, após o toggle, o estado real da entidade é obtido usando
- * `obterEstadoAtualizado()`, garantindo que o estado refletido no frontend
+ * Em seguida, após o toggle, o estado real da entidade é obtido usando WebSocket na funcao
+ * `getDevicesWIthWebSocket()`, garantindo que o estado refletido no frontend
  * esteja sincronizado com o backend.  
  * Finalmente, `trocarCorSVG()` aplica a cor correta ao SVG de acordo com
  * o novo estado.
@@ -194,26 +194,7 @@ window.click_on_image_card = async function(id){
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ entity_id: entityId })
-        });
-
-        // Se o comando foi enviado com sucesso...
-        if (result.ok) {
-            getEntitiesDataWithApi(token, api).then((entidades) => {
-                entidades.forEach((entity) => {
-
-                    if (entity.id === entityId) {
-
-                        const tipo = document.getElementById(entityId).tipo;
-
-                        obterEstadoAtualizado(entityId, token, entity.state)
-                            .then((novo_estado) => {
-                                trocarCorSVG(entity.id, novo_estado, tipo);
-                            });
-                    }
-
-                });
-            });
-        }
+        });        
 
     } catch (error) {
         console.error('Erro:', error);
@@ -223,45 +204,3 @@ window.click_on_image_card = async function(id){
 
 
 
-/**
- * Obtém o estado atualizado de uma entidade no Home Assistant,
- * repetindo leituras até que o estado mude ou o número máximo
- * de tentativas seja atingido.
- *
- * A função é útil quando um serviço (ex.: toggle) é executado,
- * mas o Home Assistant ainda não atualizou o estado imediatamente.
- * Ela faz polling a cada 100ms até detectar mudança real.
- *
- * @async
- * @function obterEstadoAtualizado
- *
- * @param {string} entityId - ID completo da entidade (ex.: "switch.sala").
- * @param {string} token - Token de acesso (Long-Lived Access Token) para a API do Home Assistant.
- * @param {string} estadoAnterior - Estado conhecido antes da execução do serviço (ex.: "on" ou "off").
- *
- * @returns {Promise<string>} Retorna o novo estado da entidade assim que detectar mudança.
- * Caso não haja alteração após 10 tentativas, retorna o estadoAnterior como fallback.
- *
- * @example
- * const novoEstado = await obterEstadoAtualizado(
- *      "switch.sala",
- *      token,
- *      "off"
- * );
- * console.log(novoEstado); // "on", caso o estado tenha realmente mudado.
- */
-async function obterEstadoAtualizado(entityId, token, estadoAnterior) {
-    for (let i = 0; i < 10; i++) {   // tenta até 10 vezes
-        const data = await fetch(`/api/states/${entityId}`, {
-            headers: { "Authorization": `Bearer ${token}` }
-        }).then(r => r.json());
-
-        if (data.state !== estadoAnterior) {
-            return data.state;
-        }
-
-        await new Promise(r => setTimeout(r, 100)); // aguarda 100ms
-    }
-
-    return estadoAnterior; // fallback
-}
