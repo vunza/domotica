@@ -51,10 +51,11 @@ function createCardElement(card) {
         </div>
     `;
     
-    //return cardElement;
-
-    // Adiciona a Card criada
-    document.getElementById('cards-container').appendChild(cardElement);
+    
+    // Adiciona a Card criada, se não existe no DOM
+    if( !document.getElementById(`${card.id}.img`) ){
+         document.getElementById('cards-container').appendChild(cardElement);
+    }   
     
 }
 

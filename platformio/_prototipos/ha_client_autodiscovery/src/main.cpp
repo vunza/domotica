@@ -66,6 +66,7 @@ void reconnect() {
       client.publish("homeassistant/switch/esp8266_switch/config",
                      "{\"name\": \"teste_switch\", \"command_topic\": \"homeassistant/switch/esp8266_switch/set\", \"state_topic\": \"homeassistant/switch/esp8266_switch/state\"}",
                      true);
+
     } else {
       Serial.print("Falha ao conectar. Erro: ");
       Serial.print(client.state());

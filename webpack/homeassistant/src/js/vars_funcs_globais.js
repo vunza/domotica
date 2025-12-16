@@ -179,16 +179,15 @@ async function getDevicesWIthWebSocket(token) {
        // Quando qualquer estado mudar
        else if (msg.type === "event") {
           const e = msg.event.data;            
-          // ctualiza estado do Dispositivo
-          const tipo = document.getElementById(e.entity_id);  
-          if(tipo){      
-            trocarCorSVG(e.entity_id, e.new_state.state, tipo.tipo);
+          // Actualiza estado do Dispositivo
+          const card = document.getElementById(e.entity_id);  
+          if(card){      
+            trocarCorSVG(e.entity_id, e.new_state.state, card.tipo);
           } 
       }
        // 3º passo → resposta com devices
        else if (msg.id === 1) {
-         resolve(msg.result);
-         //ws.close();
+         resolve(msg.result);         
        } else if (msg.type === "auth_invalid") {
          reject("Token inválido!");
          ws.close();
@@ -336,7 +335,7 @@ async function actualizaFriendlyName(token, ip_porta, entityId, friendlyName, en
  * @param {Object} device Objeto do dispositivo contendo suas entidades.
  * @returns {String} Tipo do dispositivo (e.g., 'lampada', 'switch', 'sensor').
  */
-function getZigbeeDeviceType(device) {
+/*function getZigbeeDeviceType(device) {
     const domains = device.entities.map(e => e.domain);
     
     if (domains.includes('light')) return 'lampada';
@@ -344,7 +343,7 @@ function getZigbeeDeviceType(device) {
     if (domains.includes('sensor')) return 'sensor';
     
     return 'dispositivo';
-}
+}*/
 
 
 /** 
@@ -352,13 +351,13 @@ function getZigbeeDeviceType(device) {
  * @param {Array} entities Array de entidades associadas ao dispositivo.
  * @returns {String} Status do dispositivo ('online' ou 'offline').
  */
-function getZigbeeDeviceStatus(entities) {
+/*function getZigbeeDeviceStatus(entities) {
     const availableEntities = entities.filter(entity => 
         entity.state !== 'unavailable' && entity.state !== 'unknown'
     );
     
     return availableEntities.length > 0 ? 'online' : 'offline';
-}
+}*/
 
 
 /**

@@ -153,7 +153,7 @@ void loop() {
 
         // Envia dados, apenas, se forem diferentes de "nan"
         if (!isnan(g_voltage) && !isnan(g_current) && !isnan(g_temperature)  && !isnan(g_humidity)){      
-            strcpy(dados_espnow.mac_source, mac);
+            strcpy(dados_espnow.mac_client, mac);
             strcpy(dados_espnow.msg_type, "DATA");
             espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));  
         }      

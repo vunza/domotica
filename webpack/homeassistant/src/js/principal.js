@@ -30,14 +30,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Guarda lista de objectos com os dados das Entidades, para ser comparada com a lista de dispositivos        
         getEntitiesDataWithApi(token, api).then( (entidades)=>{   
             //console.log(entidades);
-            entidades.forEach((entity) => {
+            entidades.forEach((entity) => {                
                 entities_list.push({
-                    id: entity.id,
+                    id: entity.id, // dominio.ID (Ex.: sensor.0xa4c138237471c56a_current)
                     friendly_name: entity.nome,
                     historico: entity.historico,
                     status: entity.status, // online|offline
                     state: entity.state, // on|off
-                    device_id: entity.device_id
+                    device_id: entity.device_id // Apenas ID (Ex.: 0xa4c138237471c56a_current)
                 });
             });              
                         
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async function () {
        
        
         // Obter Dispositivos
-        getDevicesWIthWebSocket(token).then( (devices) => {              
+        getDevicesWIthWebSocket(token).then( (devices) => {             
                    
             // Criar Crads dos dispositivos
             devices.forEach(element => {
@@ -54,21 +54,30 @@ document.addEventListener("DOMContentLoaded", async function () {
                 //console.log(element.model);
                 
                 // Filtra elementos por id, dominio, 
-                const ieee = element.name;
+                const ieee = element.name;               
                 const dominios = ["switch", "light", "sensor", "text"]; // Para entidaes com os dominios indicados
                 const posicoes = ["left", "center", "right"];  // Para Dispositivos com mais de um canal
-                const hubsir = ["learn_ir_code", "battery", "ir_code_to_send", "learned_ir_code"];  // Para Hubs ir
+                const hubsir = ["", "learn_ir_code", "battery", "ir_code_to_send", "learned_ir_code"];  // Para Hubs ir                            
+                const espnow = ["serial_espnow"];
 
-                const resultado = entities_list.filter(item => {
-                    const temIEEE = item.device_id.includes(ieee);
+                const resultado = entities_list.filter(item => {  
+                    // Fil;tra ID das entidades vinculadas a Devices e as criadas por via de template                                    
+                    const temIEEE = item.device_id.includes(ieee) || item.id.includes('serial_espnow');  
+                    
+                    // Filtra os dominios indicados
                     const temDominio = dominios.some(d => item.id.startsWith(d + "."));
+                    
+                    // Filtra dispositivos com mais de uma entidade, hubs ir e entidades criadas por template
                     const temPosicao = posicoes.some(p => item.id.endsWith("_" + p)) || 
-                                       hubsir.some(l => item.id.endsWith("_" + l)) || 
-                                    !item.id.includes("_"); // permite sem left/center/right
-
-                    return temIEEE && temDominio && temPosicao;
-                });  
-
+                    hubsir.some(l => item.id.endsWith("_" + l)) ||   
+                    espnow.some(e => item.id.includes(e)) ||  
+                                    
+                    // permite sem left/center/right
+                    !item.id.includes("_");                                   
+                    
+                    return temIEEE && temDominio && temPosicao;                    
+                });               
+              
 
                 // Confere os Tipos de Dispositivo    
                 const texto = element.model;          

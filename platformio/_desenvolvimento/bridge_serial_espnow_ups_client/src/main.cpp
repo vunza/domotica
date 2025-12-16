@@ -205,7 +205,7 @@ void loop() {
         yield();
 
 
-        char mac[18]; // static para persistir após a função
+        char mac[18]; 
         String macStr = WiFi.macAddress();
         macStr.toCharArray(mac, 18);
 
@@ -223,7 +223,7 @@ void loop() {
 
         // Envia dados, apenas, se forem diferentes de "nan"
         if (!isnan(g_voltage) && !isnan(g_current) && !isnan(g_temperature)  && !isnan(g_humidity)){      
-            strcpy(dados_espnow.mac_source, mac);
+            strcpy(dados_espnow.mac_client, mac);
             strcpy(dados_espnow.msg_type, "DATA");
             espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));  
         }      

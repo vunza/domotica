@@ -82,6 +82,15 @@ void setup() {
 
     // Callback de recepção ESP-NOW
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
+
+        // Obter MAC do Servidor
+        char server_mac[18]; 
+        String macStr = WiFi.macAddress();
+        macStr.toCharArray(server_mac, 18);
+
+        // Obter MAC do Cliente
+        char client_mac[18]; 
+        snprintf(client_mac, 18, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         
         // Passa dados recebidos para a estructura
         memcpy(&dados_espnow, data, sizeof(EspNowData));
@@ -91,6 +100,8 @@ void setup() {
 
             // Converte em json os dados recebidos dos sensores           
             JsonBuilder json;
+            json.add("server_mac", server_mac);
+            json.add("client_mac", client_mac);
             json.add("ups1_current", dados_espnow.u1_current, 2);
             json.add("ups1_voltage", dados_espnow.u1_voltage, 2);
             json.add("ups1_temperature", dados_espnow.u1_temperature, 2);
