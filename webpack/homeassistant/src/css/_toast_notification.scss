@@ -1,0 +1,27 @@
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--primary-color);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(56, 176, 0, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(56, 176, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(56, 176, 0, 0); }
+}

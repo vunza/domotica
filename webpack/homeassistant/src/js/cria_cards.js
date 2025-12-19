@@ -35,7 +35,7 @@ function createCardElement(card) {
     const iconHTML = iconMap[card.type] || iconMap.picture;
     cardElement.id = card.id;
     cardElement.tipo = card.type;
-    cardElement.innerHTML = `
+    cardElement.innerHTML = /*`
         <div class="card-header">
             <div class="card-title" id="${card.id}.img" onclick="click_on_image_card(this.id);">
                 ${iconHTML} ${card.title}
@@ -49,7 +49,24 @@ function createCardElement(card) {
         <div class="card-content">
             ${card.content}
         </div>
-    `;
+    `;*/
+
+    `<div class="card-header">
+        <div class="card-title" id="${card.id}.img" onclick="click_on_image_card(this.id);">
+            ${iconHTML} 
+            <span class="card-title-text">${card.title}</span>
+        </div>
+        
+        <!-- Botão OTA no cabeçalho -->
+        <div class="ota-button-header" id="${card.id}.ota" onclick="activateOTA(this.id)">
+            ${iconMap.config || 'OTA'}
+        </div>
+    </div>
+    
+    <div class="card-content">
+        ${card.content}
+        <div class="ota-status" id="${card.id}.ota-status"></div>
+    </div>`;
     
     
     // Adiciona a Card criada, se não existe no DOM

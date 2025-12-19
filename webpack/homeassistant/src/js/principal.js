@@ -12,7 +12,7 @@ import {createCardElement} from './cria_cards.js';
 //import {BottomNavigation} from './menu_inferior.js';
 import {SubmenuOverlay} from './submenu_overlay.js';
 import {api, getDevicesWIthWebSocket, getToken, getEntitiesDataWithApi, trocarCorSVG } from './vars_funcs_globais.js';
-
+import {  } from './rename_devices.js';
 
 // Lista das entidades
 let entities_list = [];
@@ -119,7 +119,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     
-
     // TODO: Tratar o Menu contextual
     // Inicializa a navegação inferior
     /*const bottomNav = new BottomNavigation();

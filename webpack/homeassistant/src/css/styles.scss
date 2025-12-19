@@ -5,8 +5,9 @@ $fundo_body: #121212;
 @use 'cards';
 @use 'menu_inferior';
 @use 'menu_contextual';
-@use 'view_selector';
-@use 'submenu_overlay';
+@use 'rename_devices';
+//@use 'view_selector';
+//@use 'submenu_overlay';
 @use 'permit_join'; 
 @use "sass:color";
 
