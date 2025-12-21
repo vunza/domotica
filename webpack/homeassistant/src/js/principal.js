@@ -1,7 +1,6 @@
 /**
  * @file principal.js
- * @description Arquivo principal que inicializa a aplicação, cria cards dinâmicos,
- *              gerencia a navegação inferior e o submenu overlay.
+ * @description Arquivo principal que inicializa a aplicação, cria cards dinâmicos.
  * @author Zambo
  * @date 2024-12-15
 */
@@ -10,13 +9,15 @@ import '../css/styles.scss';
 //import img from '../assets/orquidea.jpeg';
 import {createCardElement} from './cria_cards.js';
 //import {BottomNavigation} from './menu_inferior.js';
-import {SubmenuOverlay} from './submenu_overlay.js';
+//import {SubmenuOverlay} from './submenu_overlay.js';
 import {api, getDevicesWIthWebSocket, getToken, getEntitiesDataWithApi, trocarCorSVG } from './vars_funcs_globais.js';
 import {  } from './rename_devices.js';
+import {  } from './devices_timers.js';
+import {  } from './menu_contextual.js';
+
 
 // Lista das entidades
 let entities_list = [];
-
 
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -208,7 +209,5 @@ window.click_on_image_card = async function(id){
         console.error('Erro:', error);
     }
 };
-
-
 
 

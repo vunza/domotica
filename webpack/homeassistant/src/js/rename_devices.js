@@ -1,3 +1,8 @@
+
+
+import {saved_device_name, saved_device_id} from './menu_contextual.js';
+
+
 // Elementos DOM
 const deviceNameInput = document.getElementById('deviceName');
 const editBtn = document.getElementById('editBtn');
@@ -24,7 +29,7 @@ function updateCharCounter() {
     }
     if (length > maxLength * 0.95) {
         charCounter.classList.add('danger');
-    }
+    }    
 }
 
 // Mostrar mensagem de feedback
@@ -69,12 +74,11 @@ function closeContainer() {
         document.querySelector('.rename-container').style.opacity = '0';
         document.querySelector('.rename-container').style.transform = 'scale(0.9)';
         document.querySelector('.rename-container').style.transition = 'all 0.3s ease';
-        
-        // Após a animação, remover do DOM (comentado para teste)
-        // setTimeout(() => {
-        //     document.querySelector('.rename-container').remove();
-        //     document.body.innerHTML = '<div style="text-align:center; padding: 50px;"><h3>Interface fechada</h3><p>Recarregue a página para ver novamente.</p></div>';
-        // }, 300);
+
+        document.getElementById('cards-container').style.display = 'grid';
+        document.getElementById('rename-container').style.display = 'none';   
+        window.location.href = 'index.html';    
+       
     }, 1000);
     
     console.log('Interface de renomear fechada');
@@ -163,13 +167,19 @@ deviceNameInput.addEventListener('keydown', (e) => {
 // Fechar com a tecla Escape (quando não estiver editando)
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !isEditing) {
-        closeContainer();
+        //closeContainer();
     }
 });
 
+
 // Inicializar
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => { 
+
+    document.getElementById('deviceName').value = saved_device_name;
+    console.log('Renomear dispositivo:', saved_device_id, 'Nome atual:', saved_device_name);
+
     updateCharCounter();
+    
 });
 
 export {  }

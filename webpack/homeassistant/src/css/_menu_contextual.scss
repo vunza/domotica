@@ -1,16 +1,16 @@
 /* Menu Contextual */
 .context-menu {
     position: absolute;
-    background-color: white;
+    background-color: white; /* Dark gray/blue background */
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Darker shadow */
     z-index: 1000;
     width: 220px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
-    border: 1px solid #e0e0e0;
+    // transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+    border: 1px solid #666; /* Darker border */
 }
 
 .context-menu.active {
@@ -24,10 +24,10 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    transition: background-color 0.2s;
+    transition: all 0.2s; /* Changed to 'all' for smooth color transitions */
     font-size: 1rem;
-    border-bottom: 1px solid #f5f5f5;
-    color: #333;
+    border-bottom: 1px solid #4a5568; /* Updated border color */
+    color: black; /* Light text color for dark background */
 }
 
 .menu-item:last-child {
@@ -35,34 +35,47 @@
 }
 
 .menu-item:hover {
-    background-color: #f5f9ff;
+    background-color: #4a5568; /* Darker hover for dark theme */
 }
 
-.menu-item svg {
-    margin-right: 12px;
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-}
-
-.menu-item svg path {
-    fill: currentColor;
-}
 
 .menu-item.delete:hover {
-    background-color: #fff0f0;
-    color: #e53935;
+    background-color: rgba(245, 101, 101, 0.1); /* Subtle red tint */
+    color: #fed7d7; /* Light red text */
 }
 
 .menu-item.delete:hover svg {
-    color: #e53935;
+    color: #fc8181; /* Brighter red on hover */
 }
 
-.menu-item.move:hover {
-    background-color: #f0fff4;
-    color: #43a047;
+
+
+/* Cor base para todos os ícones */
+.menu-item svg {
+    color: #a0aec0; /* Cor padrão (cinza) */
 }
 
-.menu-item.move:hover svg {
-    color: #43a047;
+/* Cores específicas por ação */
+.menu-item[data-action="schedule"] svg {
+    color: #4299e1; /* Azul para Programar */
+}
+.menu-item[data-action="rename"] svg {
+    color: #ed8936; /* Laranja para Renomear */
+}
+.menu-item[data-action="timer"] svg {
+    color: #9f7aea; /* Roxo para Temporizar */
+}
+.menu-item[data-action="delete"] svg {
+    color: #f56565; /* Vermelho para Remover */
+}
+.menu-item[data-action="close"] svg {
+    color: #a0aec0; /* Cinza para Fechar */
+}
+
+/* Efeitos hover */
+.menu-item:hover svg {
+    filter: brightness(1.2); /* Clareia o ícone ao passar o mouse */
+}
+.menu-item[data-action="delete"]:hover svg {
+    color: #fc8181; /* Vermelho mais claro no hover */
 }

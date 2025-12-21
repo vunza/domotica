@@ -1,0 +1,458 @@
+/* _devices_timers.scss */A
+:root {
+    --primary: #41bdf5;
+    --primary-dark: #0288d1;
+    --success: #39be5a;
+    --warning: #ff9800;
+    --danger: #f44336;
+    --bg-dark: #2c3e50;
+    --bg-darker: #1a2530;
+    --radius: 12px;
+    --transition: all 0.2s ease;
+}
+
+
+.config-timers-container {
+    width: 100%;
+    max-width: 380px;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    position: relative;
+    margin: auto;
+}
+
+.config-timers-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.config-timers-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: white;
+}
+
+.timer-selector-container {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.timer-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 5px;
+}
+
+.timer-selector-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.timer-selector-input {
+    display: none;
+}
+
+.timer-selector-number {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: var(--transition);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.timer-selector-input:checked + .timer-selector-number {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(65, 189, 245, 0.5);
+}
+
+.timer-config-section {
+    padding: 20px;
+}
+
+.config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.config-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.config-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 4px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.custom-checkbox {
+    width: 28px;
+    height: 28px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.custom-checkbox::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 16px;
+    height: 16px;
+    background: var(--success);
+    border-radius: 3px;
+    transition: var(--transition);
+}
+
+#chk_activar:checked + .custom-checkbox {
+    border-color: var(--success);
+}
+
+#chk_activar:checked + .custom-checkbox::after {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Container para o select de ação */
+.select-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select {
+    width: 100%;
+    padding: 14px 16px;
+    padding-left: 44px; /* Espaço para o ícone */
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+    transition: var(--transition);
+    appearance: none;
+    cursor: pointer;
+    min-height: 48px;
+    text-align: center;
+}
+
+/* Remover seta padrão do select */
+.custom-select {
+    background-image: none;
+    padding-right: 16px; /* Remover espaço da seta antiga */
+}
+
+/* Placeholder para select (opção desabilitada) */
+.custom-select option[value=""][disabled] {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+/* Estilo para quando não há opção selecionada */
+.custom-select:invalid {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Ícone para o select de ação */
+.select-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+}
+
+/* Container para o input de hora */
+.time-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.time-input {
+    width: 100%;
+    padding: 14px 16px;
+    padding-left: 44px; /* Espaço para o ícone de relógio */
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+    transition: var(--transition);
+    min-height: 48px;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Remover controles padrão do input time */
+.time-input::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+.time-input::-webkit-inner-spin-button,
+.time-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+// .time-input[type="time"] {
+//     -moz-appearance: textfield;
+// }
+
+.time-input[type="time"] {
+    /* Remove a aparência nativa no Chrome, Safari e Android (WebKit) */
+    -webkit-appearance: none;
+    
+    /* Mantém a compatibilidade com o Firefox */
+    -moz-appearance: textfield;
+    
+    /* Propriedade padrão (moderna) */
+    appearance: none;
+    
+    /* Garante que o campo tenha uma altura mínima adequada para toque */
+    min-height: 2.5em; 
+}
+
+
+
+/* Placeholder para input de hora */
+.time-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+}
+
+/* Ícone de relógio para o input de hora */
+.time-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+}
+
+/* Efeitos de foco */
+.custom-select:focus,
+.time-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: rgba(65, 189, 245, 0.1);
+}
+
+.weekdays-container {
+    margin-top: 20px;
+}
+
+.weekdays-label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+}
+
+.weekdays-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.weekday-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.weekday-checkbox {
+    display: none;
+}
+
+.weekday-letter {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    transition: var(--transition);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.weekday-checkbox:checked + .weekday-letter {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.weekday-name {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.current-time-date {
+    text-align: center;
+    margin-top: 25px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.current-time {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+#hora_actual {
+    color: var(--warning);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.current-date {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+#dia_semana_actual {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.timers-toolbar {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.tool-btn {
+    min-width: 120px;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-save {
+    background: var(--success);
+    color: white;
+}
+
+.btn-save:hover {
+    background: #2e8b57;
+    transform: translateY(-2px);
+}
+
+.btn-close {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-close:hover {
+    background: #d32f2f;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 15px;
+    }
+    
+    .config-timers-container {
+        max-width: 100%;
+    }
+    
+    .timer-selector-number {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+    }
+    
+    .weekday-letter {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .tool-btn {
+        min-width: 100px;
+        padding: 12px 20px;
+    }
+}
+
+@media (max-width: 320px) {
+    .tool-btn {
+        min-width: 90px;
+        padding: 10px 16px;
+        font-size: 0.95rem;
+    }
+    
+    .weekday-letter {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .custom-select,
+    .time-input {
+        padding-left: 40px;
+        font-size: 0.95rem;
+    }
+    
+    .select-icon,
+    .time-icon {
+        left: 12px;
+    }
+}

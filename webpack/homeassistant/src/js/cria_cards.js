@@ -35,43 +35,29 @@ function createCardElement(card) {
     const iconHTML = iconMap[card.type] || iconMap.picture;
     cardElement.id = card.id;
     cardElement.tipo = card.type;
-    cardElement.innerHTML = /*`
-        <div class="card-header">
-            <div class="card-title" id="${card.id}.img" onclick="click_on_image_card(this.id);">
-                ${iconHTML} ${card.title}
+    cardElement.innerHTML =         
+        `<div class="card-header">
+            <div class="card-title">
+                <span class="card-icon" id="${card.id}.img" onclick="click_on_image_card(this.id);">
+                    ${iconHTML}
+                </span>
+                <span class="card-title-content">${card.title}</span>
             </div>
-            <!--<button class="menu-trigger" data-id="${card.id}">
+            <button class="menu-trigger" data-id="${card.id}">
                 <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
                 </svg>
-            </button>-->
+            </button>
         </div>
         <div class="card-content">
             ${card.content}
-        </div>
-    `;*/
-
-    `<div class="card-header">
-        <div class="card-title" id="${card.id}.img" onclick="click_on_image_card(this.id);">
-            ${iconHTML} 
-            <span class="card-title-text">${card.title}</span>
-        </div>
-        
-        <!-- Botão OTA no cabeçalho -->
-        <div class="ota-button-header" id="${card.id}.ota" onclick="activateOTA(this.id)">
-            ${iconMap.config || 'OTA'}
-        </div>
-    </div>
-    
-    <div class="card-content">
-        ${card.content}
-        <div class="ota-status" id="${card.id}.ota-status"></div>
-    </div>`;
+        </div>`;
+ 
     
     
     // Adiciona a Card criada, se não existe no DOM
     if( !document.getElementById(`${card.id}.img`) ){
-         document.getElementById('cards-container').appendChild(cardElement);
+        document.getElementById('cards-container').appendChild(cardElement);
     }   
     
 }

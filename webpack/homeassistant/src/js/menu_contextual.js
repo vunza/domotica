@@ -1,19 +1,31 @@
 
+
+
 // Menu Contextual
 const contextMenu = document.getElementById('context-menu');
 let currentMenuCardId = null;
+let saved_device_name = '';
+let saved_device_id = '';
 
 // Abrir menu contextual
 document.addEventListener('click', function(e) {
+
     const menuTrigger = e.target.closest('.menu-trigger');
     
     if (menuTrigger) {
         e.preventDefault();
         e.stopPropagation();
         
+
         const cardId = parseInt(menuTrigger.dataset.id);
-        currentMenuCardId = cardId;
-        
+        // Verifica o ID do card (adequação para cards sem ID numérico)
+        if(cardId === null || isNaN(cardId)){
+           currentMenuCardId = menuTrigger.dataset.id;
+        }
+        else{
+            currentMenuCardId = cardId;
+        }
+                        
         // Posicionar menu próximo ao botão clicado
         const rect = menuTrigger.getBoundingClientRect();
         contextMenu.style.top = `${rect.bottom + window.scrollY + 5}px`;
@@ -34,15 +46,15 @@ document.addEventListener('click', function(e) {
 
 
 // Ações do menu
-contextMenu.addEventListener('click', function(e) {
-    const menuItem = e.target.closest('.menu-item');
+contextMenu.addEventListener('click', function(e) {    
+    const menuItem = e.target.closest('.menu-item');    
     if (!menuItem || !currentMenuCardId) return;
     
     const action = menuItem.dataset.action;
     const cardId = currentMenuCardId;
     
     switch(action) {
-        case 'move':
+        /*case 'move':
             openViewsSelector(cardId);
             break;
         case 'duplicate':
@@ -50,12 +62,15 @@ contextMenu.addEventListener('click', function(e) {
             break;
         case 'copy':
             copyCard(cardId);
-            break;
-        case 'cut':
-            cutCard(cardId);
+            break;*/
+        case 'rename':
+            renameCard(cardId);
             break;
         case 'delete':
             deleteCard(cardId);
+            break;    
+        case 'close':            
+            closeMenu();
             break;
     }
     
@@ -65,8 +80,8 @@ contextMenu.addEventListener('click', function(e) {
 
 
 // Funções das ações
-function openViewsSelector(cardId) {
-    document.getElementById('views-selector').classList.add('active');
+/*function openViewsSelector(cardId) {
+    //document.getElementById('views-selector').classList.add('active');
     
     // Atualizar seleção
     const viewOptions = document.querySelectorAll('.view-option');
@@ -83,14 +98,17 @@ function openViewsSelector(cardId) {
     
     // Configurar cancelamento
     document.getElementById('cancel-move').onclick = closeAllMenus;
-}
+}*/
 
-function moveCardToView(cardId, viewName) {
+
+
+/*function moveCardToView(cardId, viewName) {
     showActionIndicator(`Card movido para: ${viewName}`);
     console.log(`Card ${cardId} movido para view: ${viewName}`);
-}
+}*/
 
-function duplicateCard(cardId) {
+
+/*function duplicateCard(cardId) {
     const cardIndex = state.cards.findIndex(card => card.id === cardId);
     if (cardIndex === -1) return;
     
@@ -104,9 +122,11 @@ function duplicateCard(cardId) {
     state.cards.splice(cardIndex + 1, 0, newCard);
     initDashboard();
     showActionIndicator('Card duplicado com sucesso!');
-}
+}*/
 
-function copyCard(cardId) {
+
+
+/*function copyCard(cardId) {
     const card = state.cards.find(card => card.id === cardId);
     if (card) {
         state.clipboard = {...card};
@@ -114,36 +134,34 @@ function copyCard(cardId) {
         updateClipboardStatus();
         showActionIndicator('Card copiado para a clipboard!');
     }
+}*/
+
+
+function renameCard(cardId) {
+    const cardElement = document.getElementById(cardId);
+    if (cardElement) {
+        saved_device_name = cardElement.querySelector('.card-title').textContent.trim();
+        saved_device_id = cardId;        
+        document.getElementById('cards-container').style.display = 'none';
+        document.getElementById('rename-container').style.display = 'block';
+    }    
 }
 
-function cutCard(cardId) {
-    const card = state.cards.find(card => card.id === cardId);
-    if (card) {
-        state.clipboard = {...card};
-        state.clipboardAction = 'cut';
-        updateClipboardStatus();
-        showActionIndicator('Card recortado para a clipboard!');
-    }
-}
 
 function deleteCard(cardId) {
     if (confirm('Tem certeza que deseja excluir este card?')) {
-        state.cards = state.cards.filter(card => card.id !== cardId);
-        initDashboard();
-        showActionIndicator('Card excluído com sucesso!');
+        const cardElement = document.getElementById(cardId);
+        if (cardElement) {
+            console.log(`Excluir card: ${cardId}`);
+            showActionIndicator('Card excluído com sucesso!');
+        }  
+        
     }
 }
 
-// Atualizar status da clipboard
-function updateClipboardStatus() {
-    /*const clipboardContent = document.getElementById('clipboard-content');
-    if (state.clipboard) {
-        clipboardContent.textContent = `${state.clipboard.title} (${state.clipboardAction === 'copy' ? 'Cópia' : 'Recorte'})`;
-        clipboardContent.style.color = state.clipboardAction === 'cut' ? '#e53935' : '#41bdf5';
-    } else {
-        clipboardContent.textContent = 'Vazio';
-        clipboardContent.style.color = '#666';
-    }*/
+
+function closeMenu() {    
+    closeAllMenus();
 }
 
 
@@ -158,5 +176,7 @@ document.addEventListener('keydown', function(e) {
 // Fechar todos os menus
 function closeAllMenus() {
     contextMenu.classList.remove('active');
-    document.getElementById('views-selector').classList.remove('active');
+    //document.getElementById('views-selector').classList.remove('active');
 }
+
+export {saved_device_name, saved_device_id};

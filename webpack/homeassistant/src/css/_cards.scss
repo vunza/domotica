@@ -1,11 +1,8 @@
-
-
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 10px;
 }
-
 
 .cards-container {
     display: grid;
@@ -35,27 +32,58 @@
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #eee;    
+    border-bottom: 1px solid #eee;
+    gap: 10px; /* Espaço entre título e botão */
 }
 
 .card-title {
     font-size: 1.3rem;
     font-weight: 500;
-    width: 100%;
     color: #222;
     display: flex;
-    align-items: center;   
+    align-items: center;
+    flex-grow: 1;
+    overflow: hidden;
+    min-width: 0;
+    position: relative;
+}
+
+.card-title-content {
+    flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-right: 5px; /* Espaço para o scroll */
+    scrollbar-width: thin; /* Para Firefox */
+    scrollbar-color: #c1c1c1 transparent; /* Para Firefox */
+}
+
+/* Estilizando a scrollbar para Chrome, Edge, Safari */
+.card-title-content::-webkit-scrollbar {
+    height: 4px;
+}
+
+.card-title-content::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 2px;
+}
+
+.card-title-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+}
+
+.card-title-content::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
 }
 
 .card-title svg {
-    vertical-align: middle;   
-    margin-right: 0px;     
-    width: 35px;  
-    height: 35px;          
+    vertical-align: middle;
+    margin-right: 8px;
+    width: 35px;
+    height: 35px;
     cursor: pointer;
+    flex-shrink: 0;
 }
-
-
 
 .card-content {
     color: #555;
@@ -75,13 +103,13 @@
     font-size: 1.5rem;
     color: #888;
     transition: background-color 0.2s;
+    flex-shrink: 0;
 }
 
 .menu-trigger:hover {
     background-color: #f0f0f0;
     color: #41bdf5;
 }
-
 
 /* Indicador de Ação */
 .action-indicator {
@@ -117,16 +145,7 @@
     justify-content: space-between;
 }
 
-
-
-
-
-/*********************************************************/
-
-
 .ota-button-header {
-    //background: #41bdf5;
-    // color: white;
     border: none;
     padding: 6px 12px;
     border-radius: 4px;
@@ -137,9 +156,9 @@
 }
 
 .ota-button-header svg {
-    vertical-align: middle;   
-    margin-right: 0px;     
-    width: 35px;  
-    height: 35px;          
+    vertical-align: middle;
+    margin-right: 0px;
+    width: 35px;
+    height: 35px;
     cursor: pointer;
 }

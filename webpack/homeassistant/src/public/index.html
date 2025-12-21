@@ -7,47 +7,56 @@
 </head>
 <body>
     <div class="container">        
-        <div class="cards-container" id="cards-container" style="display: none;">
+        <div class="cards-container" id="cards-container" style="display: grid;">
             <!-- Cards serão gerados dinamicamente -->
         </div>
     </div>
 
     <!-- Menu Contextual -->
     <div class="context-menu" id="context-menu">
-        <div class="menu-item move" data-action="move">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        <!-- Programar (Firmware Upload) -->
+        <div class="menu-item" data-action="programme">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4zM4 6h1.13l1.62 3.5-.8 1.75-.8-1.75L4.87 6zm16 12H4v-4h16v4zm0-6h-4.87l-1.62 3.5.8 1.75.8-1.75L18.13 12H20z"/>
             </svg>
-            <span>Mover para View</span>
+            <span>Programar</span>
         </div>
-        <div class="menu-item" data-action="duplicate">
-            <svg viewBox="0 0 24 24">
-                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        
+        <!-- Renomear -->
+        <div class="menu-item" data-action="rename">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
             </svg>
-            <span>Duplicar</span>
+            <span>Renomear</span>
         </div>
-        <div class="menu-item" data-action="copy">
-            <svg viewBox="0 0 24 24">
-                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        
+        <!-- Temporizar -->
+        <div class="menu-item" data-action="timer">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
             </svg>
-            <span>Copiar</span>
+            <span>Temporizar</span>
         </div>
-        <div class="menu-item" data-action="cut">
-            <svg viewBox="0 0 24 24">
-                <path d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm0 12c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm6-7.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM19 3l-6 6 2 2 7-7V3z"/>
-            </svg>
-            <span>Recortar</span>
-        </div>
+        
+        <!-- Remover -->
         <div class="menu-item delete" data-action="delete">
-            <svg viewBox="0 0 24 24">
-                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
             </svg>
-            <span>Excluir</span>
+            <span>Remover</span>
+        </div>
+        
+        <!-- Fechar -->
+        <div class="menu-item" data-action="close">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+            <span>Fechar</span>
         </div>
     </div>
 
 
-
+   
     <!-- Seletor de Views -->
     <!-- <div class="views-selector" id="views-selector">
         <div class="views-modal">
@@ -68,7 +77,7 @@
 
 
     <!-- Renomear Dispositivos -->   
-    <div class="rename-container">
+    <div class="rename-container" id="rename-container" style="display: none;">
         <!-- Botão de fechar -->
         <button class="close-btn" id="closeBtn" title="Fechar">×</button>
         
@@ -80,7 +89,7 @@
                 </svg>
             </div>
             <h1>Renomear Dispositivo</h1>
-            <p>Atualize o nome do seu dispositivo</p>
+            <p>Atualize o Nome do Dispositivo</p>
         </div>
         
         <!-- Mensagem de feedback -->
@@ -88,7 +97,7 @@
         
         <!-- Campo para editar nome -->
         <div class="name-input-wrapper">
-            <label class="name-label" for="deviceName">Nome do dispositivo</label>
+            <label class="name-label" for="deviceName">Nome do Dispositivo</label>
             <input 
                 type="text" 
                 id="deviceName" 
@@ -96,7 +105,8 @@
                 value="ESP8266 Bridge #001" 
                 maxlength="30" 
                 disabled
-                placeholder="Digite o novo nome"
+                placeholder="Digite o Novo Nome"
+                autocomplete="off"
             >
             <div id="charCounter" class="char-counter">0/30 caracteres</div>
         </div>
@@ -129,11 +139,154 @@
             </button>
         </div>
     </div>
+
+
+    <!-- Configuração de Timers -->
+      <div class="config-timers-container"  style="display: none;">
+        <div class="config-timers-header">
+            <h2>Nome do Dispositivo</h2>
+        </div>
+
+        <div class="timer-selector-container">
+            <div class="timer-selector-grid">
+                <label class="timer-selector-label" id="lbl1">
+                    <input class="timer-selector-input" type="radio" value="1" name="select_timer" checked>
+                    <div class="timer-selector-number">1</div>
+                </label>
+                <label class="timer-selector-label" id="lbl2">
+                    <input class="timer-selector-input" type="radio" value="2" name="select_timer">
+                    <div class="timer-selector-number">2</div>
+                </label>
+                <label class="timer-selector-label" id="lbl3">
+                    <input class="timer-selector-input" type="radio" value="3" name="select_timer">
+                    <div class="timer-selector-number">3</div>
+                </label>
+                <label class="timer-selector-label" id="lbl4">
+                    <input class="timer-selector-input" type="radio" value="4" name="select_timer">
+                    <div class="timer-selector-number">4</div>
+                </label>
+            </div>
+        </div>
+
+        <div class="timer-config-section">
+            <form class="config-form">
+                <div class="config-row">
+                    <label id="lbl_activar_temporizador" class="config-label" for="chk_activar">Activar Temporizador: -</label>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="chk_activar" name="activar" hidden>
+                        <div class="custom-checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
+                        <span>Sim</span>
+                    </div>
+                </div>
+
+                <div class="config-row">
+                    <label class="config-label" for="select_accao">Acção:</label>
+                    <div class="select-container">
+                        <select class="custom-select" id="select_accao" name="select_action" required>
+                            <option value="" disabled selected>Indique uma Acção</option>
+                            <option value="opt_off">Desligar</option>
+                            <option value="opt_on">Ligar</option>
+                        </select>
+                        <div class="select-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-row">
+                    <label class="config-label" for="time_hora">Hora:</label>
+                    <div class="time-input-container">
+                        <input class="time-input" id="time_hora" type="time" name="appt-time" placeholder="00:00" value="">
+                        <div class="time-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="weekdays-container">
+                <label class="weekdays-label" id="weekdays-label">Dias da Semana:</label>
+                <div class="weekdays-grid">
+                    <label class="weekday-label">
+                        <input class="weekday-checkbox" type="checkbox" name="sel_week_day" value="0">
+                        <div class="weekday-letter">D</div>
+                        <span class="weekday-name">Dom</span>
+                    </label>
+                    <label class="weekday-label">
+                        <input class="weekday-checkbox" type="checkbox" name="sel_week_day" value="1">
+                        <div class="weekday-letter">S</div>
+                        <span class="weekday-name">Seg</span>
+                    </label>
+                    <label class="weekday-label">
+                        <input class="weekday-checkbox" type="checkbox" name="sel_week_day" value="2">
+                        <div class="weekday-letter">T</div>
+                        <span class="weekday-name">Ter</span>
+                    </label>
+                    <label class="weekday-label">
+                        <input class="weekday-checkbox" type="checkbox" name="sel_week_day" value="3">
+                        <div class="weekday-letter">Q</div>
+                        <span class="weekday-name">Qua</span>
+                    </label>
+                    <label class="weekday-label">
+                        <input class="weekday-checkbox" type="checkbox" name="sel_week_day" value="4">
+                        <div class="weekday-letter">Q</div>
+                        <span class="weekday-name">Qui</span>
+                    </label>
+                    <label class="weekday-label">
+                        <input class="weekday-checkbox" type="checkbox" name="sel_week_day" value="5">
+                        <div class="weekday-letter">S</div>
+                        <span class="weekday-name">Sex</span>
+                    </label>
+                    <label class="weekday-label">
+                        <input class="weekday-checkbox" type="checkbox" name="sel_week_day" value="6">
+                        <div class="weekday-letter">S</div>
+                        <span class="weekday-name">Sáb</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="current-time-date">
+                <div class="current-time">
+                    Hora atual: <span id="hora_actual">00:00:00</span>
+                </div>
+                <div class="current-date">
+                    Dia da semana: <span id="dia_semana_actual">Segunda-feira</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="timers-toolbar">
+            <button class="tool-btn btn-save" onclick="guardarConfigsTimers()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Guardar
+            </button>
+
+            <button class="tool-btn btn-close" onclick="fecharConfigTimers()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                Sair
+            </button>
+        </div>
+    </div>
     
 
     <!-- Indicador de Ação -->
     <!-- <div class="action-indicator" id="action-indicator">
-        <span id="action-text">Ação realizada com sucesso!</span>
+        <span id="action-text">Acção realizada com sucesso!</span>
     </div> -->
 
     <!-- Toast Notification -->
