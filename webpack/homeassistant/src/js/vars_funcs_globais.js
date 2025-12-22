@@ -43,7 +43,8 @@ const ip_e_porta = `${http_port}//${location.host}`;
  * Guarda o Tokem
  * @type {String|Number}  
  */
-let cachedToken = null;   
+let cachedToken = null;  
+
 
 
 /**

@@ -78,6 +78,11 @@
 
     <!-- Renomear Dispositivos -->   
     <div class="rename-container" id="rename-container" style="display: none;">
+
+        <!-- Guardar dados do dispositivo a ser renomeado -->
+        <input type="text" id="save_device_name" name="save_device_name"  style="display: none;">
+        <input type="text" id="save_device_id" name="save_device_id"  style="display: none;">
+
         <!-- Botão de fechar -->
         <button class="close-btn" id="closeBtn" title="Fechar">×</button>
         
@@ -102,7 +107,7 @@
                 type="text" 
                 id="deviceName" 
                 class="name-input" 
-                value="ESP8266 Bridge #001" 
+                value="Digite o Novo Nome" 
                 maxlength="30" 
                 disabled
                 placeholder="Digite o Novo Nome"

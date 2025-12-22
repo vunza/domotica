@@ -4,8 +4,7 @@
 // Menu Contextual
 const contextMenu = document.getElementById('context-menu');
 let currentMenuCardId = null;
-let saved_device_name = '';
-let saved_device_id = '';
+
 
 // Abrir menu contextual
 document.addEventListener('click', function(e) {
@@ -140,9 +139,16 @@ contextMenu.addEventListener('click', function(e) {
 function renameCard(cardId) {
     const cardElement = document.getElementById(cardId);
     if (cardElement) {
-        saved_device_name = cardElement.querySelector('.card-title').textContent.trim();
-        saved_device_id = cardId;        
+        // Salvar nome e ID do dispositivo globalmente
+        let saved_device_name = cardElement.querySelector('.card-title').textContent.trim();
+        let saved_device_id = cardId; 
+        // Passar Nome e ID do dispositivo para a interface de renomear    
+        document.getElementById('deviceName').value = saved_device_name;   
+        document.getElementById('save_device_name').value = saved_device_name;
+        document.getElementById('save_device_id').value = saved_device_id;
+        // Ocultar container de cards
         document.getElementById('cards-container').style.display = 'none';
+        // Mostrar interface de renomear
         document.getElementById('rename-container').style.display = 'block';
     }    
 }
@@ -179,4 +185,4 @@ function closeAllMenus() {
     //document.getElementById('views-selector').classList.remove('active');
 }
 
-export {saved_device_name, saved_device_id};
+//export {};

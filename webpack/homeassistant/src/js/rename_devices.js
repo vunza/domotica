@@ -1,7 +1,7 @@
 
 
-import {saved_device_name, saved_device_id} from './menu_contextual.js';
-
+//import {saved_device_name, saved_device_id} from './vars_funcs_globais.js';
+//import {} from './menu_contextual.js';
 
 // Elementos DOM
 const deviceNameInput = document.getElementById('deviceName');
@@ -12,9 +12,12 @@ const messageEl = document.getElementById('message');
 const charCounter = document.getElementById('charCounter');
 const closeBtn = document.getElementById('closeBtn');
 
+let saved_device_id = null;
+let saved_device_name = null;
+
 // Estado inicial
-let originalName = deviceNameInput.value;
 let isEditing = false;
+
 
 // Atualizar contador de caracteres
 function updateCharCounter() {
@@ -46,8 +49,11 @@ function showMessage(text, type = 'success') {
 
 // Função para fechar o container
 function closeContainer() {
+   
+    saved_device_name = document.getElementById('save_device_name').value;
+
     // Se estiver editando, perguntar se quer descartar alterações
-    if (isEditing && deviceNameInput.value !== originalName) {
+    if (isEditing && deviceNameInput.value.trim() !== saved_device_name.trim()) {
         if (!confirm('Tem alterações não salvas. Deseja realmente fechar?')) {
             return;
         }
@@ -67,7 +73,7 @@ function closeContainer() {
     // document.dispatchEvent(new CustomEvent('rename-closed'));
     
     // Para este exemplo, vamos mostrar uma mensagem e esconder o container
-    showMessage('Interface fechada', 'success');
+    //showMessage('Interface fechada', 'success');
     
     // Simular fechamento após 1 segundo
     setTimeout(() => {
@@ -79,9 +85,8 @@ function closeContainer() {
         document.getElementById('rename-container').style.display = 'none';   
         window.location.href = 'index.html';    
        
-    }, 1000);
+    }, 1000);    
     
-    console.log('Interface de renomear fechada');
 }
 
 // Iniciar edição
@@ -96,24 +101,30 @@ function startEditing() {
     cancelBtn.classList.remove('hidden');
 }
 
+
 // Salvar alterações
 function saveChanges() {
+
     const newName = deviceNameInput.value.trim();
+    saved_device_id = document.getElementById('save_device_id').value;
+    saved_device_name = document.getElementById('save_device_name').value;   
     
     // Validações
     if (!newName) {
-        showMessage('O nome não pode estar vazio', 'error');
+        showMessage('Indique o Novo Nome', 'error');
         deviceNameInput.focus();
         return;
     }
     
-    if (newName === originalName) {
-        showMessage('O nome permaneceu o mesmo', 'error');
+    if (newName === saved_device_name) {
+        showMessage('O Nome não foi alterado', 'error');
         cancelEditing();
         return;
     }
     
-    // Simular envio para servidor (substitua por chamada real)
+    // TODO: logica para o envio para servidor (substitua por chamada real)
+    saved_device_id = document.getElementById('save_device_id').value;
+    document.getElementById('deviceName').value = newName; 
     console.log('Enviando novo nome para servidor:', newName);
     
     // Simular delay de rede
@@ -123,7 +134,6 @@ function saveChanges() {
     
     setTimeout(() => {
         // Sucesso
-        originalName = newName;
         showMessage(`Nome alterado para "${newName}"`);
         
         // Resetar interface
@@ -136,7 +146,8 @@ function saveChanges() {
 // Cancelar edição
 function cancelEditing() {
     isEditing = false;
-    deviceNameInput.value = originalName;
+    if (document.getElementById('save_device_name').value.trim() === deviceNameInput.value.trim()) 
+        deviceNameInput.value = document.getElementById('save_device_name').value.trim();
     deviceNameInput.disabled = true;
     
     editBtn.classList.remove('hidden');
@@ -173,13 +184,8 @@ document.addEventListener('keydown', (e) => {
 
 
 // Inicializar
-document.addEventListener('DOMContentLoaded', () => { 
-
-    document.getElementById('deviceName').value = saved_device_name;
-    console.log('Renomear dispositivo:', saved_device_id, 'Nome atual:', saved_device_name);
-
-    updateCharCounter();
-    
+document.addEventListener('DOMContentLoaded', () => {       
+    updateCharCounter();    
 });
 
-export {  }
+//export {  }
