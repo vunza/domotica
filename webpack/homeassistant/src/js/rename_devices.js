@@ -1,6 +1,6 @@
 
 
-//import {saved_device_name, saved_device_id} from './vars_funcs_globais.js';
+import {getToken, ip_e_porta} from './vars_funcs_globais.js';
 //import {} from './menu_contextual.js';
 
 // Elementos DOM
@@ -81,7 +81,8 @@ function closeContainer() {
         document.querySelector('.rename-container').style.transform = 'scale(0.9)';
         document.querySelector('.rename-container').style.transition = 'all 0.3s ease';
 
-        document.getElementById('cards-container').style.display = 'grid';
+        //document.getElementById('cards-container').style.display = 'grid';
+        document.getElementById('cards_main_wrapper').style.display = 'block';
         document.getElementById('rename-container').style.display = 'none';   
         window.location.href = 'index.html';    
        
@@ -103,7 +104,7 @@ function startEditing() {
 
 
 // Salvar alterações
-function saveChanges() {
+async function saveChanges() {
 
     const newName = deviceNameInput.value.trim();
     saved_device_id = document.getElementById('save_device_id').value;
@@ -121,26 +122,34 @@ function saveChanges() {
         cancelEditing();
         return;
     }
-    
-    // TODO: logica para o envio para servidor (substitua por chamada real)
-    saved_device_id = document.getElementById('save_device_id').value;
-    document.getElementById('deviceName').value = newName; 
-    console.log('Enviando novo nome para servidor:', newName);
-    
-    // Simular delay de rede
+
+    // Animação no botão para salvar
     saveBtn.disabled = true;
     const originalSaveText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> Salvando...';
+
+    // Obter ID do dispositivo
+    saved_device_id = document.getElementById('save_device_id').value;    
     
-    setTimeout(() => {
-        // Sucesso
-        showMessage(`Nome alterado para "${newName}"`);
+    // Obter Token de acesso ao HA
+    const api_token = '/local/json_files/token_api.json';
+    const token = await getToken(api_token);
+
+    // Realizar a atualização do nome amigável via API
+    actualizaFriendlyName(token, ip_e_porta, saved_device_id, newName, 'unknown', 'unknown').then(() => {
         
-        // Resetar interface
-        cancelEditing();
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = originalSaveText;
-    }, 1000);
+        setTimeout(() => {
+            document.getElementById('deviceName').value = newName;         
+            showMessage(`Nome alterado para "${newName}"`);        
+            // Resetar interface
+            cancelEditing();
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalSaveText;            
+        }, 500);
+
+    }).catch((error) => {
+        console.error('Erro ao atualizar friendly name:', error);
+    });   
 }
 
 // Cancelar edição
@@ -181,6 +190,41 @@ document.addEventListener('keydown', (e) => {
         //closeContainer();
     }
 });
+
+
+
+async function actualizaFriendlyName(token, ip_porta, entityId, friendlyName, entityState, device_type) {
+   
+    const url = `${ip_porta}/api/services/shell_command/atualiza_friendly`;
+
+    fetch(url, {
+    method: "POST",
+    headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        entity_id: entityId,
+        friendly_name: friendlyName,
+        entity_state: entityState,
+        device_type: device_type
+    })
+    })
+    .then(response => {
+    if (!response.ok) {
+        throw new Error("Erro na requisição");
+    }
+    return response.json();
+    })
+    .then(data => {
+    console.log("Comando enviado com sucesso:", data);
+    })
+    .catch(error => {
+    console.error("Erro:", error);
+    });
+
+}
+
 
 
 // Inicializar

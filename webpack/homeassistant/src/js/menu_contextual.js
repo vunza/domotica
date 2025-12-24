@@ -15,7 +15,6 @@ document.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-
         const cardId = parseInt(menuTrigger.dataset.id);
         // Verifica o ID do card (adequação para cards sem ID numérico)
         if(cardId === null || isNaN(cardId)){
@@ -29,6 +28,8 @@ document.addEventListener('click', function(e) {
         const rect = menuTrigger.getBoundingClientRect();
         contextMenu.style.top = `${rect.bottom + window.scrollY + 5}px`;
         contextMenu.style.left = `${rect.left + window.scrollX - 180}px`;
+            
+
         
         // Ativar menu
         closeAllMenus();
@@ -147,7 +148,8 @@ function renameCard(cardId) {
         document.getElementById('save_device_name').value = saved_device_name;
         document.getElementById('save_device_id').value = saved_device_id;
         // Ocultar container de cards
-        document.getElementById('cards-container').style.display = 'none';
+        document.getElementById('cards_main_wrapper').style.display = 'none';
+        //document.getElementById('cards-container').style.display = 'none';
         // Mostrar interface de renomear
         document.getElementById('rename-container').style.display = 'block';
     }    
@@ -182,7 +184,12 @@ document.addEventListener('keydown', function(e) {
 // Fechar todos os menus
 function closeAllMenus() {
     contextMenu.classList.remove('active');
-    //document.getElementById('views-selector').classList.remove('active');
+    //document.getElementById('views-selector').classList.remove('active'); 
+    // Resetar estilos de scroll
+    contextMenu.style.maxHeight = '';
+    contextMenu.style.overflowY = '';
 }
+
+
 
 //export {};

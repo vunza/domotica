@@ -1,16 +1,18 @@
-/* Menu Contextual */
+/* MENU CONTEXTUAL */
 .context-menu {
     position: absolute;
-    background-color: white; /* Dark gray/blue background */
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Darker shadow */
+    background-color: #2d3748;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     z-index: 1000;
-    width: 220px;
+    width: 240px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    // transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
-    border: 1px solid #666; /* Darker border */
+    transform: translateY(-15px);
+    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+    border: 1px solid #4a5568;
+    max-height: 350px;
+    overflow-y: auto;
 }
 
 .context-menu.active {
@@ -20,14 +22,15 @@
 }
 
 .menu-item {
-    padding: 14px 20px;
+    padding: 16px 20px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    transition: all 0.2s; /* Changed to 'all' for smooth color transitions */
+    gap: 14px;
+    transition: all 0.2s;
     font-size: 1rem;
-    border-bottom: 1px solid #4a5568; /* Updated border color */
-    color: black; /* Light text color for dark background */
+    border-bottom: 1px solid #4a5568;
+    color: #e2e8f0;
 }
 
 .menu-item:last-child {
@@ -35,47 +38,57 @@
 }
 
 .menu-item:hover {
-    background-color: #4a5568; /* Darker hover for dark theme */
+    background-color: #4a5568;
 }
 
-
-.menu-item.delete:hover {
-    background-color: rgba(245, 101, 101, 0.1); /* Subtle red tint */
-    color: #fed7d7; /* Light red text */
-}
-
-.menu-item.delete:hover svg {
-    color: #fc8181; /* Brighter red on hover */
-}
-
-
-
-/* Cor base para todos os ícones */
 .menu-item svg {
-    color: #a0aec0; /* Cor padrão (cinza) */
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
-/* Cores específicas por ação */
+/* Cores dos ícones por ação */
 .menu-item[data-action="schedule"] svg {
-    color: #4299e1; /* Azul para Programar */
-}
-.menu-item[data-action="rename"] svg {
-    color: #ed8936; /* Laranja para Renomear */
-}
-.menu-item[data-action="timer"] svg {
-    color: #9f7aea; /* Roxo para Temporizar */
-}
-.menu-item[data-action="delete"] svg {
-    color: #f56565; /* Vermelho para Remover */
-}
-.menu-item[data-action="close"] svg {
-    color: #a0aec0; /* Cinza para Fechar */
+    color: #4299e1;
 }
 
-/* Efeitos hover */
-.menu-item:hover svg {
-    filter: brightness(1.2); /* Clareia o ícone ao passar o mouse */
+.menu-item[data-action="rename"] svg {
+    color: #ed8936;
 }
-.menu-item[data-action="delete"]:hover svg {
-    color: #fc8181; /* Vermelho mais claro no hover */
+
+.menu-item[data-action="timer"] svg {
+    color: #9f7aea;
 }
+
+.menu-item[data-action="delete"] svg {
+    color: #f56565;
+}
+
+.menu-item[data-action="close"] svg {
+    color: #a0aec0;
+}
+
+/* Scrollbar para o menu */
+.context-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.context-menu::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.context-menu::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 3px;
+}
+
+.context-menu::-webkit-scrollbar-thumb:hover {
+    background: #5a6578;
+}
+
+/* Ações do menu */
+.menu-item.delete:hover {
+    background-color: rgba(245, 101, 101, 0.15);
+}
+

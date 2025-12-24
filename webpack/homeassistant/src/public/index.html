@@ -6,15 +6,15 @@
     <title>Painel</title>    
 </head>
 <body>
-    <div class="container">        
+    <div class="container" id="cards_main_wrapper" style="display: block;">        
         <div class="cards-container" id="cards-container" style="display: grid;">
             <!-- Cards serão gerados dinamicamente -->
         </div>
     </div>
 
     <!-- Menu Contextual -->
-    <div class="context-menu" id="context-menu">
-        <!-- Programar (Firmware Upload) -->
+    <!-- <div class="context-menu" id="context-menu">
+        
         <div class="menu-item" data-action="programme">
             <svg viewBox="0 0 24 24" width="24" height="24">
                 <path fill="currentColor" d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4zM4 6h1.13l1.62 3.5-.8 1.75-.8-1.75L4.87 6zm16 12H4v-4h16v4zm0-6h-4.87l-1.62 3.5.8 1.75.8-1.75L18.13 12H20z"/>
@@ -22,7 +22,7 @@
             <span>Programar</span>
         </div>
         
-        <!-- Renomear -->
+        
         <div class="menu-item" data-action="rename">
             <svg viewBox="0 0 24 24" width="24" height="24">
                 <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -30,7 +30,7 @@
             <span>Renomear</span>
         </div>
         
-        <!-- Temporizar -->
+        
         <div class="menu-item" data-action="timer">
             <svg viewBox="0 0 24 24" width="24" height="24">
                 <path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
@@ -38,7 +38,7 @@
             <span>Temporizar</span>
         </div>
         
-        <!-- Remover -->
+      
         <div class="menu-item delete" data-action="delete">
             <svg viewBox="0 0 24 24" width="24" height="24">
                 <path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
@@ -46,10 +46,45 @@
             <span>Remover</span>
         </div>
         
-        <!-- Fechar -->
+       
         <div class="menu-item" data-action="close">
             <svg viewBox="0 0 24 24" width="24" height="24">
                 <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+            <span>Fechar</span>
+        </div>
+    </div> -->
+
+
+    <!-- Menu Contextual (inicialmente escondido) -->
+    <div class="context-menu" id="context-menu">
+        <div class="menu-item" data-action="schedule">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 17v-6l-3 3-1.41-1.41L11 7.17l6.41 6.42L16 14l-3-3v6h-4zm3-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+            </svg>
+            <span>Programar</span>
+        </div>
+        <div class="menu-item" data-action="rename">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+            <span>Renomear</span>
+        </div>
+        <div class="menu-item" data-action="timer">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+            </svg>
+            <span>Temporizar</span>
+        </div>
+        <div class="menu-item" data-action="delete">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+            <span>Remover</span>
+        </div>
+        <div class="menu-item" data-action="close">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
             </svg>
             <span>Fechar</span>
         </div>

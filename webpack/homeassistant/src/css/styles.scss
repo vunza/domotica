@@ -26,5 +26,14 @@ $fundo_body: #121212;
 }
 
 body {
-  background-color: $fundo_body;  
+  background-color: $fundo_body;     
+}
+
+
+@media (max-width: 768px) {
+  body {     
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
 }
