@@ -59,36 +59,16 @@ function closeContainer() {
         }
     }
     
-    // Em um ambiente real, você poderia:
-    // 1. Remover o container do DOM
-    // document.querySelector('.rename-container').remove();
-    
-    // 2. Esconder o container
-    // document.querySelector('.rename-container').style.display = 'none';
-    
-    // 3. Redirecionar para outra página
-    // window.location.href = 'index.html';
-    
-    // 4. Disparar um evento customizado
-    // document.dispatchEvent(new CustomEvent('rename-closed'));
-    
-    // Para este exemplo, vamos mostrar uma mensagem e esconder o container
-    //showMessage('Interface fechada', 'success');
-    
-    // Simular fechamento após 1 segundo
-    setTimeout(() => {
-        document.querySelector('.rename-container').style.opacity = '0';
-        document.querySelector('.rename-container').style.transform = 'scale(0.9)';
-        document.querySelector('.rename-container').style.transition = 'all 0.3s ease';
+    document.querySelector('.rename-container').style.opacity = '0';
+    document.querySelector('.rename-container').style.transform = 'scale(0.9)';
+    document.querySelector('.rename-container').style.transition = 'all 0.3s ease';
 
-        //document.getElementById('cards-container').style.display = 'grid';
-        document.getElementById('cards_main_wrapper').style.display = 'block';
-        document.getElementById('rename-container').style.display = 'none';   
-        window.location.href = 'index.html';    
-       
-    }, 1000);    
-    
+    document.getElementById('cards_main_wrapper').style.display = 'block';
+    document.getElementById('rename-container').style.display = 'none';   
+    window.location.href = 'index.html';      
 }
+
+
 
 // Iniciar edição
 function startEditing() {

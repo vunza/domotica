@@ -59,10 +59,10 @@ contextMenu.addEventListener('click', function(e) {
             break;
         case 'duplicate':
             duplicateCard(cardId);
-            break;
-        case 'copy':
-            copyCard(cardId);
             break;*/
+        case 'timer':
+            timerCard(cardId);
+            break;
         case 'rename':
             renameCard(cardId);
             break;
@@ -137,6 +137,24 @@ contextMenu.addEventListener('click', function(e) {
 }*/
 
 
+
+function timerCard(cardId) {
+    const cardElement = document.getElementById(cardId);
+    if (cardElement) {
+        // Salvar nome e ID do dispositivo globalmente
+        let saved_device_name = cardElement.querySelector('.card-title').textContent.trim();
+        let saved_device_id = cardId; 
+        // Passar Nome e ID do dispositivo para a interface de renomear    
+        document.querySelector('.config-timers-header h2').textContent = saved_device_name;          
+        document.getElementById('timer_save_device_id').value = saved_device_id;
+        // Ocultar container de cards
+        document.getElementById('cards_main_wrapper').style.display = 'none';        
+        // Mostrar interface de renomear
+        document.getElementById('config-timers-container').style.display = 'block';
+    }    
+}
+
+
 function renameCard(cardId) {
     const cardElement = document.getElementById(cardId);
     if (cardElement) {
@@ -148,8 +166,7 @@ function renameCard(cardId) {
         document.getElementById('save_device_name').value = saved_device_name;
         document.getElementById('save_device_id').value = saved_device_id;
         // Ocultar container de cards
-        document.getElementById('cards_main_wrapper').style.display = 'none';
-        //document.getElementById('cards-container').style.display = 'none';
+        document.getElementById('cards_main_wrapper').style.display = 'none';       
         // Mostrar interface de renomear
         document.getElementById('rename-container').style.display = 'block';
     }    
@@ -190,6 +207,3 @@ function closeAllMenus() {
     contextMenu.style.overflowY = '';
 }
 
-
-
-//export {};

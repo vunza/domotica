@@ -136,4 +136,12 @@ customCheckbox.setAttribute('aria-checked', 'false');
 // Inicializar o select com a cor da marca d'água
 selectAccao.style.color = 'rgba(255, 255, 255, 0.5)';
 
+
+window.fecharConfigTimers = function () {
+    document.getElementById('cards_main_wrapper').style.display = 'block';
+    document.getElementById('config-timers-container').style.display = 'none';   
+    window.location.href = 'index.html';   
+}
+
+
 export { fecharConfigTimers, guardarConfigsTimers };

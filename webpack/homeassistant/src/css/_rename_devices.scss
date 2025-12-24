@@ -37,7 +37,9 @@
     border-radius: 50%;
     border: none;
     background: #f5f5f5;
+    background: var(--danger);
     color: var(--text-light);
+    color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
