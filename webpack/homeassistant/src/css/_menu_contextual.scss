@@ -22,7 +22,7 @@
 }
 
 .menu-item {
-    padding: 16px 20px;
+    padding: 12px 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -42,13 +42,22 @@
 }
 
 .menu-item svg {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;   
+}
+
+#svg_upload_sketch{
+    width: 40px;
+    height: 40px;
+}
+
+#span_programar{
+   margin-left: -10px;
 }
 
 /* Cores dos ícones por ação */
-.menu-item[data-action="schedule"] svg {
+.menu-item[data-action="upload_sketch"] svg {
     color: #4299e1;
 }
 

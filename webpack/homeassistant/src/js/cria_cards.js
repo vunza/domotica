@@ -36,7 +36,7 @@ function createCardElement(card) {
     cardElement.id = card.id;
     cardElement.tipo = card.type;
     cardElement.innerHTML =         
-        `<div class="card-header">
+        `<div class="card-header" device-mac-address="${card.mac_address || 'null'}">
             <div class="card-title">
                 <span class="card-icon" id="${card.id}.img" onclick="click_on_image_card(this.id);">
                     ${iconHTML}

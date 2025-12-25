@@ -1,5 +1,5 @@
 
-
+import { executaApiServices, getToken, ip_e_porta } from './vars_funcs_globais.js';
 
 // Menu Contextual
 const contextMenu = document.getElementById('context-menu');
@@ -28,8 +28,14 @@ document.addEventListener('click', function(e) {
         const rect = menuTrigger.getBoundingClientRect();
         contextMenu.style.top = `${rect.bottom + window.scrollY + 5}px`;
         contextMenu.style.left = `${rect.left + window.scrollX - 180}px`;
-            
 
+        // Oculta a opção Programar se o card não tem MAC Address
+        const cardElement = document.getElementById(currentMenuCardId);
+        let saved_device_mac = cardElement.querySelector('.card-header').getAttribute('device-mac-address');
+        if (!saved_device_mac || saved_device_mac === 'null') {
+            document.querySelector('.menu-item[data-action="upload_sketch"]').style.display = 'none';
+        }    
+        
         
         // Ativar menu
         closeAllMenus();
@@ -54,10 +60,10 @@ contextMenu.addEventListener('click', function(e) {
     const cardId = currentMenuCardId;
     
     switch(action) {
-        /*case 'move':
-            openViewsSelector(cardId);
+        case 'upload_sketch':
+            uploadSketch(cardId);
             break;
-        case 'duplicate':
+        /*case 'duplicate':
             duplicateCard(cardId);
             break;*/
         case 'timer':
@@ -79,64 +85,40 @@ contextMenu.addEventListener('click', function(e) {
 
 
 
-// Funções das ações
-/*function openViewsSelector(cardId) {
-    //document.getElementById('views-selector').classList.add('active');
-    
-    // Atualizar seleção
-    const viewOptions = document.querySelectorAll('.view-option');
-    viewOptions.forEach(option => option.classList.remove('selected'));
-    
-    // Configurar botão de confirmação
-    document.getElementById('confirm-move').onclick = function() {
-        const selectedView = document.querySelector('.view-option.selected');
-        if (selectedView) {
-            moveCardToView(cardId, selectedView.dataset.view);
-        }
-        closeAllMenus();
-    };
-    
-    // Configurar cancelamento
-    document.getElementById('cancel-move').onclick = closeAllMenus;
-}*/
 
+async function uploadSketch(cardId) {
+    const cardElement = document.getElementById(cardId);
+    if (cardElement) {
+        // Salvar nome e ID do dispositivo globalmente
+        let saved_device_name = cardElement.querySelector('.card-title').textContent.trim();
+        let saved_device_id = cardId; 
+        let saved_device_mac = cardElement.querySelector('.card-header').getAttribute('device-mac-address');
 
+        // Obter Token de acesso ao HA
+        const api_token = '/local/json_files/token_api.json';
+        const token = await getToken(api_token);
 
-/*function moveCardToView(cardId, viewName) {
-    showActionIndicator(`Card movido para: ${viewName}`);
-    console.log(`Card ${cardId} movido para view: ${viewName}`);
-}*/
+        // Cria mensagem JSON a ser enviada, a um dispositivo EspNow, pela porta serial
+        const json_mensagem = JSON.stringify({
+            msg: "OTA_MODE" ,
+            dst_mac: saved_device_mac
+        })
 
+        // Envia mensagem JSON a ser enviada, a um dispositivo EspNow, pela porta serial
+        const api_service = "shell_command/esp32_serial_write";
+        executaApiServices(token, ip_e_porta, api_service, json_mensagem);
 
-/*function duplicateCard(cardId) {
-    const cardIndex = state.cards.findIndex(card => card.id === cardId);
-    if (cardIndex === -1) return;
-    
-    const originalCard = state.cards[cardIndex];
-    const newCard = {
-        ...originalCard,
-        id: Date.now(), // Novo ID único
-        title: `${originalCard.title} (Cópia)`
-    };
-    
-    state.cards.splice(cardIndex + 1, 0, newCard);
-    initDashboard();
-    showActionIndicator('Card duplicado com sucesso!');
-}*/
+        console.log(`Programar dispositivo: ${saved_device_name} \nID: ${saved_device_id} \nMAC: ${saved_device_mac}`);
 
-
-
-/*function copyCard(cardId) {
-    const card = state.cards.find(card => card.id === cardId);
-    if (card) {
-        state.clipboard = {...card};
-        state.clipboardAction = 'copy';
-        updateClipboardStatus();
-        showActionIndicator('Card copiado para a clipboard!');
-    }
-}*/
-
-
+        // Passar Nome e ID do dispositivo para a interface de renomear    
+        /*document.querySelector('.config-timers-header h2').textContent = saved_device_name;          
+        document.getElementById('timer_save_device_id').value = saved_device_id;
+        // Ocultar container de cards
+        document.getElementById('cards_main_wrapper').style.display = 'none';        
+        // Mostrar interface de renomear
+        document.getElementById('config-timers-container').style.display = 'block';*/
+    }    
+}
 
 function timerCard(cardId) {
     const cardElement = document.getElementById(cardId);

@@ -287,50 +287,6 @@ async function obterEstadoEntidade(token, ip_porta, entityId) {
 }
 
 
-/**
- * Função para alterar o friendly_name de uma entidae.
- * @param {String} token Token de acesso ao HA.
- * @param {String} ip_porta URL Base do HA no formato http[s]://ip-do-ha:porta.
- * @param {String} entityId ID a Entidade a alterar o friendly_name.
- * @param {String} friendlyName friendly_name a ser atribuido a entidade.
- * @param {String} entityState String que comtem o estado da entidade (on|off), obtido da função "obterEstadoEntidade".
- * @param {String} deviceType String que comtem o tipo de dispositivo (array "tipos_dispositivos"), para determina o icon para a Card.
-* @returns {string} Srting de confirmação do envio do comando.
- */
-async function actualizaFriendlyName(token, ip_porta, entityId, friendlyName, entityState, deviceType) {   
-   
-    const url = `${ip_porta}/api/services/shell_command/atualiza_friendly`;
-
-    fetch(url, {
-    method: "POST",
-    headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        entity_id: entityId,
-        friendly_name: friendlyName,
-        entity_state: entityState,
-        device_type: deviceType // Ler via: data.attributes.device_type
-    })
-    })
-    .then(response => {
-    if (!response.ok) {
-        throw new Error("Erro na requisição");
-    }
-    return response.json();
-    })
-    .then(data => {
-      console.log("Comando enviado com sucesso!");
-    })
-    .catch(error => {
-      console.error("Erro:", error);
-    });
-
-}
-
-
-
 /** 
  * Determina o tipo de dispositivo Zigbee com base nas entidades associadas.
  * @param {Object} device Objeto do dispositivo contendo suas entidades.
@@ -396,6 +352,72 @@ function trocarCorSVG(dev_id, dev_state, dev_type){
 }
 
 
+/**
+ * Executa uma chamada POST para a API de serviços de um dispositivo (ex.: ESP / Home Assistant).
+ *
+ * Envia uma mensagem JSON para o endpoint `/api/services/{api_service}`,
+ * utilizando autenticação via Bearer Token.
+ *
+ * @async
+ * @function executaApiServices
+ *
+ * @param {string} token
+ *        Token de autenticação (Bearer Token).
+ *
+ * @param {string} ip_porta
+ *        Endereço base do servidor com IP e porta.
+ *        Exemplo: "http://192.168.1.50:8123"
+ *
+ * @param {string} api_service
+ *        Serviço da API a ser executado.
+ *        Exemplo: "light/turn_on"
+ *
+ * @param {string} json_mensagem
+ *        Corpo da requisição em formato JSON (stringificado).
+ *        Exemplo: JSON.stringify({ entity_id: "light.sala" })
+ *
+ * @returns {Promise<void>}
+ *          Não retorna valor.
+ *          Em caso de sucesso ou erro, o resultado é tratado via console.
+ *
+ * @throws {Error}
+ *         Lança erro se a resposta HTTP não for OK (status diferente de 2xx).
+ *
+ * @example
+ * executaApiServices(
+ *   "abc123TOKEN",
+ *   "http://192.168.1.50:8123",
+ *   "light/turn_on",
+ *   JSON.stringify({ entity_id: "light.sala" })
+ * );
+ */
+async function executaApiServices(token, ip_porta, api_service, json_mensagem) {   
+  
+    const url = `${ip_porta}/api/services/${api_service}`;
+
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: json_mensagem
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Erro na requisição");
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Comando enviado com sucesso!");
+    })
+    .catch(error => {
+        console.log("Erro:", error);
+    });
+}
+
+
 
 export { 
   api, 
@@ -406,5 +428,6 @@ export {
   mostrarLogs,
   getDevicesWIthWebSocket,
   getEntitiesDataWithApi,
-  trocarCorSVG
+  trocarCorSVG,
+  executaApiServices
 };

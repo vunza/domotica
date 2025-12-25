@@ -31,14 +31,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Guarda lista de objectos com os dados das Entidades, para ser comparada com a lista de dispositivos        
         getEntitiesDataWithApi(token, api).then( (entidades)=>{   
             //console.log(entidades);
-            entidades.forEach((entity) => {                
+            entidades.forEach((entity) => {  
+                // Se tiver o atributo mac_address, guarda na variavel
+                let macAddr = null;
+                if (entity.attributes.mac_address){
+                    macAddr = entity.attributes.mac_address;
+                }     
+
                 entities_list.push({
                     id: entity.id, // dominio.ID (Ex.: sensor.0xa4c138237471c56a_current)
                     friendly_name: entity.nome,
                     historico: entity.historico,
                     status: entity.status, // online|offline
                     state: entity.state, // on|off
-                    device_id: entity.device_id // Apenas ID (Ex.: 0xa4c138237471c56a_current)
+                    device_id: entity.device_id, // Apenas ID (Ex.: 0xa4c138237471c56a_current)
+                    mac_address: macAddr // MAC Address 
                 });
             });              
                         
@@ -95,13 +102,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                     
                 // Criar Cards dos Dispositivos
-                resultado.forEach( (item) => {
+                resultado.forEach( (item) => {                   
+                    
+                    //console.log('MAC Address:', item.mac_address, item.friendly_name);
 
                     const card = {
                         id: item.id,
                         title: item.friendly_name,
                         content: item.historico,
-                        type: tipo
+                        type: tipo,
+                        mac_address: item.mac_address
                     };
                     
                     // Cria Card

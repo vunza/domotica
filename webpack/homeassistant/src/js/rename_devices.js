@@ -1,7 +1,7 @@
 
 
-import {getToken, ip_e_porta} from './vars_funcs_globais.js';
-//import {} from './menu_contextual.js';
+import {executaApiServices, getToken, ip_e_porta} from './vars_funcs_globais.js';
+
 
 // Elementos DOM
 const deviceNameInput = document.getElementById('deviceName');
@@ -115,8 +115,20 @@ async function saveChanges() {
     const api_token = '/local/json_files/token_api.json';
     const token = await getToken(api_token);
 
+
+    // Cria mensagem JSON a ser enviada ao HA
+    const json_mensagem = JSON.stringify({
+        entity_id: saved_device_id,
+        friendly_name: newName,
+        entity_state: 'unknown',
+        device_type: 'unknown' // Ler via: data.attributes.device_type
+    })
+
+    // Serviço API para atualizar friendly_name de dispositivos
+    const api_service = "shell_command/atualiza_friendly";    
+
     // Realizar a atualização do nome amigável via API
-    actualizaFriendlyName(token, ip_e_porta, saved_device_id, newName, 'unknown', 'unknown').then(() => {
+    executaApiServices(token, ip_e_porta, api_service, json_mensagem).then(() => {
         
         setTimeout(() => {
             document.getElementById('deviceName').value = newName;         
@@ -173,43 +185,8 @@ document.addEventListener('keydown', (e) => {
 
 
 
-async function actualizaFriendlyName(token, ip_porta, entityId, friendlyName, entityState, device_type) {
-   
-    const url = `${ip_porta}/api/services/shell_command/atualiza_friendly`;
-
-    fetch(url, {
-    method: "POST",
-    headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        entity_id: entityId,
-        friendly_name: friendlyName,
-        entity_state: entityState,
-        device_type: device_type
-    })
-    })
-    .then(response => {
-    if (!response.ok) {
-        throw new Error("Erro na requisição");
-    }
-    return response.json();
-    })
-    .then(data => {
-    console.log("Comando enviado com sucesso:", data);
-    })
-    .catch(error => {
-    console.error("Erro:", error);
-    });
-
-}
-
-
-
 // Inicializar
 document.addEventListener('DOMContentLoaded', () => {       
     updateCharCounter();    
 });
 
-//export {  }
