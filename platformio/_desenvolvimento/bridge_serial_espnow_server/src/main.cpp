@@ -102,6 +102,7 @@ void setup() {
             JsonBuilder json;
             json.add("server_mac", server_mac);
             json.add("client_mac", client_mac);
+            json.add("state", dados_espnow.state);
             json.add("ups1_current", dados_espnow.u1_current, 2);
             json.add("ups1_voltage", dados_espnow.u1_voltage, 2);
             json.add("ups1_temperature", dados_espnow.u1_temperature, 2);
@@ -139,12 +140,38 @@ void loop() {
     if (Serial.available()) {
 
         String recebido = Serial.readStringUntil('\n');
-        recebido.trim();        
+        recebido.trim();         
         
-        if (recebido == "NORMAL_MODE") {
-            ESP.restart(); // Rinicia o ESP para iniciar o modo e operação normal
+        // Converte String para char array
+        char buffer[JS_UART_DATA_SIZE];
+        recebido.toCharArray(buffer, sizeof(buffer));
+
+        // Extrai mensagem e MAC do formato <MSG|MAC>
+        char command[16];
+        char dts_mac[18];
+
+        if (buffer[0] == '<' && buffer[strlen(buffer) - 1] == '>') {
+            sscanf(buffer + 1, "%15[^|]|%17[^>]", command, dts_mac);            
         }
-        else if (recebido == "OTA_MODE") {
+
+        if ( strcmp(command, "NORMAL_MODE") == 0) {
+            
+            // Veriifca a quem destina-se o comando
+            char mac_addr[18];            
+            WiFi.macAddress().toCharArray(mac_addr, 18);
+
+            if ( strcmp(mac_addr, dts_mac) == 0) {
+                ESP.restart(); // Rinicia o ESP para iniciar o modo e operação normal
+            }
+            else{ // Retrasmite a mensagem para todos os nós ESP-NOW       
+                strcpy(dados_espnow.mac_server, mac_addr);
+                strcpy(dados_espnow.mac_client, dts_mac);
+                strcpy(dados_espnow.msg_type, "NORMAL_MODE");
+                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            }
+            
+        }
+        else if (strcmp(command, "OTA_MODE") == 0) {            
 
             // Credeciais de acesso a rede WiFi
             const char* ssid = "TPLINK";
@@ -164,11 +191,10 @@ void loop() {
     }
    
     // Envia um "ping" a cada 5 segundos
-    static unsigned long lastPing = 0;
+    /*static unsigned long lastPing = 0;
     if (millis() - lastPing > 10000) {   
-        lastPing = millis();  
-       
-    }
+        lastPing = millis();       
+    }*/
 
 }
 

@@ -128,7 +128,7 @@ async function saveChanges() {
     const api_service = "shell_command/atualiza_friendly";    
 
     // Realizar a atualização do nome amigável via API
-    executaApiServices(token, ip_e_porta, api_service, json_mensagem).then(() => {
+    executaApiServices(token, ip_e_porta, api_service, "application/json", json_mensagem).then(() => {
         
         setTimeout(() => {
             document.getElementById('deviceName').value = newName;         

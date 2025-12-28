@@ -5,6 +5,7 @@
 #define DEVICE_NAME_SIZE 24
 #define EEPROM_SIZE 512
 #define INA226_I2C_ADDRESS 0x40 
+#define JS_UART_DATA_SIZE 64
 
 
 #endif // CONSTANTES_H

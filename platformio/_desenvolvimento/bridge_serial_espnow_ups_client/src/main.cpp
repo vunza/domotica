@@ -107,31 +107,53 @@ void setup() {
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
         // Passa dados recebidos para a estructura
         memcpy(&dados_espnow, data, sizeof(EspNowData));
+        
+        char my_mac_addr[18];            
+        WiFi.macAddress().toCharArray(my_mac_addr, 18);       
 
         // Checa e processa o tipo de mensagens
         if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
-
-            
+            // Veriifca a quem destina-se o comando
+            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0) {
+                
+            } 
+            else{ // Retrasmite os dados, para alcançar dispositivos fora do alcance do servidor              
+                strcpy(dados_espnow.msg_type, "DATA");
+                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            }           
         }
-        else if( strcmp(dados_espnow.msg_type, "NORMAL_MODE") == 0 ) {   
-            ESP.restart(); // Rinicia o ESP para iniciar o modo e operação normal            
+        else if( strcmp(dados_espnow.msg_type, "NORMAL_MODE") == 0 ) { 
+            // Veriifca a quem destina-se o comando
+            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0) {
+                ESP.restart(); // Rinicia o ESP para iniciar o modo e operação normal
+            } 
+            else{ // Retrasmite os dados, para alcançar dispositivos fora do alcance do servidor
+                strcpy(dados_espnow.msg_type, "DATA");
+                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            }                         
         }
         else if( strcmp(dados_espnow.msg_type, "OTA_MODE") == 0 ) {   
-            // TODO: Atribuir nome sugestivo.
-            // TODO: Checar se a mensagem destina-se ao dispositivo.
-            // Credeciais de acesso a rede WiFi
-            const char* ssid = "FIRMEWARE";
-            const char* password = "123456789";
+            // TODO: Atribuir nome sugestivo.    
+            // Veriifca a quem destina-se o comando
+            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0) {
+                // Credeciais de acesso a rede WiFi
+                const char* ssid = "FIRMEWARE";
+                const char* password = "123456789";
 
-            // Rede WiFi            
-            //wifiManager.connect(ssid, password);
-            wifiManager.criar_ap(ssid, password);
+                // Rede WiFi            
+                //wifiManager.connect(ssid, password);
+                wifiManager.criar_ap(ssid, password);
 
-            // Iniciar servidor web
-            webServer.begin();
+                // Iniciar servidor web
+                webServer.begin();
 
-            // Inicializar OTA elegante
-            ElengantOTA::begin(&servidorHTTP);       
+                // Inicializar OTA elegante
+                ElengantOTA::begin(&servidorHTTP); 
+            } 
+            else{ // Retrasmite os dados, para alcançar dispositivos fora do alcance do servidor
+                strcpy(dados_espnow.msg_type, "OTA_MODE");
+                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            }                   
         }
 
     });
@@ -143,24 +165,21 @@ void setup() {
         
     });
 
-
-
     
     // Conectar WiFi
-    wifiManager.connect(ssid, password); 
-    
+    /*wifiManager.connect(ssid, password); 
+
     // Criar ponto de acesso WiFi
     //wifiManager.criar_ap("ESP8266", "123456789");
-
     // Iniciar servidor web
     webServer.begin();
 
     // Inicializar OTA elegante
-    ElengantOTA::begin(&servidorHTTP);  
+    ElengantOTA::begin(&servidorHTTP); */ 
+
     
     // Inicializar sensor INA226
-    sensorINA226.begin(); 
-  
+    sensorINA226.begin();   
     
     // Inicializa display LCD
     displayLCD.begin();
@@ -222,7 +241,8 @@ void loop() {
         //sizeof(dados);
 
         // Envia dados, apenas, se forem diferentes de "nan"
-        if (!isnan(g_voltage) && !isnan(g_current) && !isnan(g_temperature)  && !isnan(g_humidity)){      
+        if (!isnan(g_voltage) && !isnan(g_current) && !isnan(g_temperature)  && !isnan(g_humidity)){  
+            strcpy(dados_espnow.state, "ON"); // Assuming the device is on
             strcpy(dados_espnow.mac_client, mac);
             strcpy(dados_espnow.msg_type, "DATA");
             espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));  

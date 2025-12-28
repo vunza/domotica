@@ -31,12 +31,12 @@ function createCardElement(card) {
         //pencil: `<svg fill="lightgray" viewBox="0 0 24 24" transform="" id="injected-svg"><path d="m19.41,3c-.78-.78-2.05-.78-2.83,0L4.29,15.29c-.13.13-.22.29-.26.46l-1,4c-.08.34.01.7.26.95.19.19.45.29.71.29.08,0,.16,0,.24-.03l4-1c.18-.04.34-.13.46-.26l12.29-12.29c.78-.78.78-2.05,0-2.83l-1.59-1.59Zm-11.93,15.1l-2.11.53.53-2.11L15,7.41l1.59,1.59-9.1,9.1Zm10.51-10.51l-1.59-1.59,1.59-1.59,1.59,1.58-1.59,1.59Z"/></svg>`
 
     };
-    
+    //console.log('MAC Address do card selecionado:', card.mac_address);
     const iconHTML = iconMap[card.type] || iconMap.picture;
     cardElement.id = card.id;
     cardElement.tipo = card.type;
     cardElement.innerHTML =         
-        `<div class="card-header" device-mac-address="${card.mac_address || 'null'}">
+        `<div class="card-header" data-device-mac-address="${card.mac_address || 'null'}">
             <div class="card-title">
                 <span class="card-icon" id="${card.id}.img" onclick="click_on_image_card(this.id);">
                     ${iconHTML}

@@ -19,7 +19,8 @@
 typedef struct {
     char msg_type[10];  // REGIST | DATA | COMMAND | RESPONSE
     char mac_server[18];  
-    char mac_client[18];  
+    char mac_client[18]; 
+    char state[4]; // ON | OFF
     char u1_voltage[15];   
     char u1_current[15];
     char u1_temperature[15];

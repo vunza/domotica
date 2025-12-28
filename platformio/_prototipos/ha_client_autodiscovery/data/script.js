@@ -173,3 +173,5 @@ function actualizarFirmeware() {
 function Voltar(){
     location.reload();
 }
+
+

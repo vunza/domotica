@@ -391,7 +391,7 @@ function trocarCorSVG(dev_id, dev_state, dev_type){
  *   JSON.stringify({ entity_id: "light.sala" })
  * );
  */
-async function executaApiServices(token, ip_porta, api_service, json_mensagem) {   
+async function executaApiServices(token, ip_porta, api_service, contentType, content_msg) {   
   
     const url = `${ip_porta}/api/services/${api_service}`;
 
@@ -399,9 +399,9 @@ async function executaApiServices(token, ip_porta, api_service, json_mensagem) {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
+            "Content-Type": contentType
         },
-        body: json_mensagem
+        body: content_msg
     })
     .then(response => {
         if (!response.ok) {

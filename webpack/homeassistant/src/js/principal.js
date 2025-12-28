@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         getEntitiesDataWithApi(token, api).then( (entidades)=>{   
             //console.log(entidades);
             entidades.forEach((entity) => {  
-                // Se tiver o atributo mac_address, guarda na variavel
+                // Se tiver o atributo mac_address, guarda na variavel                
                 let macAddr = null;
                 if (entity.attributes.mac_address){
                     macAddr = entity.attributes.mac_address;
@@ -57,31 +57,33 @@ document.addEventListener("DOMContentLoaded", async function () {
                    
             // Criar Crads dos dispositivos
             devices.forEach(element => {
-                  
+               /* if(element.id.includes("wemos"))*/
                 // (*J*) Ponto para ver o tipo de Dispositivo
-                //console.log(element.model);
+                //console.log(element.name + " - " + element.model);
                 
                 // Filtra elementos por id, dominio, 
-                const ieee = element.name;               
+                const ieee = element.name.toLowerCase(); // Adequar para IEEE do Dispositivo      
                 const dominios = ["switch", "light", "sensor", "text"]; // Para entidaes com os dominios indicados
                 const posicoes = ["left", "center", "right"];  // Para Dispositivos com mais de um canal
-                const hubsir = ["", "learn_ir_code", "battery", "ir_code_to_send", "learned_ir_code"];  // Para Hubs ir                            
+                const hubsir = ["learn_ir_code", "battery", "ir_code_to_send", "learned_ir_code"];  // Para Hubs ir                            
                 const espnow = ["serial_espnow"];
-
+                const wemos = ["wemos", "mini", "d1", "led"];
+               
                 const resultado = entities_list.filter(item => {  
+                                      
                     // Fil;tra ID das entidades vinculadas a Devices e as criadas por via de template                                    
                     const temIEEE = item.device_id.includes(ieee) || item.id.includes('serial_espnow');  
-                    
+                   
                     // Filtra os dominios indicados
                     const temDominio = dominios.some(d => item.id.startsWith(d + "."));
                     
                     // Filtra dispositivos com mais de uma entidade, hubs ir e entidades criadas por template
                     const temPosicao = posicoes.some(p => item.id.endsWith("_" + p)) || 
-                    hubsir.some(l => item.id.endsWith("_" + l)) ||   
-                    espnow.some(e => item.id.includes(e)) ||  
-                                    
+                    hubsir.some(l => item.id.endsWith("_" + l)) ||  
+                    espnow.some(e => item.id.includes(e)) ||     
+                    wemos.some(w => item.id.includes(w)) ||                                               
                     // permite sem left/center/right
-                    !item.id.includes("_");                                   
+                    !item.id.includes("_");  
                     
                     return temIEEE && temDominio && temPosicao;                    
                 });               
@@ -91,6 +93,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const texto = element.model;          
                 let tipo = null;
                 if (texto != null && texto.includes('switch')) {
+                    tipo = 'light';
+                } else if (texto != null && texto.includes('Wemos D1 Mini')) {
                     tipo = 'light';
                 } else if (texto != null && texto.includes('Plug')) {
                     tipo = 'plug';
@@ -102,9 +106,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                     
                 // Criar Cards dos Dispositivos
-                resultado.forEach( (item) => {                   
-                    
-                    //console.log('MAC Address:', item.mac_address, item.friendly_name);
+                resultado.forEach( (item) => {                       
 
                     const card = {
                         id: item.id,
