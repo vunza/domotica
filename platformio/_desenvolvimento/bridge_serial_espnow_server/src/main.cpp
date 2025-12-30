@@ -163,7 +163,8 @@ void loop() {
             if ( strcmp(mac_addr, dts_mac) == 0) {
                 ESP.restart(); // Rinicia o ESP para iniciar o modo e operação normal
             }
-            else{ // Retrasmite a mensagem para todos os nós ESP-NOW       
+            else{ // Retrasmite a mensagem para todos os nós ESP-NOW  
+                strcpy(dados_espnow.state, "");     
                 strcpy(dados_espnow.mac_server, mac_addr);
                 strcpy(dados_espnow.mac_client, dts_mac);
                 strcpy(dados_espnow.msg_type, "NORMAL_MODE");

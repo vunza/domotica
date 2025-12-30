@@ -167,7 +167,7 @@ void setup() {
 
     
     // Conectar WiFi
-    /*wifiManager.connect(ssid, password); 
+    wifiManager.connect(ssid, password); 
 
     // Criar ponto de acesso WiFi
     //wifiManager.criar_ap("ESP8266", "123456789");
@@ -175,7 +175,7 @@ void setup() {
     webServer.begin();
 
     // Inicializar OTA elegante
-    ElengantOTA::begin(&servidorHTTP); */ 
+    ElengantOTA::begin(&servidorHTTP); 
 
     
     // Inicializar sensor INA226

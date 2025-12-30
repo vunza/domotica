@@ -1,5 +1,26 @@
-#include <ESP8266WiFi.h>
-#include <PubSubClient.h>
+#include <headers.h>
+
+
+/*
+          PIN_RELAY   PIN_BUTTON    PIN_LED   MCU
+--------------------------------------------------------  
+SLAMPHER  GPIO12      GPIO0         GPIO13    ESP8285 1M
+BASIC     GPIO12      GPIO0         GPIO13    ESP8266 1M
+ESP12E    GPIO12      GPIO0         GPIO2     ESP8266 4M
+T4EU1C    GPIO12      GPIO0         GPIO13    ESP8285 1M 
+T0EU1C    GPIO12      GPIO0         GPIO13    ESP8285 1M 
+SHELLY1L  GPIO5       GPIO4         GPIO0     ESP8285 1M 
+
+*/
+
+// Configuração do pin a controlar
+// 12 -- GPIO12 do SLAMPHER -- //GPIO15 do ESP12E
+// 2 --- wemos_d1_R2
+// 1 --- ESP8266
+
+//  2449233 -- Brdge Tasmota (Sonoff Pow Elite)
+//  8591111 -- Brdge Tasmota (Sonoff Zigbee Bridge Pro)
+
 
 // ========== CONFIGURAÇÕES ==========
 const char* WIFI_SSID = "TPLINK";
