@@ -16,7 +16,8 @@
 //#include <esp_now.h>
 //#include <ESP8266WebServer.h>
 //#include <ESP8266HTTPUpdateServer.h>
-
+ #include <PubSubClient.h>
+ #include <ESPAsyncWebServer.h>
 
 
 #if defined(ESP8266) 
@@ -29,10 +30,9 @@
   #include <espnow.h>  
   #include <WiFiClient.h>
   #include <ESP8266HTTPClient.h>
-  #include <PubSubClient.h>
+  //#include <PubSubClient.h>
 #elif defined(ESP32) 
-  #include <WiFi.h>
-  #include <ESPAsyncWebServer.h>
+  #include <WiFi.h> 
   //#include <SPIFFS.h>
   #include <esp_now.h>  
   #include <esp_wifi.h>

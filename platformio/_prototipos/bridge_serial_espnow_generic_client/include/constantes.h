@@ -1,0 +1,10 @@
+#ifndef CONSTANTES_H
+#define CONSTANTES_H
+
+#define EEPROM_START_ADDR 0
+#define DEVICE_NAME_SIZE 24
+#define EEPROM_SIZE 512
+#define INA226_I2C_ADDRESS 0x40 
+
+
+#endif // CONSTANTES_H
