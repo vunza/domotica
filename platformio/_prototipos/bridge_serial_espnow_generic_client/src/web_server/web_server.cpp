@@ -22,14 +22,12 @@ void WebServer::begin() {
     // ---- SERVE ARQUIVOS DO SPIFFS ----
     // Route for root / web page
     server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(LittleFS, "/index.html", "text/html"); });
-
-    server->on("/painel", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(LittleFS, "/painel.html", "text/html"); });           
-
+              { request->send(LittleFS, "/index.html", "text/html"); });  
+              
     // Route to load onfig.html file          
     server->on("/config", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/config.html", "text/html"); });
+                        
 
     // Route to load style.css file
     server->on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -43,8 +41,17 @@ void WebServer::begin() {
     server->on("/api/restart_device", HTTP_GET, [](AsyncWebServerRequest *request){        
         ESP.restart();
         request->send(200, "text/plain", "OK");     
-    });   
+    });    
+
+
     
+     // Rota para reiniciar o ESP
+    server->on("/api/restart_device", HTTP_GET, [](AsyncWebServerRequest *request){        
+        ESP.restart();
+        request->send(200, "text/plain", "OK");     
+    });    
+    
+        
     // Rota para renonmear o ESP, recebe dados atravez da requisicao POST
     server->on("/api/rename_esp", HTTP_POST, [](AsyncWebServerRequest *request){},NULL,[](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
 
@@ -93,20 +100,21 @@ void WebServer::begin() {
         request->send(200, "text/plain",  String(dados_dispositivo.device_name) + "," + String(DEVICE_NAME_SIZE));     
     });
 
-
-    // Route serve sensor INA226 data as JSON
-    server->on("/api/sensores", HTTP_GET, [](AsyncWebServerRequest *request){            
-
-        JsonBuilder json;
-        json.add("voltage", g_voltage, 3);
-        json.add("current", g_current, 3);
-        json.add("temperature", g_temperature, 2);
-        json.add("humidity", g_humidity, 2);
-
-        request->send(200, "application/json", json.build());     
-    }); 
-
     
+    // Route serve sensor INA226 data as JSON
+    server->on("/api/sensores", HTTP_GET, [](AsyncWebServerRequest *request){          
+        
+        JsonBuilder json;
+        json.add("ups1_current", 0.00, 2);
+        json.add("ups1_voltage", 0.00, 2);
+        json.add("ups1_temperature", 0.00, 2);
+        json.add("ups1_humidity", 0, 2);    
+        
+        String dados = json.build();        
+
+        request->send(200, "application/json", dados);     
+    });         
+
     // Iniciar o servidor web          
     server->begin();
 

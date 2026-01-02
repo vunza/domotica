@@ -16,6 +16,8 @@ void WiFiManager::connect(const char* ssid, const char* password) {
     
     imprimeln(F("\nConectado ao WiFi!"));    
     imprimeln(WiFi.localIP());
+    imprime(F("Canal WiFi: "));
+    imprimeln(String(WiFi.channel()));
 }
 
 

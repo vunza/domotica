@@ -51,6 +51,49 @@ public:
     void criar_ap(const char* ssid, const char* password);
 
     /**
+     * @brief Obtém o endereço MAC do dispositivo Wi-Fi.
+     *
+     * Esta função lê o endereço MAC da interface Wi-Fi e o grava
+     * no buffer fornecido pelo chamador, com ou sem separadores
+     * de dois pontos (`:`).
+     *
+     * É uma alternativa segura ao uso de `String`, evitando
+     * problemas de ponteiros inválidos e fragmentação de memória,
+     * especialmente em ESP8266 e ESP32.
+     *
+     * @param buffer      Buffer onde o endereço MAC será armazenado.
+     *                    - Deve ter tamanho mínimo de:
+     *                      • 18 bytes para formato com ":" (XX:XX:XX:XX:XX:XX)
+     *                      • 13 bytes para formato sem ":" (XXXXXXXXXXXX)
+     *
+     * @param withColons  Define o formato de saída:
+     *                    - true  → MAC com separadores ":" (ex: C8:C9:A3:38:D2:C3)
+     *                    - false → MAC contínuo, sem separadores (ex: C8C9A338D2C3)
+     *
+     * @note
+     * - O buffer será sempre finalizado com `\\0`.
+     * - Os caracteres hexadecimais são gerados em minúsculas (`%02x`).
+     *   Caso seja necessário letras maiúsculas, utilize `%02X`.
+     *
+     * @warning
+     * - O chamador é responsável por garantir que o buffer tenha
+     *   tamanho suficiente para o formato escolhido.
+     *
+     * @example
+     * char mac_no_colon[13];
+     * char mac_with_colon[18];
+     *
+     * getMacAddress(mac_no_colon, false);
+     * getMacAddress(mac_with_colon, true);
+     *
+     * // Resultados possíveis:
+     * // mac_no_colon   → "c8c9a338d2c3"
+     * // mac_with_colon → "c8:c9:a3:38:d2:c3"
+     */
+    void getMacAddress(char* buffer, bool withColons);
+
+
+    /**
      * @brief Verifica o estado da conexão Wi-Fi
      *
      * Deve ser chamado periodicamente no `loop()`.

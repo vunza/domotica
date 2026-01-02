@@ -16,6 +16,8 @@ void WiFiManager::connect(const char* ssid, const char* password) {
     
     imprimeln(F("\nConectado ao WiFi!"));    
     imprimeln(WiFi.localIP());
+    imprime(F("Canal WiFi: "));
+    imprimeln(String(WiFi.channel()));
 }
 
 
@@ -37,4 +39,18 @@ void WiFiManager::checkConnection() {
 
         lastCheck = millis();
     }
+}
+
+// Obtém o endereço MAC do dispositivo Wi-Fi.
+void WiFiManager::getMacAddress(char* buffer, bool withColons) {
+  uint8_t mac[6];
+  WiFi.macAddress(mac);
+
+  if (withColons) {
+    snprintf(buffer, 18, "%02x:%02x:%02x:%02x:%02x:%02x",
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  } else {
+    snprintf(buffer, 13, "%02x%02x%02x%02x%02x%02x",
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  }
 }

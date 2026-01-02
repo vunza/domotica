@@ -11,14 +11,16 @@ bool EspNowManager::begin(uint8_t channel, bool useAP) {
 #if defined(ESP32)
 
     WiFi.disconnect(true);
-    WiFi.mode(useAP ? WIFI_AP : WIFI_STA);
+    WiFi.mode(useAP ? WIFI_AP : WIFI_STA);    
     delay(100);
 
-    // Ajusta o canal de rádio
+    // Ajusta o canal de rádio    
+    esp_wifi_set_promiscuous(true);
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+    esp_wifi_set_promiscuous(false);
 
     if (esp_now_init() != ESP_OK) {
-        Serial.println("[ESPNOW] ERRO ao iniciar (ESP32)");
+        imprimeln(F("[ESPNOW] ERRO ao iniciar (ESP32)"));
         return false;
     }
 
@@ -28,14 +30,14 @@ bool EspNowManager::begin(uint8_t channel, bool useAP) {
 #elif defined(ESP8266)
 
     WiFi.disconnect();
-    WiFi.mode(useAP ? WIFI_AP : WIFI_STA);
-    /*WiFi.mode(useAP ? WIFI_AP : WIFI_AP_STA);   
+    WiFi.mode(useAP ? WIFI_AP : WIFI_AP_STA);   
     WiFi.softAP(WiFi.hostname(), "123456789", channel, true); // para que o esp-now funcione
-    */
+   
+
     delay(100);
 
     if (esp_now_init() != 0) {
-        Serial.println("[ESPNOW] ERRO ao iniciar (ESP8266)");
+        imprimeln(F("[ESPNOW] ERRO ao iniciar (ESP8266)"));
         return false;
     }
 
@@ -45,7 +47,7 @@ bool EspNowManager::begin(uint8_t channel, bool useAP) {
     esp_now_register_send_cb(_onSent);
 
     // Transformar AP em “fantasma” (desativada, mas canal permanece)
-    /*softap_config apcfg;
+    softap_config apcfg;
     wifi_softap_get_config(&apcfg);
     memset(apcfg.ssid, 0, sizeof(apcfg.ssid));  // Ocultar completamente
     apcfg.ssid_len = 0;
@@ -53,7 +55,7 @@ bool EspNowManager::begin(uint8_t channel, bool useAP) {
     apcfg.max_connection = 0;                 
     apcfg.beacon_interval = 1000;    
     wifi_softap_set_config_current(&apcfg);
-    wifi_softap_dhcps_stop(); // Desliga DHCP*/
+    wifi_softap_dhcps_stop(); // Desliga DHCP
 
 #endif
 
@@ -85,7 +87,7 @@ bool EspNowManager::addPeer(const uint8_t mac[6], uint8_t channel) {
 
 #endif
 
-    Serial.println("[ESPNOW] Falha ao adicionar peer");
+    imprimeln(F("[ESPNOW] Falha ao adicionar peer"));
     return false;
 }
 

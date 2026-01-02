@@ -16,6 +16,21 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 */
 
 
+// TDOD: Guardar/Recuperar dados da WiFi na EEPROM
+// ========== CONFIGURAÇÕES ==========
+const char* WIFI_SSID = "TPLINK";
+const char* WIFI_PASSWORD = "gregorio@2012";
+
+const char* MQTT_BROKER = "192.168.0.5";
+const int MQTT_PORT = 1883;
+const char* MQTT_USER = "wnr";
+const char* MQTT_PASSWORD = "123";
+
+
+bool ledState = false;
+const int LED_PIN = 2; // GPIO2 - LED embutido (LOW = ligado)
+
+
 // Variáveis globais para cache dos sensores
 float g_voltage = 0.0;
 float g_current = 0.0;
@@ -41,24 +56,19 @@ EEPROMManager eeprom;
 
 // CLIENTE MQTT
 WiFiClient wifiClient;
-MQTTClient mqttClient(wifiClient, "192.168.0.5");
+// TODO: IP do broker dinamico
+MQTTClient mqttClient(wifiClient, MQTT_BROKER);
 
-void mqttCallback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("MQTT: ");
-  Serial.println(topic);
 
-  static char msg[MQTT_BUFFER_SIZE];   // ajuste ao teu buffer
-  if (length >= sizeof(msg)) {
-    imprimeln(F("Payload demasiado grande"));
-    return;
-  }
-
-  memcpy(msg, payload, length);
-  msg[length] = '\0';     // termina a string
-
-  Serial.print(" Payload: ");
-  Serial.println(msg);
+void publishState() {
+  const char* state = ledState ? "ON" : "OFF";    
+  mqttClient.publish("casa/c8c9a338d2e7/state", state, true);
+  digitalWrite(LED_PIN, ledState ? LOW : HIGH);
 }
+
+
+// CallBack MQTT 
+void mqttCallback(char* topic, byte* payload, unsigned int length);
 
 
 
@@ -82,6 +92,10 @@ void setup() {
     #elif defined(ESP8266)
         Serial.setDebugOutput(false);
     #endif
+
+
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH); // LED desligado inicialmente
 
 
 
@@ -147,22 +161,46 @@ void setup() {
     espnow.onSend([](const uint8_t *mac, bool ok){
         
     });
-
-    // TDOD: Guardar/Recuperar dados da WiFi na EEPROM
-    // Credeciais de acesso a rede WiFi
-    const char* ssid = "TPLINK";
-    const char* password = "gregorio@2012";
+    
 
     // Rede WiFi
-    wifiManager.connect(ssid, password);
+    wifiManager.connect(WIFI_SSID, WIFI_PASSWORD);
 
 
-    // CLIENTE MQTT
-    mqttClient.setClientId("esp32_001");
+    // CLIENTE MQTT     
+    #if defined(ESP32)
+        const char* host_name = WiFi.getHostname();
+    #elif defined(ESP8266)  
+        String hostNameStr = WiFi.hostname();
+        const char* host_name = hostNameStr.c_str();
+    #endif    
+        
+    char node_id[13];  
+    char mac_colon[18]; 
+    char unique_id[64];    
+    const char* component  = "switch"; 
+    wifiManager.getMacAddress(mac_colon, true);   
+    wifiManager.getMacAddress(node_id, false);    
+    snprintf(unique_id, sizeof(unique_id), "%s%s_%s", mqttClient.entity_id_prefix, node_id, component);    
+    const char* device_name = node_id;
+    const char* entity_name = "Interruptor Cozinha";
+    const char* base_topic = "casa/";  
+    //char base_topic[64]; 
+    //snprintf(base_topic, sizeof(base_topic), "cozinha/%s_", component);
+    const char* manufacturer = "Espressif";
+    const char* model = "ESP-01"; // (*J*) Deve ser unico
+    const char* extra_config;
+
+    
+    mqttClient.setClientId(host_name);
     mqttClient.setCallback(mqttCallback);
     mqttClient.setBufferSize(MQTT_BUFFER_SIZE);
-    mqttClient.connect();
-    mqttClient.subscribe("wemos/C8C9A338D2C3/state");
+    mqttClient.connect();    
+
+    mqttClient.publishDiscoveryEntity(
+        mqttClient, component, node_id, entity_name, base_topic, unique_id,       
+        mac_colon, device_name, manufacturer, model, extra_config = nullptr 
+    );     
     
 }
 
@@ -233,4 +271,37 @@ void loop() {
     }*/
 
 }
+
+
+///////////////////
+// CallBack MQTT //
+///////////////////
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  
+  imprimeln(topic);
+
+  static char msg[MQTT_BUFFER_SIZE];   // ajuste ao teu buffer
+  if (length >= sizeof(msg)) {
+    imprimeln(F("Payload demasiado grande"));
+    return;
+  }
+
+  memcpy(msg, payload, length);
+  msg[length] = '\0';     
+
+  imprime(F(" Payload: "));
+  imprimeln(msg);
+
+     
+  // Verificar se é comando
+  if (strcmp(topic, "casa/c8c9a338d2e7/set") == 0) {
+    if (strcmp(msg, "ON") == 0) {
+      ledState = true;
+    } else if (strcmp(msg, "OFF") == 0) {
+      ledState = false;
+    }
+    publishState();
+  }
+}
+
 
