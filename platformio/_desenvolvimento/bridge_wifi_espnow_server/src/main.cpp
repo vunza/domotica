@@ -60,6 +60,10 @@ WiFiClient wifiClient;
 MQTTClient mqttClient(wifiClient, MQTT_BROKER);
 
 
+// DISPLAY OLED
+OLEDDisplay oled;
+
+
 void publishState() {
   const char* state = ledState ? "ON" : "OFF";    
   mqttClient.publish("casa/c8c9a338d2e7/state", state, true);
@@ -131,8 +135,10 @@ void setup() {
         // Passa dados recebidos para a estructura
         memcpy(&dados_espnow, data, sizeof(EspNowData));
 
+        Serial.println(dados_espnow.msg_type);
+
         // Checa e processa o tipo de mensagens (Se nao for para retransmissao)
-        if( strcmp(dados_espnow.msg_type, "DATA") == 0 && strcmp(dados_espnow.state, "RTx") != 0) {   
+        /*if( strcmp(dados_espnow.msg_type, "DATA") == 0 && strcmp(dados_espnow.state, "RTx") != 0) {   
 
             // Converte em json os dados recebidos dos sensores           
             JsonBuilder json;
@@ -153,7 +159,8 @@ void setup() {
             // Evia pela serial os dados processados            
             Serial.println(dados.c_str());
             json.reset();
-        }
+        }*/       
+
     });
 
 
@@ -200,7 +207,21 @@ void setup() {
     mqttClient.publishDiscoveryEntity(
         mqttClient, component, node_id, entity_name, base_topic, unique_id,       
         mac_colon, device_name, manufacturer, model, extra_config = nullptr 
-    );     
+    );  
+    
+
+    // DISPLAY OLED
+    static unsigned long contador = 0;
+    if (millis() - contador > 5000 && !oled.begin()) {   
+        contador = millis();       
+        imprimeln(F("Falha ao iniciar OLED"));        
+    }
+    else if(oled.begin()){
+        oled.clear();
+        oled.printText(0, 0, "Sistema OK", 2);
+        oled.showBattery(75);
+        oled.update();
+    }       
     
 }
 
@@ -269,6 +290,17 @@ void loop() {
     if (millis() - lastPing > 10000) {   
         lastPing = millis();       
     }*/
+
+    // DISPLAY OLED
+    static uint8_t bat = 0;
+    bat = (bat + 5) % 101;
+
+    oled.clear();
+    oled.printText(0, 0, "Bateria", 2);
+    oled.showBattery(bat);
+    oled.update();
+
+    delay(2000);
 
 }
 

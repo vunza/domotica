@@ -8,6 +8,7 @@
 #include "ctrl_debug.h"
 #include "sensors/INA226Sensor.h"
 #include "displays/lcd_display.h"
+#include "displays/oled_display_128x64.h"
 #include "sensors/DTH11Sensor.h"
 #include "espnow_manager/espnow_manager.h"
 #include "eeprom_manager/eeprom_manager.h"
