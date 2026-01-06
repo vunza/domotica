@@ -74,6 +74,24 @@ void publishState() {
 // CallBack MQTT 
 void mqttCallback(char* topic, byte* payload, unsigned int length);
 
+uint8_t getWiFiChannelFromAP(const char* ssid) {
+#if defined(ESP8266)
+    int n = WiFi.scanNetworks();
+    for (int i = 0; i < n; i++) {
+        if (WiFi.SSID(i) == ssid) {
+            return WiFi.channel(i);
+        }
+    }
+#elif defined(ESP32)
+    int n = WiFi.scanNetworks();
+    for (int i = 0; i < n; i++) {
+        if (WiFi.SSID(i) == ssid) {
+            return WiFi.channel(i);
+        }
+    }
+#endif
+    return 0; // não encontrado
+}
 
 
 //////////////////////////
@@ -81,7 +99,8 @@ void mqttCallback(char* topic, byte* payload, unsigned int length);
 //////////////////////////
 void setup() {
     // Iniciar comunicação serial
-    Serial.begin(115200);    
+    Serial.begin(115200); 
+    delay(200);   
 
     while (!Serial) {
         ; // Aguarda porta serial iniciar (normal no ESP32 USB)
@@ -98,9 +117,9 @@ void setup() {
     #endif
 
 
+    // TODO: Melhorar este trecho
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, HIGH); // LED desligado inicialmente
-
 
 
     // Inicializa a EEPROM com 512 bytes
@@ -112,12 +131,14 @@ void setup() {
     imprime(F("Nome do Dispositivo: "));
     imprimeln(dados_dispositivo.device_name);
 
+    // Obter canal WiFi
+    uint8_t channel = WiFi.channel();
     
     // Iniciar ESP-NOW    
-    espnow.begin(); // canal = 1 e modo = WIFI_STA por defeito
+    espnow.begin(channel, false); // canal e modo = WIFI_STA por defeito
 
     // broadcast (tudo que enviar vai para todos)
-    espnow.addPeer(broadcastMac); // canal = 1 por defeito
+    espnow.addPeer(broadcastMac, channel); 
     
 
     // Callback de recepção ESP-NOW
@@ -135,10 +156,33 @@ void setup() {
         // Passa dados recebidos para a estructura
         memcpy(&dados_espnow, data, sizeof(EspNowData));
 
-        Serial.println(dados_espnow.msg_type);
+        imprimeln(dados_espnow.msg_type);
+
+        // Processa Requisição de Canal
+        if( strcmp(dados_espnow.msg_type, "CHANNEL_REQ") == 0) {
+
+            // Converte nteiro a char []
+            uint8_t channel = espnow.getCurrentWiFiChannel();;
+            uint8_t len = String(channel).length();
+            char cz_channel[len + 1];  
+            String(channel).toCharArray(cz_channel, sizeof(cz_channel));
+
+            strcpy(dados_espnow.msg_type, "CHANNEL_RSP");
+            strcpy(dados_espnow.state, cz_channel);  
+            strcpy(dados_espnow.mac_server, server_mac);
+            strcpy(dados_espnow.mac_client, client_mac);          
+           
+            // Envia Resposta, CHANNEL_RSP, da petição CHANNEL_REQ
+            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+
+            Serial.println(dados_espnow.state);
+            Serial.println(dados_espnow.msg_type);           
+            Serial.println(dados_espnow.mac_client);
+            Serial.println("📡 Canal enviado ao cliente");            
+        }
 
         // Checa e processa o tipo de mensagens (Se nao for para retransmissao)
-        /*if( strcmp(dados_espnow.msg_type, "DATA") == 0 && strcmp(dados_espnow.state, "RTx") != 0) {   
+        else if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
 
             // Converte em json os dados recebidos dos sensores           
             JsonBuilder json;
@@ -159,7 +203,7 @@ void setup() {
             // Evia pela serial os dados processados            
             Serial.println(dados.c_str());
             json.reset();
-        }*/       
+        }     
 
     });
 
@@ -172,6 +216,7 @@ void setup() {
 
     // Rede WiFi
     wifiManager.connect(WIFI_SSID, WIFI_PASSWORD);
+    //wifiManager.criar_ap("ESP8266", "123456789", 3);
 
 
     // CLIENTE MQTT     
@@ -221,7 +266,7 @@ void setup() {
         oled.printText(0, 0, "Sistema OK", 2);
         oled.showBattery(75);
         oled.update();
-    }       
+    }     
     
 }
 
@@ -288,7 +333,7 @@ void loop() {
     // Envia um "ping" a cada 5 segundos
     /*static unsigned long lastPing = 0;
     if (millis() - lastPing > 10000) {   
-        lastPing = millis();       
+        lastPing = millis();        
     }*/
 
     // DISPLAY OLED

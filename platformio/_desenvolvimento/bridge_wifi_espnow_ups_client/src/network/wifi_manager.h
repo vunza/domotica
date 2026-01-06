@@ -48,7 +48,7 @@ public:
      * @param ssid Nome do Access Point
      * @param password Senha do Access Point (mínimo 8 caracteres)
      */
-    void criar_ap(const char* ssid, const char* password);
+    void criar_ap(const char* ssid, const char* password, uint8_t channel = 1);
 
     /**
      * @brief Obtém o endereço MAC do dispositivo Wi-Fi.

@@ -5,6 +5,8 @@ EspNowManager *EspNowManager::instance = nullptr;
 
 EspNowManager::EspNowManager() {
     instance = this;
+    channelFound = false;
+    discoveredChannel = 0;
 }
 
 bool EspNowManager::begin(uint8_t channel, bool useAP) {
@@ -63,6 +65,9 @@ bool EspNowManager::begin(uint8_t channel, bool useAP) {
     return true;
 }
 
+
+
+
 bool EspNowManager::addPeer(const uint8_t mac[6], uint8_t channel) {
 
 #if defined(ESP32)
@@ -99,6 +104,148 @@ bool EspNowManager::send(const uint8_t mac[6], const uint8_t *data, int len) {
 #endif
 }
 
+
+// Obtem canal WiFi configurado no dispositivo
+uint8_t EspNowManager::getCurrentWiFiChannel() {
+#if defined(ESP8266)
+    return wifi_get_channel();
+#elif defined(ESP32)
+    return WiFi.channel();
+#endif
+}
+
+
+
+// Callback de instância (processa os dados recebidos)
+void EspNowManager::onRecvInstance(const uint8_t* mac, const uint8_t* data, int len) {
+    EspNowData dados_espnow;
+    memcpy(&dados_espnow, data, sizeof(EspNowData));
+
+    imprime("[ESPNOW] Recebido de: ");
+    for (int i = 0; i < 6; i++) {
+        imprime(String(mac[i], HEX));
+        if (i < 5) imprime(":");
+    }
+    imprimeln("");
+
+    // Verifica se é uma resposta de canal
+    if (strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0) {       
+
+        // Termina o scan do vcanal
+        channelFound = true;
+        // Converte char array a interiro
+        char* endPtr;
+        discoveredChannel = strtol(dados_espnow.state, &endPtr, 10);
+
+        // Se nao foi encontardo o canal
+        if (*endPtr != '\0') {
+            discoveredChannel = 0;
+        }
+
+        imprime("[ESPNOW] Canal descoberto: ");
+        imprimeln(discoveredChannel);            
+    }
+}
+
+
+
+// Callback estática para ESP8266 (discovery espnow channel)
+#ifdef ESP8266
+void EspNowManager::staticOnRecv(uint8_t* mac, uint8_t* incomingData, uint8_t len) {
+    if (instance != nullptr) {
+        instance->onRecvInstance(mac, incomingData, len);
+    }
+}
+// Callback estática para ESP32 (discovery espnow channel)
+#elif defined(ESP32)
+void EspNowManager::staticOnRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
+    if (instance != nullptr) {
+        instance->onRecvInstance(mac, incomingData, len);
+    }
+}
+#endif
+
+
+
+// Solicita canal WiFi do Master
+uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
+
+    EspNowData dados_espnow; 
+    uint8_t broadcastMac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}; 
+    
+    strcpy(dados_espnow.msg_type, "CHANNEL_REQ");   
+    strcpy(dados_espnow.state, "");     
+
+    for(int8_t channel = 0; channel <= CHANNEL_SCAN_MAX; channel++){
+        
+        esp_now_deinit();
+        
+        #if defined(ESP32)
+            WiFi.disconnect(true);
+            WiFi.mode(WIFI_STA);    
+            delay(100);
+
+            // Ajusta o canal de rádio    
+            esp_wifi_set_promiscuous(true);
+            esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+            esp_wifi_set_promiscuous(false);
+
+            if (esp_now_init() != ESP_OK) {
+                imprimeln(F("[ESPNOW] ERRO ao iniciar (ESP32)"));
+                return 0;
+            }
+
+            esp_now_register_recv_cb(staticOnRecv);           
+
+        #elif defined(ESP8266)
+
+            WiFi.disconnect();
+            WiFi.mode(WIFI_AP_STA);   
+            WiFi.softAP(WiFi.hostname(), "123456789", channel, true); // para que o esp-now funcione
+
+            delay(100);
+
+            if (esp_now_init() != 0) {
+                imprimeln(F("[ESPNOW] ERRO ao iniciar (ESP8266)"));
+                return 0;
+            }
+
+            esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+            esp_now_register_recv_cb(staticOnRecv);            
+
+            // Transformar AP em “fantasma” (desativada, mas canal permanece)
+            softap_config apcfg;
+            wifi_softap_get_config(&apcfg);
+            memset(apcfg.ssid, 0, sizeof(apcfg.ssid));  // Ocultar completamente
+            apcfg.ssid_len = 0;
+            apcfg.ssid_hidden = 1;
+            apcfg.max_connection = 0;                 
+            apcfg.beacon_interval = 1000;    
+            wifi_softap_set_config_current(&apcfg);
+            wifi_softap_dhcps_stop(); // Desliga DHCP
+
+        #endif
+
+        if(channelFound){           
+           break;
+        }  
+        else{
+            strcpy(dados_espnow.msg_type, "CHANNEL_REQ");
+            esp_now_send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            imprime(F("Testando o Canal: "));
+            imprimeln(channel);
+        }                  
+        
+        delay(timeoutMs);
+    }
+
+    return discoveredChannel;
+    
+}
+
+
+
+
 /* -------------------- CALLBACKS ------------------------ */
 
 void EspNowManager::onReceive(RecvCallback cb) { _recvCB = cb; }
@@ -124,4 +271,5 @@ void EspNowManager::_onSent(uint8_t *mac, uint8_t status) {
     if (instance && instance->_sendCB)
         instance->_sendCB(mac, status == 0);
 }
+
 #endif

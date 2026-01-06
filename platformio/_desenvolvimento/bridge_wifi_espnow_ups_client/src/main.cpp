@@ -94,25 +94,63 @@ void setup() {
     Wire.setClock(100000); // 100 kHz → máximo de estabilidade com 2 I2C
 
     // Inicializar dispositivo
-    device.initialize();
+    device.initialize(); 
+
+
+    // Scanea canal Esp-Now
+    uint8_t canal = espnow.discoverEspNowChannel(1500);    
+
+    if (canal <= 0) {
+        Serial.println("❌ Master ESP-NOW não encontrado");
+    } else {
+        imprime("✅ Canal ESP-NOW descoberto: ");
+        imprimeln(canal); 
+        // Para ESP-NOW (discovery espnow channel)
+        esp_now_deinit();
+        // Iniciar ESP-NOW (modo normal)
+        espnow.begin(canal, false); // canal, modo = WIFI_STA por defeito
+        // broadcast (tudo que enviar vai para todos)
+        espnow.addPeer(broadcastMac, canal); 
+    }
 
 
     // Iniciar ESP-NOW
-    espnow.begin(); // canal = 1 e modo = WIFI_STA por defeito
+    /*espnow.begin(1, false); // canal == 1, modo = WIFI_STA por defeito
 
     // broadcast (tudo que enviar vai para todos)
-    espnow.addPeer(broadcastMac); // canal = 1 por defeito
+    espnow.addPeer(broadcastMac, 1); // canal == 1
+    */     
+    
+    
 
     // Callback para recepção de dados esp-now
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
         // Passa dados recebidos para a estructura
         memcpy(&dados_espnow, data, sizeof(EspNowData));
+
+        Serial.println(dados_espnow.msg_type);
         
+        // Obtem MAC do Dispositivo
         char my_mac_addr[18];            
         WiFi.macAddress().toCharArray(my_mac_addr, 18);       
 
         // Checa e processa o tipo de mensagens
-        if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
+        if( strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0 ) {             
+            
+
+            // Veriifca a quem destina-se o comando
+            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){
+                Serial.print("CANAL: ");
+                Serial.println(dados_espnow.state);
+            } 
+            else if(strcmp(dados_espnow.state, "RTx") != 0) {  
+                // Retrasmite os dados (uma vez), para alcançar dispositivos fora do alcance do servidor             
+                strcpy(dados_espnow.msg_type, "DATA");
+                strcpy(dados_espnow.state, "RTx");
+                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            }           
+        }
+        else if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
             // Veriifca a quem destina-se o comando
             if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){
                 
@@ -169,7 +207,7 @@ void setup() {
 
     
     // Conectar WiFi
-    wifiManager.connect(ssid, password); 
+    /*wifiManager.connect(ssid, password); 
 
     // Criar ponto de acesso WiFi
     //wifiManager.criar_ap("ESP8266", "123456789");
@@ -184,7 +222,7 @@ void setup() {
     sensorINA226.begin();   
     
     // Inicializa display LCD
-    displayLCD.begin();
+    displayLCD.begin();*/
     
 }
 
@@ -204,7 +242,7 @@ void loop() {
         if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA){
             wifiManager.checkConnection();
         }        
-    #endif  
+    #endif
  
     
     // Envia Dados cada X segundos
@@ -252,3 +290,8 @@ void loop() {
     }
     
 }
+
+
+
+
+

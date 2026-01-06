@@ -12,8 +12,14 @@
 OLEDDisplay::OLEDDisplay()
     : display(OLED_WIDTH, OLED_HEIGHT, &Wire, -1) {}
 
-bool OLEDDisplay::begin() {
-    Wire.begin(SDA_PIN, SCL_PIN);
+bool OLEDDisplay::begin() {    
+    #if defined(ESP8266)
+        Wire.begin();
+    #elif defined(ESP32)
+        Wire.begin(SDA_PIN, SCL_PIN);
+    #endif
+
+    delay(100);
 
     if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
         return false;

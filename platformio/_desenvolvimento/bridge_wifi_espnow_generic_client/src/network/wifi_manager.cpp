@@ -22,8 +22,8 @@ void WiFiManager::connect(const char* ssid, const char* password) {
 
 
 // Criar ponto de acesso WiFi
-void WiFiManager::criar_ap(const char* ssid, const char* password) {
-    WiFi.softAP(ssid, password);
+void WiFiManager::criar_ap(const char* ssid, const char* password, uint8_t channel) {
+    WiFi.softAP(ssid, password, channel);
     imprimeln(F("Ponto de acesso criado"));
     imprimeln(WiFi.softAPIP());
 }
