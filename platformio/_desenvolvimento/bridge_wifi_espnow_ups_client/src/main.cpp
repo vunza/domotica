@@ -101,25 +101,15 @@ void setup() {
     uint8_t canal = espnow.discoverEspNowChannel(1500);    
 
     if (canal <= 0) {
-        Serial.println("❌ Master ESP-NOW não encontrado");
+        imprimeln(F("Master ESP-NOW não encontrado"));
     } else {
-        imprime("✅ Canal ESP-NOW descoberto: ");
+        imprime(F("Canal ESP-NOW descoberto: "));
         imprimeln(canal); 
-        // Para ESP-NOW (discovery espnow channel)
-        esp_now_deinit();
         // Iniciar ESP-NOW (modo normal)
         espnow.begin(canal, false); // canal, modo = WIFI_STA por defeito
         // broadcast (tudo que enviar vai para todos)
         espnow.addPeer(broadcastMac, canal); 
     }
-
-
-    // Iniciar ESP-NOW
-    /*espnow.begin(1, false); // canal == 1, modo = WIFI_STA por defeito
-
-    // broadcast (tudo que enviar vai para todos)
-    espnow.addPeer(broadcastMac, 1); // canal == 1
-    */     
     
     
 

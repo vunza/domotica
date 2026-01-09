@@ -152,21 +152,46 @@ void setup() {
         // Obter MAC do Cliente
         char client_mac[18]; 
         snprintf(client_mac, 18, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        char client_mac_without_colon[13]; 
+        snprintf(client_mac_without_colon, 13, "%02x%02x%02x%02x%02x%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
         
         // Passa dados recebidos para a estructura
-        memcpy(&dados_espnow, data, sizeof(EspNowData));
-
-        imprimeln(dados_espnow.msg_type);
+        memcpy(&dados_espnow, data, sizeof(EspNowData));        
 
         // Processa Requisição de Canal
         if( strcmp(dados_espnow.msg_type, "CHANNEL_REQ") == 0) {
 
-            // Converte nteiro a char []
+            // Guarda o hostname do cliente, para CHANNEL_REQ vem atrave de "dados_espnow.mac_server"
+            const char* client_host_name = dados_espnow.mac_server;            
+
+            // Converte inteiro a char []
             uint8_t channel = espnow.getCurrentWiFiChannel();;
             uint8_t len = String(channel).length();
             char cz_channel[len + 1];  
             String(channel).toCharArray(cz_channel, sizeof(cz_channel));
+           
+            // Criar Entidade MQTT                        
+            char node_id[13];  
+            char mac_colon[18]; 
+            char unique_id[64];    
+            const char* component  = "switch";                
+            strcpy(mac_colon, client_mac); // wifiManager.getMacAddress(mac_colon, true);
+            strcpy(node_id, client_mac_without_colon); // wifiManager.getMacAddress(node_id, false);    
+            snprintf(unique_id, sizeof(unique_id), "%s%s", mqttClient.entity_id_prefix, node_id);   
+            const char* device_name = client_mac_without_colon;
+            const char* entity_name = ""; //"Interruptor Sala";
+            const char* base_topic = "casa/";  
+            const char* manufacturer = "Espressif";            
+            const char* model = client_host_name; // (*J*) Deve ser unico
+            const char* extra_config;            
 
+            mqttClient.publishDiscoveryEntity(
+                mqttClient, "entity", component, node_id, entity_name, base_topic, unique_id,       
+                mac_colon, device_name, manufacturer, model, extra_config = nullptr 
+            );  
+
+
+            // Respode a mensagem "CHANNEL_REQ"
             strcpy(dados_espnow.msg_type, "CHANNEL_RSP");
             strcpy(dados_espnow.state, cz_channel);  
             strcpy(dados_espnow.mac_server, server_mac);
@@ -174,11 +199,7 @@ void setup() {
            
             // Envia Resposta, CHANNEL_RSP, da petição CHANNEL_REQ
             espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
-
-            Serial.println(dados_espnow.state);
-            Serial.println(dados_espnow.msg_type);           
-            Serial.println(dados_espnow.mac_client);
-            Serial.println("📡 Canal enviado ao cliente");            
+    
         }
 
         // Checa e processa o tipo de mensagens (Se nao for para retransmissao)
@@ -219,40 +240,42 @@ void setup() {
     //wifiManager.criar_ap("ESP8266", "123456789", 3);
 
 
-    // CLIENTE MQTT     
+    // Conectar CLIENTE MQTT   
     #if defined(ESP32)
         const char* host_name = WiFi.getHostname();
     #elif defined(ESP8266)  
         String hostNameStr = WiFi.hostname();
         const char* host_name = hostNameStr.c_str();
-    #endif    
-        
+    #endif  
+    
+    mqttClient.setClientId(host_name);
+    mqttClient.setCallback(mqttCallback);
+    mqttClient.setBufferSize(MQTT_BUFFER_SIZE);
+    mqttClient.connect();         
+
+    // Criar Dispositivo MQTT
     char node_id[13];  
     char mac_colon[18]; 
     char unique_id[64];    
     const char* component  = "switch"; 
     wifiManager.getMacAddress(mac_colon, true);   
     wifiManager.getMacAddress(node_id, false);    
-    snprintf(unique_id, sizeof(unique_id), "%s%s_%s", mqttClient.entity_id_prefix, node_id, component);    
+    snprintf(unique_id, sizeof(unique_id), "%s%s", mqttClient.entity_id_prefix, node_id);      
     const char* device_name = node_id;
-    const char* entity_name = "Interruptor Cozinha";
+    const char* entity_name = "";//"Interruptor Cozinha";
     const char* base_topic = "casa/";  
-    //char base_topic[64]; 
-    //snprintf(base_topic, sizeof(base_topic), "cozinha/%s_", component);
-    const char* manufacturer = "Espressif";
-    const char* model = "ESP-01"; // (*J*) Deve ser unico
+    const char* manufacturer = "Espressif";    
+    const char* model = host_name; // (*J*) Deve ser unico
     const char* extra_config;
 
-    
-    mqttClient.setClientId(host_name);
-    mqttClient.setCallback(mqttCallback);
-    mqttClient.setBufferSize(MQTT_BUFFER_SIZE);
-    mqttClient.connect();    
-
+    // Guarda node_id do dispositivo principal para ser usado nas entidades dependentes
+    strcpy(mqttClient.main_device_node_id, node_id);
+     
     mqttClient.publishDiscoveryEntity(
-        mqttClient, component, node_id, entity_name, base_topic, unique_id,       
+        mqttClient, "device", component, node_id, entity_name, base_topic, unique_id,       
         mac_colon, device_name, manufacturer, model, extra_config = nullptr 
     );  
+    
     
 
     // DISPLAY OLED
@@ -341,7 +364,7 @@ void loop() {
     bat = (bat + 5) % 101;
 
     oled.clear();
-    oled.printText(0, 0, "Bateria", 2);
+    oled.printText(0, 0, "Bat.", 2);
     oled.showBattery(bat);
     oled.update();
 

@@ -228,16 +228,30 @@ uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
 
         if(channelFound){           
            break;
+           // Cancela ESP-NOW (discovery espnow channel)
+           esp_now_deinit();
         }  
         else{
+
+            #if defined(ESP32)
+                const char* host_name = WiFi.getHostname();
+            #elif defined(ESP8266)  
+                String hostNameStr = WiFi.hostname();
+                const char* host_name = hostNameStr.c_str();
+            #endif  
+
+            strcpy(dados_espnow.mac_server, host_name); // Usar mac_server para levar o nome do ESP
             strcpy(dados_espnow.msg_type, "CHANNEL_REQ");
             esp_now_send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
             imprime(F("Testando o Canal: "));
             imprimeln(channel);
-        }                  
-        
+        }       
+
         delay(timeoutMs);
     }
+
+    // Cancela ESP-NOW (discovery espnow channel)
+    esp_now_deinit();
 
     return discoveredChannel;
     

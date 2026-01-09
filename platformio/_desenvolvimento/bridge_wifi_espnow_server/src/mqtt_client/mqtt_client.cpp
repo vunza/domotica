@@ -47,6 +47,7 @@ bool MQTTClient::connected() {
 
 void MQTTClient::publishDiscoveryEntity(
     MQTTClient& mqttClient,
+    const char* role,
     const char* component,
     const char* node_id,
     const char* entity_name,
@@ -68,7 +69,9 @@ void MQTTClient::publishDiscoveryEntity(
 
     JsonBuilder json;
 
-    json.add("name", entity_name);
+    //json.add("name", entity_name);
+    json.add("name", model);
+    //json.add("name",  String(entity_id_prefix) + String(node_id));
     json.add("unique_id", unique_id);
 
     // State topic (sempre existe)
@@ -78,8 +81,7 @@ void MQTTClient::publishDiscoveryEntity(
 
     // Command topic (não usado em sensor/binary_sensor)
     char command_topic[64];
-    if (strcmp(component, "sensor") != 0 &&
-        strcmp(component, "binary_sensor") != 0) {          
+    if (strcmp(component, "sensor") != 0 && strcmp(component, "binary_sensor") != 0) {          
         snprintf(command_topic, sizeof(command_topic), "%s%s/set", base_topic, node_id);
         json.add("command_topic", command_topic);
     }
@@ -89,7 +91,7 @@ void MQTTClient::publishDiscoveryEntity(
     json.add("availability_topic", availability_topic);
 
     // Defaults para switch / light
-    if (!strcmp(component, "switch") || !strcmp(component, "light")) {
+    if (strcmp(component, "switch") == 0 || strcmp(component, "light") == 0 ) {
         json.add("payload_on", "ON");
         json.add("payload_off", "OFF");
         json.add("state_on", "ON");
@@ -98,13 +100,21 @@ void MQTTClient::publishDiscoveryEntity(
         json.add("qos", 1);
     }
 
+
     // Device block (partilhado por todas as entidades)
     JsonBuilder device;
-    device.add("identifiers", "[\"esp_" + String(node_id) + "\"]", false);
-    device.add("connections", "[[\"mac\",\"" + String(mac_colon) + "\"]]", false);
-    device.add("name", String(entity_id_prefix) + String(device_name));
-    device.add("manufacturer", manufacturer);
-    device.add("model", model);
+    if(strcmp(role, "device") == 0){
+      String device_id = "esp_" + String(component) + "_" + String(node_id);
+      device.add("identifiers", "[\"" + device_id + "\"]", false);    
+      device.add("connections", "[[\"mac\",\"" + String(mac_colon) + "\"]]", false);
+      device.add("name", String(entity_id_prefix) + String(device_name));
+      device.add("manufacturer", manufacturer);
+      device.add("model", model);
+    }
+    else if(strcmp(role, "entity") == 0){
+      String device_id = "esp_" + String(component) + "_" + String(main_device_node_id);
+      device.add("identifiers", "[\"" + device_id + "\"]", false);                  
+    }    
 
     json.add("device", device.build(), false);
 
@@ -112,7 +122,8 @@ void MQTTClient::publishDiscoveryEntity(
     if (extra_config && strlen(extra_config)) {
         json.add("_extra", extra_config, false);
     }
-
+    
+    
     // Ajuste final para remover placeholder
     String payload = json.build();
     payload.replace("\"_extra\":", "");
@@ -130,7 +141,9 @@ void MQTTClient::publishDiscoveryEntity(
       imprime(F("✔ MQTT Discovery publicado: "));
       imprimeln(discoveryTopic);
       imprimeln(payload);     
-    }
-
+    } 
+    else{
+      imprime(F("Erro do MQTT Discovery!"));
+    } 
     
 }

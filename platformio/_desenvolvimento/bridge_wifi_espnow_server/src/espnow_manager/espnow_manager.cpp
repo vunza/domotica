@@ -228,16 +228,21 @@ uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
 
         if(channelFound){           
            break;
+           // Cancela ESP-NOW (discovery espnow channel)
+           esp_now_deinit();
         }  
         else{
             strcpy(dados_espnow.msg_type, "CHANNEL_REQ");
             esp_now_send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
             imprime(F("Testando o Canal: "));
             imprimeln(channel);
-        }                  
-        
+        }       
+
         delay(timeoutMs);
     }
+
+    // Cancela ESP-NOW (discovery espnow channel)
+    esp_now_deinit();
 
     return discoveredChannel;
     
