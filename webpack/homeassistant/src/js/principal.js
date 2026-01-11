@@ -66,8 +66,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const dominios = ["switch", "light", "sensor", "text"]; // Para entidaes com os dominios indicados
                 const posicoes = ["left", "center", "right"];  // Para Dispositivos com mais de um canal
                 const hubsir = ["learn_ir_code", "battery", "ir_code_to_send", "learned_ir_code"];  // Para Hubs ir                            
-                const espnow = ["serial_espnow"];
-                const wemos = ["wemos", "mini", "d1", "led"];
+                const espnow = ["_esp_"];
+                //const wemos = ["wemos", "mini", "d1", "led"];
                
                 const resultado = entities_list.filter(item => {  
                                       
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const temPosicao = posicoes.some(p => item.id.endsWith("_" + p)) || 
                     hubsir.some(l => item.id.endsWith("_" + l)) ||  
                     espnow.some(e => item.id.includes(e)) ||     
-                    wemos.some(w => item.id.includes(w)) ||                                               
+                    //wemos.some(w => item.id.includes(w)) ||                                               
                     // permite sem left/center/right
                     !item.id.includes("_");  
                     
@@ -93,6 +93,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const texto = element.model;          
                 let tipo = null;
                 if (texto != null && texto.includes('switch')) {
+                    tipo = 'light';
+                }else if (texto != null && (texto.includes('ESP') || texto.includes('esp') )) {
                     tipo = 'light';
                 } else if (texto != null && texto.includes('Wemos D1 Mini')) {
                     tipo = 'light';

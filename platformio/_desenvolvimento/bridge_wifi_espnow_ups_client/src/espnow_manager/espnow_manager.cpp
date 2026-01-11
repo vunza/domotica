@@ -143,7 +143,7 @@ void EspNowManager::onRecvInstance(const uint8_t* mac, const uint8_t* data, int 
         }
 
         imprime("[ESPNOW] Canal descoberto: ");
-        imprimeln(discoveredChannel);            
+        imprimeln(discoveredChannel);                  
     }
 }
 
@@ -242,9 +242,10 @@ uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
 
             strcpy(dados_espnow.mac_server, host_name); // Usar mac_server para levar o nome do ESP
             strcpy(dados_espnow.msg_type, "CHANNEL_REQ");
+            strcpy(dados_espnow.mac_client, WiFi.macAddress().c_str());
             esp_now_send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
             imprime(F("Testando o Canal: "));
-            imprimeln(channel);
+            imprimeln(channel);            
         }       
 
         delay(timeoutMs);

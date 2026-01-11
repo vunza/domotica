@@ -120,7 +120,7 @@ void MQTTClient::publishDiscoveryEntity(
 
     // Configuração extra específica do componente
     if (extra_config && strlen(extra_config)) {
-        json.add("_extra", extra_config, false);
+      json.add("_extra", extra_config, false);
     }
     
     
@@ -138,7 +138,7 @@ void MQTTClient::publishDiscoveryEntity(
     boolean result = mqttClient.publish(discoveryTopic.c_str(), payload.c_str(), true);
 
     if(result){
-      imprime(F("✔ MQTT Discovery publicado: "));
+      imprime(F("MQTT Discovery publicado: "));
       imprimeln(discoveryTopic);
       imprimeln(payload);     
     } 

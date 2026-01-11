@@ -30,6 +30,8 @@ INA226Sensor sensorINA226(INA226_I2C_ADDRESS);
 // Define seu LCD (endereço e tamanho)
 LCDDisplay displayLCD(0x27, 16, 2);
 
+const uint8_t LED_PIN = 2; // GPIO2 - LED embutido (LOW = ligado)
+
 
 // DHT11 temperature and humidity sensor
 #ifdef ESP32
@@ -81,6 +83,11 @@ void setup() {
     #endif  
 
 
+    // TODO: Melhorar este trecho
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH); // LED desligado inicialmente
+
+
     // Inicializa a EEPROM com 512 bytes
     eeprom.begin(EEPROM_SIZE);   
     
@@ -108,7 +115,7 @@ void setup() {
         // Iniciar ESP-NOW (modo normal)
         espnow.begin(canal, false); // canal, modo = WIFI_STA por defeito
         // broadcast (tudo que enviar vai para todos)
-        espnow.addPeer(broadcastMac, canal); 
+        espnow.addPeer(broadcastMac, canal);         
     }
     
     
@@ -116,18 +123,15 @@ void setup() {
     // Callback para recepção de dados esp-now
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
         // Passa dados recebidos para a estructura
-        memcpy(&dados_espnow, data, sizeof(EspNowData));
-
-        Serial.println(dados_espnow.msg_type);
+        memcpy(&dados_espnow, data, sizeof(EspNowData));        
         
         // Obtem MAC do Dispositivo
         char my_mac_addr[18];            
         WiFi.macAddress().toCharArray(my_mac_addr, 18);       
 
         // Checa e processa o tipo de mensagens
-        if( strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0 ) {             
+        if( strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0 ) {        
             
-
             // Veriifca a quem destina-se o comando
             if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){
                 Serial.print("CANAL: ");
@@ -138,12 +142,23 @@ void setup() {
                 strcpy(dados_espnow.msg_type, "DATA");
                 strcpy(dados_espnow.state, "RTx");
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
-            }           
-        }
-        else if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
+            }  
+
+        } else if( strcmp(dados_espnow.msg_type, "SET_STATE") == 0 ) {             
             // Veriifca a quem destina-se o comando
             if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){
                 
+                // Ligar/Desligar PIN/LED (Logica invertida)
+                if (strcmp(dados_espnow.state, "ON") == 0) {      
+                    digitalWrite(LED_PIN, LOW);
+                } else if (strcmp(dados_espnow.state, "OFF") == 0) {      
+                    digitalWrite(LED_PIN, HIGH);
+                }
+
+                // Publicar Estado do PIN/LED                
+                strcpy(dados_espnow.msg_type, "STATE_SETED");                
+                strcpy(dados_espnow.mac_client, WiFi.macAddress().c_str());
+                esp_now_send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
             } 
             else if(strcmp(dados_espnow.state, "RTx") != 0) {  
                 // Retrasmite os dados (uma vez), para alcançar dispositivos fora do alcance do servidor             

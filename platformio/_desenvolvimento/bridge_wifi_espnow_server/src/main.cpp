@@ -27,8 +27,8 @@ const char* MQTT_USER = "wnr";
 const char* MQTT_PASSWORD = "123";
 
 
-bool ledState = false;
-const int LED_PIN = 2; // GPIO2 - LED embutido (LOW = ligado)
+//bool ledState = false;
+const uint8_t LED_PIN = 2; // GPIO2 - LED embutido (LOW = ligado)
 
 
 // Variáveis globais para cache dos sensores
@@ -63,16 +63,10 @@ MQTTClient mqttClient(wifiClient, MQTT_BROKER);
 // DISPLAY OLED
 OLEDDisplay oled;
 
-
-void publishState() {
-  const char* state = ledState ? "ON" : "OFF";    
-  mqttClient.publish("casa/c8c9a338d2e7/state", state, true);
-  digitalWrite(LED_PIN, ledState ? LOW : HIGH);
-}
-
-
 // CallBack MQTT 
 void mqttCallback(char* topic, byte* payload, unsigned int length);
+
+
 
 uint8_t getWiFiChannelFromAP(const char* ssid) {
 #if defined(ESP8266)
@@ -144,19 +138,27 @@ void setup() {
     // Callback de recepção ESP-NOW
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
 
+        // Passa dados recebidos para a estructura
+        memcpy(&dados_espnow, data, sizeof(EspNowData));
+
         // Obter MAC do Servidor
         char server_mac[18]; 
         String macStr = WiFi.macAddress();
         macStr.toCharArray(server_mac, 18);
 
         // Obter MAC do Cliente
+        const char* str = dados_espnow.mac_client;
+        uint8_t CLIENT_MAC[6];
+        sscanf(str, "%2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx",
+                                &CLIENT_MAC[0], &CLIENT_MAC[1], &CLIENT_MAC[2],
+                                &CLIENT_MAC[3], &CLIENT_MAC[4], &CLIENT_MAC[5]);
+
+
         char client_mac[18]; 
-        snprintf(client_mac, 18, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        snprintf(client_mac, 18, "%02X:%02X:%02X:%02X:%02X:%02X", CLIENT_MAC[0], CLIENT_MAC[1], CLIENT_MAC[2], CLIENT_MAC[3], CLIENT_MAC[4], CLIENT_MAC[5]);
         char client_mac_without_colon[13]; 
-        snprintf(client_mac_without_colon, 13, "%02x%02x%02x%02x%02x%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-        
-        // Passa dados recebidos para a estructura
-        memcpy(&dados_espnow, data, sizeof(EspNowData));        
+        snprintf(client_mac_without_colon, 13, "%02x%02x%02x%02x%02x%02x", CLIENT_MAC[0], CLIENT_MAC[1], CLIENT_MAC[2], CLIENT_MAC[3], CLIENT_MAC[4], CLIENT_MAC[5]);
+                        
 
         // Processa Requisição de Canal
         if( strcmp(dados_espnow.msg_type, "CHANNEL_REQ") == 0) {
@@ -174,14 +176,14 @@ void setup() {
             char node_id[13];  
             char mac_colon[18]; 
             char unique_id[64];    
-            const char* component  = "switch";                
+            const char* component  = MQTT_ENTITY_DOMAIN;                
             strcpy(mac_colon, client_mac); // wifiManager.getMacAddress(mac_colon, true);
             strcpy(node_id, client_mac_without_colon); // wifiManager.getMacAddress(node_id, false);    
             snprintf(unique_id, sizeof(unique_id), "%s%s", mqttClient.entity_id_prefix, node_id);   
             const char* device_name = client_mac_without_colon;
             const char* entity_name = ""; //"Interruptor Sala";
-            const char* base_topic = "casa/";  
-            const char* manufacturer = "Espressif";            
+            const char* base_topic = MQTT_BASE_TOPIC;  
+            const char* manufacturer = MQTT_ENTITY_MANUFACTURER;            
             const char* model = client_host_name; // (*J*) Deve ser unico
             const char* extra_config;            
 
@@ -200,8 +202,11 @@ void setup() {
             // Envia Resposta, CHANNEL_RSP, da petição CHANNEL_REQ
             espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
     
+        }else if( strcmp(dados_espnow.msg_type, "STATE_SETED") == 0 ) { 
+            // Publicar Estado do PIN/LED
+            String str_topico = MQTT_BASE_TOPIC + String(client_mac_without_colon) + String("/state");
+            mqttClient.publish(str_topico.c_str(), dados_espnow.state, true);
         }
-
         // Checa e processa o tipo de mensagens (Se nao for para retransmissao)
         else if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
 
@@ -257,14 +262,14 @@ void setup() {
     char node_id[13];  
     char mac_colon[18]; 
     char unique_id[64];    
-    const char* component  = "switch"; 
+    const char* component  = MQTT_DEVICE_DOMAIN; 
     wifiManager.getMacAddress(mac_colon, true);   
     wifiManager.getMacAddress(node_id, false);    
     snprintf(unique_id, sizeof(unique_id), "%s%s", mqttClient.entity_id_prefix, node_id);      
     const char* device_name = node_id;
-    const char* entity_name = "";//"Interruptor Cozinha";
-    const char* base_topic = "casa/";  
-    const char* manufacturer = "Espressif";    
+    const char* entity_name = "";
+    const char* base_topic = MQTT_BASE_TOPIC;  
+    const char* manufacturer = MQTT_DEVICE_MANUFACTURER;    
     const char* model = host_name; // (*J*) Deve ser unico
     const char* extra_config;
 
@@ -274,11 +279,10 @@ void setup() {
     mqttClient.publishDiscoveryEntity(
         mqttClient, "device", component, node_id, entity_name, base_topic, unique_id,       
         mac_colon, device_name, manufacturer, model, extra_config = nullptr 
-    );  
-    
+    );    
     
 
-    // DISPLAY OLED
+    // INICIALIZA DISPLAY OLED
     static unsigned long contador = 0;
     if (millis() - contador > 5000 && !oled.begin()) {   
         contador = millis();       
@@ -289,8 +293,8 @@ void setup() {
         oled.printText(0, 0, "Sistema OK", 2);
         oled.showBattery(75);
         oled.update();
-    }     
-    
+    }  
+        
 }
 
 
@@ -304,22 +308,7 @@ void loop() {
     mqttClient.loop();
 
     // Se recebeu dados pela Serial
-    if (Serial.available()) {
-
-        String recebido = Serial.readStringUntil('\n');
-        recebido.trim();         
-        
-        // Converte String para char array
-        char buffer[JS_UART_DATA_SIZE];
-        recebido.toCharArray(buffer, sizeof(buffer));
-
-        // Extrai mensagem e MAC do formato <MSG|MAC>
-        char command[16];
-        char dts_mac[18];
-
-        if (buffer[0] == '<' && buffer[strlen(buffer) - 1] == '>') {
-            sscanf(buffer + 1, "%15[^|]|%17[^>]", command, dts_mac);            
-        }
+    /*if (Serial.available()) {          
 
         if ( strcmp(command, "NORMAL_MODE") == 0) {
             
@@ -351,7 +340,9 @@ void loop() {
             ElengantOTA::begin(&servidorHTTP);       
         }
 
-    }
+    }*/
+
+
    
     // Envia um "ping" a cada 5 segundos
     /*static unsigned long lastPing = 0;
@@ -377,10 +368,8 @@ void loop() {
 // CallBack MQTT //
 ///////////////////
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
-  
-  imprimeln(topic);
 
-  static char msg[MQTT_BUFFER_SIZE];   // ajuste ao teu buffer
+  static char msg[MQTT_BUFFER_SIZE];  
   if (length >= sizeof(msg)) {
     imprimeln(F("Payload demasiado grande"));
     return;
@@ -389,19 +378,47 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   memcpy(msg, payload, length);
   msg[length] = '\0';     
 
-  imprime(F(" Payload: "));
+  imprime(F("Topico: "));
+  imprimeln(topic);
+  imprime(F("Payload: "));
   imprimeln(msg);
 
-     
-  // Verificar se é comando
-  if (strcmp(topic, "casa/c8c9a338d2e7/set") == 0) {
-    if (strcmp(msg, "ON") == 0) {
-      ledState = true;
-    } else if (strcmp(msg, "OFF") == 0) {
-      ledState = false;
+  // Obtem MAC contido no toico
+  String str_mac = wifiManager.extrairIdDoTopico(String(topic));
+  // Obtem MAC do Servidor
+  char server_mac[13];
+  wifiManager.getMacAddress(server_mac, false); 
+  
+
+  // Verificar se é comando e o proprietario do topico 
+  if ( strcmp(server_mac, str_mac.c_str()) == 0 && strstr(topic, "/set")) { // SERVIDOR ESP-NOW
+
+    // Ligar/Desligar PIN/LED (Logica invertida)
+    if (strcmp(msg, "ON") == 0) {      
+      digitalWrite(LED_PIN, LOW);
+    } else if (strcmp(msg, "OFF") == 0) {      
+      digitalWrite(LED_PIN, HIGH);
     }
-    publishState();
+
+    // Publicar Estado do PIN/LED
+    String str_topico = MQTT_BASE_TOPIC + str_mac + String("/state");
+    mqttClient.publish(str_topico.c_str(), msg, true);
+    
+  } else if ( !strcmp(server_mac, str_mac.c_str()) == 0 && strstr(topic, "/set")){ // CLIENTES ESP-NOW 
+    
+    // Respode a mensagem "CHANNEL_REQ"
+    String str_mac_formatado = wifiManager.formatarMac(str_mac); // Formata string MAC
+    strcpy(dados_espnow.msg_type, "SET_STATE");
+    strcpy(dados_espnow.state, msg);  
+    strcpy(dados_espnow.mac_server, server_mac);
+    strcpy(dados_espnow.mac_client, str_mac_formatado.c_str());          
+    
+    // Envia SET_STATE
+    espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+
   }
-}
+
+
+}// mqttCallback(char* topic, byte* payload, unsigned int length)
 
 

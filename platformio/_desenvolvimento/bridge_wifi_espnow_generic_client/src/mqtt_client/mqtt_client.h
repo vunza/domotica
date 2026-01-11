@@ -16,6 +16,19 @@
  */
 class MQTTClient {
   public:
+
+    /**
+     * Buffer estático que armazena o identificador único do dispositivo para MQTT Auto Discovery.
+     * 
+     * Este identificador é utilizado para agrupar múltiplas entidades (sensores, interruptores, 
+     * etc.) sob um único dispositivo na interface do Home Assistant, permitindo organização
+     * hierárquica e gerenciamento conjunto.
+     * 
+     * Formato: "esp32_[TIPO]_[ID_UNICO]"
+     * Exemplo: "esp32_sensor_001", "esp32_relay_kitchen"
+     */
+    char main_device_node_id[13];
+
     /**
      * @brief Prefixo fixo usado para identificação do dispositivo no Home Assistant.
      *
@@ -115,6 +128,8 @@ class MQTTClient {
  * componente através de um bloco JSON adicional.
  *
  * @param mqttClient   Referência para o cliente MQTT já conectado.
+ * 
+ *  @param role        Tipo de dispositivo [device|entity].
  *
  * @param component    Tipo de entidade do Home Assistant.
  *                     Exemplos:
@@ -172,6 +187,7 @@ class MQTTClient {
  * @example
  * publishDiscoveryEntity(
  *     mqttClient,
+ *     "[device|entity]"
  *     "sensor",
  *     "C8C9A338D2C3",
  *     "Tensão",
@@ -186,6 +202,7 @@ class MQTTClient {
  */
 void publishDiscoveryEntity(
     MQTTClient& mqttClient,
+    const char* role,
     const char* component,
     const char* node_id,
     const char* entity_name,
