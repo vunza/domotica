@@ -201,6 +201,80 @@ public:
     uint8_t discoverEspNowChannel(uint32_t timeoutMs = 3000);
 
 
+    /**
+     * @brief Realiza o emparelhamento com um dispositivo mestre via ESP-NOW.
+     * 
+     * Esta função executa o processo completo de descoberta e emparelhamento com um 
+     * dispositivo mestre ESP-NOW. Primeiro, realiza um scan para descobrir o canal 
+     * ativo do mestre e, em caso de sucesso, inicializa o ESP-NOW no canal correto
+     * e adiciona o endereço de broadcast como peer para comunicação.
+     * 
+     * O processo inclui:
+     * 1. Descoberta do canal do dispositivo mestre ESP-NOW
+     * 2. Inicialização do ESP-NOW no canal descoberto
+     * 3. Configuração do peer de broadcast para comunicação com todos os dispositivos
+     * 4. Atualização do estado interno (is_server_alive)
+     * 
+     * @param broadcastMac Ponteiro para array de 6 bytes contendo o endereço MAC
+     *                     de broadcast (ex: {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}).
+     *                     Este será o peer principal para envio de mensagens.
+     * 
+     * @param timeoutMs Tempo máximo em milissegundos para a descoberta do canal.
+     *                  Recomenda-se valores entre 5000-30000 ms (5-30 segundos).
+     *                  Valor muito baixo pode resultar em falha de descoberta.
+     * 
+     * @param wifi_sta_mode Define o modo de operação do WiFi:
+     *                      - true: Modo Station (conecta a um AP)
+     *                      - false: Modo AP (cria ponto de acesso)
+     *                      Afeta a estabilidade da comunicação ESP-NOW.
+     * 
+     * @return void A função não retorna valor, mas atualiza o estado interno:
+     *              - is_server_alive = true: Emparelhamento bem-sucedido
+     *              - is_server_alive = false: Falha na descoberta do canal
+     * 
+     * @exception-safe Esta função não lança exceções. Todos os erros são tratados
+     *                 internamente, atualizando o estado is_server_alive.
+     * 
+     * @note Importante:
+     *       - A função assume que o dispositivo mestre está ativo e enviando pacotes
+     *       - O canal descoberto é válido apenas no ambiente de rede atual
+     *       - O peer de broadcast permite enviar para todos os dispositivos no canal
+     * 
+     * @warning Se o canal for 0 ou negativo, o emparelhamento é considerado falho
+     *          e is_server_alive será false. Neste caso, ESP-NOW não é inicializado.
+     * 
+     * @see discoverEspNowChannel(), begin(), addPeer()
+     * 
+     * @example Exemplo básico de uso:
+     * @code
+     * EspNowManager manager;
+     * uint8_t broadcastMac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+     * 
+     * // Tentar emparelhar com timeout de 10 segundos no modo Station
+     * manager.emparelharDispositivo(broadcastMac, 10000, true);
+     * 
+     * if (manager.is_server_alive) {
+     *     Serial.println("Emparelhamento bem-sucedido!");
+     * } else {
+     *     Serial.println("Falha no emparelhamento. Tentar novamente...");
+     * }
+     * @endcode
+     * 
+     * @example Com descoberta otimizada:
+     * @code
+     * // Timeout maior para ambientes com interferência
+     * manager.emparelharDispositivo(broadcastMac, 20000, false);
+     * 
+     * // Verificar estado periodicamente
+     * if (!manager.is_server_alive) {
+     *     // Tentar reconectar com parâmetros diferentes
+     *     manager.emparelharDispositivo(broadcastMac, 15000, true);
+     * }
+     * @endcode
+     */
+    void emparelharDispositivo(const uint8_t* broadcastMac, uint32_t timeoutMs, boolean wifi_sta_mode);
+
+
 
     /**
      * @brief Envia dados via ESP-NOW
@@ -225,6 +299,9 @@ public:
      * @param cb Função callback a ser chamada após envio
      */
     void onSend(SendCallback cb);
+
+    uint8_t server_alive_counter;
+    boolean is_server_alive;
 
 private:
     /** Callback interno de receção */

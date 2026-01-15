@@ -73,8 +73,17 @@ void setup() {
     // Iniciar comunicação serial
     Serial.begin(115200);
     delay(1000);
-    imprimeln();
-    imprimeln(F("Iniciando..."));
+    imprimeln();    
+
+    // Pausa necessaris para o emparelhamento com Master Esp-Now
+    uint8_t counter = 0;
+    while(counter < 14){
+        counter++;
+        delay(1000);        
+        imprime(F("Iniciando..."));
+        imprimeln(counter);
+    }
+
 
     #ifdef ESP32
        Wire.begin(21, 22);  // SDA=21, SCL=22 no ESP32
@@ -103,22 +112,9 @@ void setup() {
     // Inicializar dispositivo
     device.initialize(); 
 
-
     // Scanea canal Esp-Now
-    uint8_t canal = espnow.discoverEspNowChannel(1500);    
-
-    if (canal <= 0) {
-        imprimeln(F("Master ESP-NOW não encontrado"));
-    } else {
-        imprime(F("Canal ESP-NOW descoberto: "));
-        imprimeln(canal); 
-        // Iniciar ESP-NOW (modo normal)
-        espnow.begin(canal, false); // canal, modo = WIFI_STA por defeito
-        // broadcast (tudo que enviar vai para todos)
-        espnow.addPeer(broadcastMac, canal);         
-    }
-    
-    
+    espnow.emparelharDispositivo(broadcastMac, 1500, false);
+   
 
     // Callback para recepção de dados esp-now
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
@@ -129,7 +125,7 @@ void setup() {
         char my_mac_addr[18];            
         WiFi.macAddress().toCharArray(my_mac_addr, 18);       
 
-        // Checa e processa o tipo de mensagens
+        // Checa e processa Mensagens Recebidas
         if( strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0 ) {        
             
             // Veriifca a quem destina-se o comando
@@ -140,6 +136,34 @@ void setup() {
             else if(strcmp(dados_espnow.state, "RTx") != 0) {  
                 // Retrasmite os dados (uma vez), para alcançar dispositivos fora do alcance do servidor             
                 strcpy(dados_espnow.msg_type, "DATA");
+                strcpy(dados_espnow.state, "RTx");
+                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            }  
+
+        } else if( strcmp(dados_espnow.msg_type, "REPAIR_MSG") == 0 ) { // Forçar reemparelhamento
+            
+             // Scanea canal Esp-Now
+            espnow.emparelharDispositivo(broadcastMac, 1500, false);
+
+            if(strcmp(dados_espnow.state, "RTx") != 0) {  
+                // Retrasmite os dados (uma vez), para alcançar dispositivos fora do alcance do servidor             
+                strcpy(dados_espnow.msg_type, "REPAIR_MSG");
+                strcpy(dados_espnow.state, "RTx");
+                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            }  
+
+        } else if( strcmp(dados_espnow.msg_type, "ALIVE_MSG") == 0 ) {            
+            
+            espnow.server_alive_counter = 0;            
+
+            /*if ( atoi(dados_espnow.state) != WiFi.channel()){                
+                espnow.is_server_alive = false;                
+            }*/
+            
+
+            if(strcmp(dados_espnow.state, "RTx") != 0) {  
+                // Retrasmite os dados (uma vez), para alcançar dispositivos fora do alcance do servidor             
+                strcpy(dados_espnow.msg_type, "ALIVE_MSG");
                 strcpy(dados_espnow.state, "RTx");
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
             }  
@@ -248,6 +272,33 @@ void loop() {
             wifiManager.checkConnection();
         }        
     #endif
+
+
+    // Controla reconexao com o Master Esp-Now
+    static unsigned long lastPingCounter = 0;
+    if (millis() - lastPingCounter > 1000) { 
+
+        if( ++espnow.server_alive_counter >= 25){
+            espnow.is_server_alive = false;                      
+        } else {
+            espnow.is_server_alive = true;
+        }
+
+        lastPingCounter = millis();
+
+    }// FIM if(...)
+
+    static unsigned long lastPing = 0;
+    if (millis() - lastPing > 30000) {          
+        
+        if( espnow.is_server_alive == false){     
+            // Scanea canal Esp-Now
+            espnow.emparelharDispositivo(broadcastMac, 1500, false);               
+        }
+
+        lastPing = millis(); 
+
+    } // FIM if(...)
  
     
     // Envia Dados cada X segundos

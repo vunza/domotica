@@ -7,6 +7,7 @@ EspNowManager::EspNowManager() {
     instance = this;
     channelFound = false;
     discoveredChannel = 0;
+    server_alive_counter = 0;
 }
 
 bool EspNowManager::begin(uint8_t channel, bool useAP) {
@@ -172,6 +173,8 @@ uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
 
     EspNowData dados_espnow; 
     uint8_t broadcastMac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}; 
+    channelFound = false;
+    is_server_alive = false;
     
     strcpy(dados_espnow.msg_type, "CHANNEL_REQ");   
     strcpy(dados_espnow.state, "");     
@@ -256,6 +259,27 @@ uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
 
     return discoveredChannel;
     
+}
+
+
+// Realiza o emparelhamento com um dispositivo mestre via ESP-NOW.
+void EspNowManager::emparelharDispositivo(const uint8_t* broadcastMac, uint32_t timeoutMs, boolean wifi_sta_mode){
+    
+    // Scanea canal Esp-Now
+    uint8_t canal = discoverEspNowChannel(timeoutMs);    
+
+    if (canal <= 0) {
+        imprimeln(F("Master ESP-NOW não encontrado"));
+        is_server_alive = false;
+    } else {
+        imprime(F("Canal ESP-NOW descoberto: "));
+        imprimeln(canal); 
+        // Iniciar ESP-NOW (modo normal)
+        begin(canal, wifi_sta_mode);
+        // broadcast (tudo que enviar vai para todos)
+        addPeer(broadcastMac, canal); 
+        is_server_alive = true;       
+    }            
 }
 
 

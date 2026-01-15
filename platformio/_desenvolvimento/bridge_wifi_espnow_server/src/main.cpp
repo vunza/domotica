@@ -94,7 +94,7 @@ uint8_t getWiFiChannelFromAP(const char* ssid) {
 void setup() {
     // Iniciar comunicação serial
     Serial.begin(115200); 
-    delay(200);   
+    delay(1000);   
 
     while (!Serial) {
         ; // Aguarda porta serial iniciar (normal no ESP32 USB)
@@ -125,6 +125,13 @@ void setup() {
     imprime(F("Nome do Dispositivo: "));
     imprimeln(dados_dispositivo.device_name);
 
+    uint8_t counter = 0;
+    while(counter < 1){
+        counter++;
+        delay(1000);
+        Serial.println(counter);
+    }
+
     // Obter canal WiFi
     uint8_t channel = WiFi.channel();
     
@@ -132,7 +139,7 @@ void setup() {
     espnow.begin(channel, false); // canal e modo = WIFI_STA por defeito
 
     // broadcast (tudo que enviar vai para todos)
-    espnow.addPeer(broadcastMac, channel); 
+    espnow.addPeer(broadcastMac, channel);    
     
 
     // Callback de recepção ESP-NOW
@@ -293,7 +300,12 @@ void setup() {
         oled.printText(0, 0, "Sistema OK", 2);
         oled.showBattery(75);
         oled.update();
-    }  
+    } 
+        
+    
+    // Envia mensagem "REPAIR_MSG" aos clientes para Forçar reemparelhamento
+    strcpy(dados_espnow.msg_type, "REPAIR_MSG");    
+    espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
         
 }
 
@@ -344,11 +356,25 @@ void loop() {
 
 
    
-    // Envia um "ping" a cada 5 segundos
-    /*static unsigned long lastPing = 0;
-    if (millis() - lastPing > 10000) {   
-        lastPing = millis();        
-    }*/
+    // Envia um "ping", aos clientes esp-now, a cada X segundos
+    static unsigned long lastPing = 0;
+    if (millis() - lastPing > 5000) {   
+        lastPing = millis(); 
+
+        // Converte inteiro a char []
+        uint8_t channel = espnow.getCurrentWiFiChannel();;
+        uint8_t len = String(channel).length();
+        char cz_channel[len + 1];  
+        String(channel).toCharArray(cz_channel, sizeof(cz_channel));
+        
+        // Envia mensagem "ALIVE_MSG" aos clientes
+        strcpy(dados_espnow.msg_type, "ALIVE_MSG");    
+        strcpy(dados_espnow.state, cz_channel);
+        
+        // Envia Resposta, CHANNEL_RSP, da petição CHANNEL_REQ
+        espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+    }
+
 
     // DISPLAY OLED
     static uint8_t bat = 0;
