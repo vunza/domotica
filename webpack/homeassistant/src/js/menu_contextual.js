@@ -1,5 +1,5 @@
 
-import { executaApiServices, getToken, ip_e_porta } from './vars_funcs_globais.js';
+import { getEntitiesDataWithApi, pubTopicsWIthWebSocket, executaApiServices, getToken, ip_e_porta, api } from './vars_funcs_globais.js';
 
 // Menu Contextual
 const contextMenu = document.getElementById('context-menu');
@@ -32,7 +32,7 @@ document.addEventListener('click', function(e) {
         // Oculta a opção Programar se o card não tem MAC Address
         const cardElement = document.getElementById(currentMenuCardId);
         let saved_device_mac = cardElement.querySelector('.card-header').getAttribute('data-device-mac-address');
-        console.log('MAC Address do dispositivo:', saved_device_mac);
+        //console.log('MAC Address do dispositivo:', saved_device_mac);
         if (!saved_device_mac || saved_device_mac === 'null') {
             document.querySelector('.menu-item[data-action="upload_sketch"]').style.display = 'none';
         }    
@@ -91,26 +91,26 @@ async function uploadSketch(cardId) {
     const cardElement = document.getElementById(cardId);
     if (cardElement) {
         // Salvar nome e ID do dispositivo globalmente
-        let saved_device_name = cardElement.querySelector('.card-title').textContent.trim();        
+        //let saved_device_name = cardElement.querySelector('.card-title').textContent.trim();        
         let saved_device_mac = cardElement.querySelector('.card-header').getAttribute('data-device-mac-address');
-        
 
         // Obter Token de acesso ao HA
         const api_token = '/local/json_files/token_api.json';             
         const token = await getToken(api_token);  
 
-        // Mensagem a ser enviada, usando o formato esperado pelo ESP32, framing (UART robusto).
-        const framing_msg = `<OTA_MODE|${saved_device_mac}>`;       
-
-        // Cria mensagem JSON a ser enviada, a um dispositivo EspNow, pela porta serial
-        const json_mensagem = JSON.stringify({
-            msg: framing_msg            
-        });
-       
-
-        // Envia mensagem JSON a ser enviada, a um dispositivo EspNow, pela porta serial
-        const api_service = "shell_command/esp_serial_write";
-        executaApiServices(token, ip_e_porta, api_service, "application/json", json_mensagem);
+        // Obtem topico base, da entidade, publica comando OTA no topico correspondete (base_topic/entity/set)
+        getEntitiesDataWithApi(token, api).then( (entidades)=>{                         
+            entidades.forEach((entity) => {                                       
+                if (entity.attributes.identificador === saved_device_mac){
+                    const basicTopic = entity.attributes.basic_topic;                     
+                    // Mensagem a ser enviada, usando o formato esperado pelo ESP32, framing (UART robusto).
+                    const framing_msg = `<OTA_MODE|${saved_device_mac}>`;
+                    // Publica mensagem
+                    const mac_entidade = saved_device_mac.replace(/:/g, "").toLowerCase();
+                    pubTopicsWIthWebSocket(token, `${basicTopic}${mac_entidade}/set`, framing_msg );                  
+                }                                              
+            });                       
+        });        
 
         
         // Passar Nome e ID do dispositivo para a interface de renomear    

@@ -84,11 +84,17 @@ void MQTTClient::publishDiscoveryEntity(
     if (strcmp(component, "sensor") != 0 && strcmp(component, "binary_sensor") != 0) {          
         snprintf(command_topic, sizeof(command_topic), "%s%s/set", base_topic, node_id);
         json.add("command_topic", command_topic);
-    }
+    }   
 
+    // availability topic
     char availability_topic[64];  
     snprintf(availability_topic, sizeof(availability_topic), "%s%s/availability", base_topic, node_id);
     json.add("availability_topic", availability_topic);
+
+    // attributes topic
+    char attributes_topic[64]; 
+    snprintf(attributes_topic, sizeof(attributes_topic), "%s%s/attributes", base_topic, node_id);
+    json.add("json_attributes_topic", attributes_topic);
 
     // Defaults para switch / light
     if (strcmp(component, "switch") == 0 || strcmp(component, "light") == 0 ) {
@@ -131,19 +137,30 @@ void MQTTClient::publishDiscoveryEntity(
     // Publica Disponibilidade
     mqttClient.publish(availability_topic, "online", true);
 
+    // Publica atributo
+    JsonBuilder attrjson;
+    attrjson.add("mac_address", mac_colon);
+    attrjson.add("basic_topic", MQTT_BASE_TOPIC);
+    attrjson.add("identificador", mac_colon);
+    String attributes_topic_payload = attrjson.build();
+    //String attributes_topic_payload = "{\"mac_address\":\"" + String(mac_colon) + "\"}";
+    //Serial.println(attributes_topic_payload.c_str());
+    mqttClient.publish(attributes_topic, attributes_topic_payload.c_str(), true);
+
+   
     // Subscrever ao tópico de comandos
     mqttClient.subscribe(command_topic);
 
     // Publicação MQTT (retain = true)
     boolean result = mqttClient.publish(discoveryTopic.c_str(), payload.c_str(), true);
-
+    
     if(result){
       imprime(F("MQTT Discovery publicado: "));
       imprimeln(discoveryTopic);
       imprimeln(payload);     
     } 
-    else{
-      imprime(F("Erro do MQTT Discovery!"));
+    else{     
+      imprime(F("Erro do MQTT Discovery!"));      
     } 
     
 }

@@ -33,11 +33,16 @@ document.addEventListener("DOMContentLoaded", async function () {
             //console.log(entidades);
             entidades.forEach((entity) => {  
                 // Se tiver o atributo mac_address, guarda na variavel                
-                let macAddr = null;
+                let macAddr = null;  
+                let basicTopic = null;                                 
                 if (entity.attributes.mac_address){
-                    macAddr = entity.attributes.mac_address;
-                }     
+                    macAddr = entity.attributes.mac_address;                    
+                }
 
+                if (entity.attributes.basic_topic){
+                    basicTopic = entity.attributes.basic_topic;                    
+                }
+               
                 entities_list.push({
                     id: entity.id, // dominio.ID (Ex.: sensor.0xa4c138237471c56a_current)
                     friendly_name: entity.nome,
@@ -45,7 +50,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                     status: entity.status, // online|offline
                     state: entity.state, // on|off
                     device_id: entity.device_id, // Apenas ID (Ex.: 0xa4c138237471c56a_current)
-                    mac_address: macAddr // MAC Address 
+                    mac_address: macAddr,// MAC Address   
+                    basic_topic: basicTopic ,
+                    identificador: entity.attributes.identificador             
                 });
             });              
                         
@@ -108,14 +115,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                     
                 // Criar Cards dos Dispositivos
-                resultado.forEach( (item) => {                       
+                resultado.forEach( (item) => {                  
 
                     const card = {
                         id: item.id,
                         title: item.friendly_name,
                         content: item.historico,
                         type: tipo,
-                        mac_address: item.mac_address
+                        mac_address: item.mac_address,
+                        basic_topic: item.basic_topic,
+                        identificador: item.identificador
                     };
                     
                     // Cria Card

@@ -234,7 +234,7 @@ void setup() {
             }
             
             // Evia pela serial os dados processados            
-            Serial.println(dados.c_str());
+            //Serial.println(dados.c_str());
             json.reset();
         }     
 

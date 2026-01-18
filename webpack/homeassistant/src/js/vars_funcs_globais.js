@@ -199,6 +199,208 @@ async function getDevicesWIthWebSocket(token) {
 
 
 
+/*
+async function pubTopicsWIthWebSocket(token, topico, mensagem) {
+  return new Promise((resolve, reject) => {
+
+    let HA_URL =  null; 
+    let url = new URL(window.location.href);  
+
+    if (http_port === 'http:') {        
+        HA_URL = `ws://${url.host}/api/websocket`;
+    }
+    else if (http_port === 'https:'){        
+        HA_URL = `wss://${url.host}/api/websocket`;
+    }      
+
+    const ws = new WebSocket(HA_URL);
+
+    ws.onopen = () => {
+      console.log("Conectado ao WebSocket API");
+    };
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      // 1º passo → autenticação
+      if (msg.type === "auth_required") {
+        ws.send(
+          JSON.stringify({
+            type: "auth",
+            access_token: token,
+          })
+        );
+      }
+      // 2º passo → confirmar autenticação
+      else if (msg.type === "auth_ok") {
+        // Enviar comando MQTT via Home Assistant
+        ws.send(
+          JSON.stringify({
+            id: 1,
+            type: "call_service",
+            domain: "mqtt",
+            service: "publish",
+              service_data: {
+                topic: topico,
+                payload: mensagem,
+                qos: 0, 
+                retain: false
+              }
+          })
+        );// FIM de ws.send(...)  
+
+        //console.log(topico, mensagem);
+
+      } // FIM do else(...)
+
+    };// FIM de ws.onmessage(...)
+
+  });// FIM de Promise(...)
+
+}// FIM de pubTopicsWIthWebSocket(...)
+*/
+
+/**
+ * Publica uma mensagem MQTT através da WebSocket API do Home Assistant
+ * 
+ * Esta função estabelece uma conexão WebSocket com o Home Assistant, autentica-se
+ * usando um token de acesso e publica uma mensagem no tópico MQTT especificado
+ * utilizando o serviço interno `mqtt.publish`.
+ * 
+ * @async
+ * @function pubTopicsWIthWebSocket
+ * @param {string} token - Token de autenticação do Home Assistant (Long-lived access token)
+ * @param {string} topico - Tópico MQTT de destino para publicação
+ * @param {string|Object} mensagem - Conteúdo a ser publicado (objetos são convertidos para JSON)
+ * @returns {Promise<Object>} Retorna uma Promise que resolve quando a mensagem é publicada
+ * @throws {Error} Lança erro se a autenticação falhar, serviço indisponível ou timeout
+ * 
+ * @example
+ * // Publicar uma string simples
+ * try {
+ *   const resultado = await pubTopicsWIthWebSocket(
+ *     'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+ *     'casa/sensor/temperatura',
+ *     '22.5'
+ *   );
+ *   console.log('Publicado com sucesso:', resultado);
+ * } catch (erro) {
+ *   console.error('Falha na publicação:', erro.message);
+ * }
+ * 
+ * @example
+ * // Publicar um objeto JSON
+ * await pubTopicsWIthWebSocket(
+ *   'seu_token_aqui',
+ *   'homeassistant/switch/meu_switch/config',
+ *   {
+ *     name: "Meu Interruptor",
+ *     state_topic: "casa/interruptor/estado",
+ *     command_topic: "casa/interruptor/comando"
+ *   }
+ * );
+ * 
+ * @see {@link https://developers.home-assistant.io/docs/api/websocket|Home Assistant WebSocket API}
+ * @see {@link https://www.home-assistant.io/integrations/mqtt/|Home Assistant MQTT Integration}
+ * 
+ * @remarks
+ * Esta função requer:
+ * 1. Home Assistant com WebSocket API habilitada
+ * 2. Token de acesso longo (long-lived access token)
+ * 3. Integração MQTT configurada no Home Assistant
+ * 4. Permissões adequadas para o token
+ * 
+ * @warning
+ * - Nunca exponha tokens em código client-side em produção
+ * - Use HTTPS/WSS em ambientes de produção
+ * - Cada chamada cria uma nova conexão WebSocket
+ * 
+ * @todo
+ * - Adicionar suporte a opções de QoS e retain
+ * - Implementar pool de conexões WebSocket
+ * - Adicionar timeout configurável
+ */
+async function pubTopicsWIthWebSocket(token, topico, mensagem) {
+  return new Promise((resolve, reject) => {
+    let HA_URL = null;
+    let url = new URL(window.location.href);
+
+    if (url.protocol === 'http:') {
+      HA_URL = `ws://${url.host}/api/websocket`;
+    } else if (url.protocol === 'https:') {
+      HA_URL = `wss://${url.host}/api/websocket`;
+    }
+
+    const ws = new WebSocket(HA_URL);
+    let authenticated = false;
+    let messageSent = false;
+
+    // Timeout para evitar conexões pendentes
+    const timeout = setTimeout(() => {
+      ws.close();
+      reject(new Error("Timeout na conexão WebSocket"));
+    }, 10000);
+
+    ws.onopen = () => {
+      console.log("Conectado ao WebSocket API");
+    };
+
+    ws.onerror = (error) => {
+      clearTimeout(timeout);
+      reject(new Error(`Erro WebSocket: ${error.message}`));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+
+        if (msg.type === "auth_required" && !authenticated) {
+          ws.send(JSON.stringify({
+            type: "auth",
+            access_token: token,
+          }));
+        }
+        else if (msg.type === "auth_ok") {
+          authenticated = true;
+          
+          ws.send(JSON.stringify({
+            id: Date.now(),
+            type: "call_service",
+            domain: "mqtt",
+            service: "publish",
+            service_data: {
+              topic: topico,
+              payload: typeof mensagem === 'object' ? JSON.stringify(mensagem) : mensagem,
+              qos: 1,
+              retain: false
+            }
+          }));
+        }
+        else if (msg.type === "result" && msg.success && !messageSent) {
+          messageSent = true;
+          clearTimeout(timeout);
+          ws.close();
+          resolve({
+            success: true,
+            topic: topico,
+            message: mensagem
+          });
+        }
+        else if (msg.type === "result" && !msg.success) {
+          clearTimeout(timeout);
+          ws.close();
+          reject(new Error(`Falha ao publicar: ${msg.error?.message || "Erro desconhecido"}`));
+        }
+      } catch (error) {
+        clearTimeout(timeout);
+        ws.close();
+        reject(new Error(`Erro ao processar mensagem: ${error.message}`));
+      }
+    };
+  });
+}
+
+
 
 
 /**
@@ -235,7 +437,7 @@ async function getEntitiesDataWithApi(token, api) {
     }
     
     const entities = await response.json();
-    
+    //console.log(entities);
     return entities.map(entity => {
         const [domain, deviceId] = entity.entity_id.split('.');
         
@@ -429,5 +631,6 @@ export {
   getDevicesWIthWebSocket,
   getEntitiesDataWithApi,
   trocarCorSVG,
-  executaApiServices
+  executaApiServices,
+  pubTopicsWIthWebSocket
 };

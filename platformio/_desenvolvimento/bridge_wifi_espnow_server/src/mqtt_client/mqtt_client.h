@@ -6,6 +6,7 @@
 #include <WiFiClient.h>
 #include "json/json_builder.h"
 #include "ctrl_debug.h"
+#include "constantes.h"
 
 /**
  * @class MQTTClient

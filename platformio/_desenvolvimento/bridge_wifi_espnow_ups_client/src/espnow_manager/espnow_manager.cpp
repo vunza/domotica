@@ -119,18 +119,17 @@ uint8_t EspNowManager::getCurrentWiFiChannel() {
 
 // Callback de instância (processa os dados recebidos)
 void EspNowManager::onRecvInstance(const uint8_t* mac, const uint8_t* data, int len) {
+    
     EspNowData dados_espnow;
     memcpy(&dados_espnow, data, sizeof(EspNowData));
 
-    imprime("[ESPNOW] Recebido de: ");
-    for (int i = 0; i < 6; i++) {
-        imprime(String(mac[i], HEX));
-        if (i < 5) imprime(":");
-    }
-    imprimeln("");
+    /*imprimeln(dados_espnow.mac_server);
+    imprimeln(dados_espnow.mac_client);
+    imprimeln(dados_espnow.msg_type);
+    imprimeln(dados_espnow.state);*/
 
     // Verifica se é uma resposta de canal
-    if (strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0) {       
+    if (strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0) {         
 
         // Termina o scan do vcanal
         channelFound = true;
