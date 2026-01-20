@@ -44,6 +44,40 @@ bool MQTTClient::connected() {
 }
 
 
+bool MQTTClient::parseOtaMessageOptimized(const char* message, char* command, char* mac) {
+    // Verifica primeiro e último caractere
+    if (message[0] != '<' || message[strlen(message)-1] != '>') {
+        return false;
+    }
+    
+    // Encontra o separador |
+    const char* pipe = strchr(message, '|');
+    if (!pipe) return false;
+    
+    // Extrai comando (entre < e |)
+    int cmdLen = pipe - (message + 1);
+    if (cmdLen <= 0 || cmdLen >= 32) return false;
+    strncpy(command, message + 1, cmdLen);
+    command[cmdLen] = '\0';
+    
+    // Extrai MAC (entre | e >)
+    int macLen = strlen(message) - 2 - cmdLen - 1;  // -2 para <>, -1 para |
+    if (macLen != 17) return false;  // Formato MAC fixo
+    strncpy(mac, pipe + 1, macLen);
+    mac[macLen] = '\0';
+    
+    // Valida formato do MAC
+    for (int i = 0; i < 17; i++) {
+        if (i % 3 == 2) {
+            if (mac[i] != ':') return false;
+        } else {
+            if (!isxdigit(mac[i])) return false;
+        }
+    }
+    
+    return true;
+}
+
 
 void MQTTClient::publishDiscoveryEntity(
     MQTTClient& mqttClient,
@@ -84,11 +118,17 @@ void MQTTClient::publishDiscoveryEntity(
     if (strcmp(component, "sensor") != 0 && strcmp(component, "binary_sensor") != 0) {          
         snprintf(command_topic, sizeof(command_topic), "%s%s/set", base_topic, node_id);
         json.add("command_topic", command_topic);
-    }
+    }   
 
+    // availability topic
     char availability_topic[64];  
     snprintf(availability_topic, sizeof(availability_topic), "%s%s/availability", base_topic, node_id);
     json.add("availability_topic", availability_topic);
+
+    // attributes topic
+    char attributes_topic[64]; 
+    snprintf(attributes_topic, sizeof(attributes_topic), "%s%s/attributes", base_topic, node_id);
+    json.add("json_attributes_topic", attributes_topic);
 
     // Defaults para switch / light
     if (strcmp(component, "switch") == 0 || strcmp(component, "light") == 0 ) {
@@ -131,19 +171,28 @@ void MQTTClient::publishDiscoveryEntity(
     // Publica Disponibilidade
     mqttClient.publish(availability_topic, "online", true);
 
+    // Publica atributo
+    JsonBuilder attrjson;
+    attrjson.add("mac_address", mac_colon);
+    attrjson.add("basic_topic", MQTT_BASE_TOPIC);
+    attrjson.add("identificador", mac_colon);
+    String attributes_topic_payload = attrjson.build();    
+    mqttClient.publish(attributes_topic, attributes_topic_payload.c_str(), true);
+
+   
     // Subscrever ao tópico de comandos
     mqttClient.subscribe(command_topic);
 
     // Publicação MQTT (retain = true)
     boolean result = mqttClient.publish(discoveryTopic.c_str(), payload.c_str(), true);
-
+    
     if(result){
       imprime(F("MQTT Discovery publicado: "));
       imprimeln(discoveryTopic);
       imprimeln(payload);     
     } 
-    else{
-      imprime(F("Erro do MQTT Discovery!"));
+    else{     
+      imprime(F("Erro do MQTT Discovery!"));      
     } 
     
 }

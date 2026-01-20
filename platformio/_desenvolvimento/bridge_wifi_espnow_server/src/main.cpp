@@ -66,8 +66,6 @@ OLEDDisplay oled;
 // CallBack MQTT 
 void mqttCallback(char* topic, byte* payload, unsigned int length);
 
-
-
 uint8_t getWiFiChannelFromAP(const char* ssid) {
 #if defined(ESP8266)
     int n = WiFi.scanNetworks();
@@ -92,13 +90,19 @@ uint8_t getWiFiChannelFromAP(const char* ssid) {
 // Configuração inicial //
 //////////////////////////
 void setup() {
+    
     // Iniciar comunicação serial
     Serial.begin(115200); 
-    delay(1000);   
+    delay(1000);
+    
+    // TODO: Melhorar este trecho
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH); // LED desligado inicialmente(LOGICA INVERTIDA)
 
-    while (!Serial) {
-        ; // Aguarda porta serial iniciar (normal no ESP32 USB)
-    }
+
+    // while (!Serial) {
+    //     ; // Aguarda porta serial iniciar (normal no ESP32 USB)
+    // }
 
     imprimeln();
     imprimeln(F("Iniciando..."));   
@@ -108,12 +112,7 @@ void setup() {
         esp_log_level_set("*", ESP_LOG_NONE);
     #elif defined(ESP8266)
         Serial.setDebugOutput(false);
-    #endif
-
-
-    // TODO: Melhorar este trecho
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH); // LED desligado inicialmente
+    #endif    
 
 
     // Inicializa a EEPROM com 512 bytes
@@ -125,13 +124,7 @@ void setup() {
     imprime(F("Nome do Dispositivo: "));
     imprimeln(dados_dispositivo.device_name);
 
-    uint8_t counter = 0;
-    while(counter < 1){
-        counter++;
-        delay(1000);
-        Serial.println(counter);
-    }
-
+   
     // Obter canal WiFi
     uint8_t channel = WiFi.channel();
     
@@ -147,6 +140,13 @@ void setup() {
 
         // Passa dados recebidos para a estructura
         memcpy(&dados_espnow, data, sizeof(EspNowData));
+
+        // Descarta Mensagens de Retransmissão
+        if( strcmp(dados_espnow.mac_server, "RTx") == 0) {
+            imprime("Mensagem de Retransmissão descartada: ");
+            imprimeln(dados_espnow.msg_type);
+            return;
+        }
 
         // Obter MAC do Servidor
         char server_mac[18]; 
@@ -246,11 +246,9 @@ void setup() {
         
     });
     
-
     // Rede WiFi
     wifiManager.connect(WIFI_SSID, WIFI_PASSWORD);
-    //wifiManager.criar_ap("ESP8266", "123456789", 3);
-
+    
 
     // Conectar CLIENTE MQTT   
     #if defined(ESP32)
@@ -277,7 +275,7 @@ void setup() {
     const char* entity_name = "";
     const char* base_topic = MQTT_BASE_TOPIC;  
     const char* manufacturer = MQTT_DEVICE_MANUFACTURER;    
-    const char* model = host_name; // (*J*) Deve ser unico
+    const char* model = host_name; // (*J*) Deve ser único.
     const char* extra_config;
 
     // Guarda node_id do dispositivo principal para ser usado nas entidades dependentes
@@ -305,8 +303,7 @@ void setup() {
     
     // Envia mensagem "REPAIR_MSG" aos clientes para Forçar reemparelhamento
     strcpy(dados_espnow.msg_type, "REPAIR_MSG");    
-    espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
-        
+    espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));       
 }
 
 
@@ -339,18 +336,7 @@ void loop() {
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
             }
             
-        }
-        else if (strcmp(command, "OTA_MODE") == 0) { 
-            
-            // Rede WiFi
-            //wifiManager.criar_ap(ssid, password);
-
-            // Iniciar servidor web
-            webServer.begin();
-
-            // Inicializar OTA elegante
-            ElengantOTA::begin(&servidorHTTP);       
-        }
+        }        
 
     }*/
 
@@ -414,10 +400,36 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   // Obtem MAC do Servidor
   char server_mac[13];
   wifiManager.getMacAddress(server_mac, false); 
-  
 
-  // Verificar se é comando e o proprietario do topico 
-  if ( strcmp(server_mac, str_mac.c_str()) == 0 && strstr(topic, "/set")) { // SERVIDOR ESP-NOW
+  
+  if( strcmp(msg, "ON") != 0 && strcmp(msg, "OFF") != 0 ){ // MENSAGEM OTA
+
+    char command[32];
+    char mac[18];
+
+    if (mqttClient.parseOtaMessageOptimized(msg, command, mac) && strcmp(server_mac, str_mac.c_str()) == 0 ){
+        
+        // Rede WiFi
+        //wifiManager.criar_ap(ssid, password);
+        // Iniciar servidor web
+        webServer.begin();
+        // Inicializar OTA elegante
+        ElengantOTA::begin(&servidorHTTP);      
+    }
+    else if (mqttClient.parseOtaMessageOptimized(msg, command, mac) && strcmp(server_mac, str_mac.c_str()) != 0 ){
+        Serial.println(server_mac);
+        Serial.print("Comando: ");
+        Serial.println(command);
+        Serial.print("MAC: ");
+        Serial.println(mac);
+
+        // Envia mensagem "OTA_MODE" aos clientes
+        strcpy(dados_espnow.msg_type, "OTA_MODE");    
+        strcpy(dados_espnow.mac_client, mac);        
+        espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+    }
+
+  } else if ( strcmp(server_mac, str_mac.c_str()) == 0 && strstr(topic, "/set")) { // ON/OFF SERVIDOR ESP-NOW
 
     // Ligar/Desligar PIN/LED (Logica invertida)
     if (strcmp(msg, "ON") == 0) {      
@@ -430,7 +442,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     String str_topico = MQTT_BASE_TOPIC + str_mac + String("/state");
     mqttClient.publish(str_topico.c_str(), msg, true);
     
-  } else if ( !strcmp(server_mac, str_mac.c_str()) == 0 && strstr(topic, "/set")){ // CLIENTES ESP-NOW 
+  } else if ( strcmp(server_mac, str_mac.c_str()) != 0 && strstr(topic, "/set")){ // ON/OFF CLIENTES ESP-NOW 
     
     // Respode a mensagem "CHANNEL_REQ"
     String str_mac_formatado = wifiManager.formatarMac(str_mac); // Formata string MAC

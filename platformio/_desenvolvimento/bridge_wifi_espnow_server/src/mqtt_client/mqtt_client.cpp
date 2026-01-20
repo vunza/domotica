@@ -44,6 +44,40 @@ bool MQTTClient::connected() {
 }
 
 
+bool MQTTClient::parseOtaMessageOptimized(const char* message, char* command, char* mac) {
+    // Verifica primeiro e último caractere
+    if (message[0] != '<' || message[strlen(message)-1] != '>') {
+        return false;
+    }
+    
+    // Encontra o separador |
+    const char* pipe = strchr(message, '|');
+    if (!pipe) return false;
+    
+    // Extrai comando (entre < e |)
+    int cmdLen = pipe - (message + 1);
+    if (cmdLen <= 0 || cmdLen >= 32) return false;
+    strncpy(command, message + 1, cmdLen);
+    command[cmdLen] = '\0';
+    
+    // Extrai MAC (entre | e >)
+    int macLen = strlen(message) - 2 - cmdLen - 1;  // -2 para <>, -1 para |
+    if (macLen != 17) return false;  // Formato MAC fixo
+    strncpy(mac, pipe + 1, macLen);
+    mac[macLen] = '\0';
+    
+    // Valida formato do MAC
+    for (int i = 0; i < 17; i++) {
+        if (i % 3 == 2) {
+            if (mac[i] != ':') return false;
+        } else {
+            if (!isxdigit(mac[i])) return false;
+        }
+    }
+    
+    return true;
+}
+
 
 void MQTTClient::publishDiscoveryEntity(
     MQTTClient& mqttClient,
@@ -142,9 +176,7 @@ void MQTTClient::publishDiscoveryEntity(
     attrjson.add("mac_address", mac_colon);
     attrjson.add("basic_topic", MQTT_BASE_TOPIC);
     attrjson.add("identificador", mac_colon);
-    String attributes_topic_payload = attrjson.build();
-    //String attributes_topic_payload = "{\"mac_address\":\"" + String(mac_colon) + "\"}";
-    //Serial.println(attributes_topic_payload.c_str());
+    String attributes_topic_payload = attrjson.build();    
     mqttClient.publish(attributes_topic, attributes_topic_payload.c_str(), true);
 
    
