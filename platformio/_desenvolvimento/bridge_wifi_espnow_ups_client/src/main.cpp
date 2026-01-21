@@ -351,9 +351,17 @@ void loop() {
         // Ponto parachecar/ver o tamanho do Array
         //sizeof(dados);
 
+        // Verifica estado do LED_PIN
+        char etstado_pin[4];
+        if (digitalRead(LED_PIN) == LOW){      
+            strcpy(etstado_pin, "ON");
+        } else {
+            strcpy(etstado_pin, "OFF");
+        }
+
         // Envia dados, apenas, se forem diferentes de "nan"
         if (!isnan(g_voltage) && !isnan(g_current) && !isnan(g_temperature)  && !isnan(g_humidity)){  
-            strcpy(dados_espnow.state, "ON"); // Assuming the device is on
+            strcpy(dados_espnow.state, etstado_pin); 
             strcpy(dados_espnow.mac_client, mac);
             strcpy(dados_espnow.msg_type, "DATA");
             espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));  

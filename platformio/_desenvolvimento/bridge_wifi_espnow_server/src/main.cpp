@@ -316,32 +316,7 @@ void loop() {
     // CLIENTE MQTT
     mqttClient.loop();
 
-    // Se recebeu dados pela Serial
-    /*if (Serial.available()) {          
-
-        if ( strcmp(command, "NORMAL_MODE") == 0) {
-            
-            // Veriifca a quem destina-se o comando
-            char mac_addr[18];            
-            WiFi.macAddress().toCharArray(mac_addr, 18);
-
-            if ( strcmp(mac_addr, dts_mac) == 0) {
-                ESP.restart(); // Rinicia o ESP para iniciar o modo e operação normal
-            }
-            else{ // Reassa a mensagem para todos os nós ESP-NOW  
-                strcpy(dados_espnow.state, "");     
-                strcpy(dados_espnow.mac_server, mac_addr);
-                strcpy(dados_espnow.mac_client, dts_mac);
-                strcpy(dados_espnow.msg_type, "NORMAL_MODE");
-                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
-            }
-            
-        }        
-
-    }*/
-
-
-   
+      
     // Envia um "ping", aos clientes esp-now, a cada X segundos
     static unsigned long lastPing = 0;
     if (millis() - lastPing > 5000) {   
@@ -363,15 +338,16 @@ void loop() {
 
 
     // DISPLAY OLED
+    static unsigned long lastUpdate = 0;
     static uint8_t bat = 0;
-    bat = (bat + 5) % 101;
-
-    oled.clear();
-    oled.printText(0, 0, "Bat.", 2);
-    oled.showBattery(bat);
-    oled.update();
-
-    delay(2000);
+    if (millis() - lastUpdate > 2000) { 
+        bat = (bat + 5) % 101;
+        oled.clear();
+        oled.printText(0, 0, "Bat.", 2);
+        oled.showBattery(bat);
+        oled.update();
+        lastUpdate = millis();
+    }
 
 }
 
@@ -417,12 +393,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         ElengantOTA::begin(&servidorHTTP);      
     }
     else if (mqttClient.parseOtaMessageOptimized(msg, command, mac) && strcmp(server_mac, str_mac.c_str()) != 0 ){
-        Serial.println(server_mac);
-        Serial.print("Comando: ");
-        Serial.println(command);
-        Serial.print("MAC: ");
-        Serial.println(mac);
-
+        
         // Envia mensagem "OTA_MODE" aos clientes
         strcpy(dados_espnow.msg_type, "OTA_MODE");    
         strcpy(dados_espnow.mac_client, mac);        

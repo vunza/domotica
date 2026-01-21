@@ -35,7 +35,10 @@ document.addEventListener('click', function(e) {
         //console.log('MAC Address do dispositivo:', saved_device_mac);
         if (!saved_device_mac || saved_device_mac === 'null') {
             document.querySelector('.menu-item[data-action="upload_sketch"]').style.display = 'none';
-        }    
+        } 
+        else{
+            document.querySelector('.menu-item[data-action="upload_sketch"]').style.display = 'flex';
+        }  
         
         
         // Ativar menu
@@ -63,10 +66,7 @@ contextMenu.addEventListener('click', function(e) {
     switch(action) {
         case 'upload_sketch':
             uploadSketch(cardId);
-            break;
-        /*case 'duplicate':
-            duplicateCard(cardId);
-            break;*/
+            break;        
         case 'timer':
             timerCard(cardId);
             break;
