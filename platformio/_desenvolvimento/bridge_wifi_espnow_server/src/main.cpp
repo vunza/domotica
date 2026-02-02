@@ -134,12 +134,13 @@ void setup() {
     // broadcast (tudo que enviar vai para todos)
     espnow.addPeer(broadcastMac, channel);    
     
-
-    // Callback de recepção ESP-NOW
+    //////////////////////////////////
+    // Callback de recepção ESP-NOW //
+    //////////////////////////////////
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
 
         // Passa dados recebidos para a estructura
-        memcpy(&dados_espnow, data, sizeof(EspNowData));
+        memcpy(&dados_espnow, data, sizeof(EspNowData));        
 
         // Descarta Mensagens de Retransmissão
         if( strcmp(dados_espnow.mac_server, "RTx") == 0) {
@@ -192,13 +193,13 @@ void setup() {
             const char* base_topic = MQTT_BASE_TOPIC;  
             const char* manufacturer = MQTT_ENTITY_MANUFACTURER;            
             const char* model = client_host_name; // (*J*) Deve ser unico
-            const char* extra_config;            
+            const char* extra_config;
 
+            // Publicar Entidade MQTT do Cliente
             mqttClient.publishDiscoveryEntity(
                 mqttClient, "entity", component, node_id, entity_name, base_topic, unique_id,       
                 mac_colon, device_name, manufacturer, model, extra_config = nullptr 
-            );  
-
+            ); 
 
             // Respode a mensagem "CHANNEL_REQ"
             strcpy(dados_espnow.msg_type, "CHANNEL_RSP");
@@ -207,12 +208,27 @@ void setup() {
             strcpy(dados_espnow.mac_client, client_mac);          
            
             // Envia Resposta, CHANNEL_RSP, da petição CHANNEL_REQ
-            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));             
     
-        }else if( strcmp(dados_espnow.msg_type, "STATE_SETED") == 0 ) { 
+        } else if( strcmp(dados_espnow.msg_type, "STATE_SETED") == 0 ) { 
             // Publicar Estado do PIN/LED
             String str_topico = MQTT_BASE_TOPIC + String(client_mac_without_colon) + String("/state");
             mqttClient.publish(str_topico.c_str(), dados_espnow.state, true);
+
+        } else if( strcmp(dados_espnow.msg_type, "ASK_STATE") == 0 ) {            
+            // Buscar estado do PIN/LED no Array de Estados MQTT
+            const char* estado = mqttClient.buscarEstado(client_mac_without_colon);
+                        
+            // Respode a mensagem "CHANNEL_REQ"
+            String str_mac_formatado = wifiManager.formatarMac(String(client_mac_without_colon)); // Formata string MAC
+            strcpy(dados_espnow.msg_type, "SET_STATE");
+            strcpy(dados_espnow.state, estado);  
+            strcpy(dados_espnow.mac_server, server_mac);
+            strcpy(dados_espnow.mac_client, str_mac_formatado.c_str());    
+            
+            // Envia SET_STATE aos clientes esp-now   
+            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));  
+
         }
         // Checa e processa o tipo de mensagens (Se nao for para retransmissao)
         else if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
@@ -238,14 +254,17 @@ void setup() {
             json.reset();
         }     
 
-    });
+    }); // FIM de Callback de recepção ESP-NOW
 
 
-    // Callback de envio ESP-NOW
-    espnow.onSend([](const uint8_t *mac, bool ok){
+    ///////////////////////////////
+    // Callback de envio ESP-NOW //
+    //////////////////////////////
+    espnow.onSend([](const uint8_t *mac, bool ok){       
         
-    });
+    }); // FIM de Callback de envio ESP-NOW
     
+
     // Rede WiFi
     wifiManager.connect(WIFI_SSID, WIFI_PASSWORD);
     
@@ -365,12 +384,12 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   memcpy(msg, payload, length);
   msg[length] = '\0';     
-
-  imprime(F("Topico: "));
+  
+  /*imprime(F("Topico: "));
   imprimeln(topic);
   imprime(F("Payload: "));
-  imprimeln(msg);
-
+  imprimeln(msg);*/
+    
   // Obtem MAC contido no toico
   String str_mac = wifiManager.extrairIdDoTopico(String(topic));
   // Obtem MAC do Servidor
@@ -420,10 +439,13 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     strcpy(dados_espnow.msg_type, "SET_STATE");
     strcpy(dados_espnow.state, msg);  
     strcpy(dados_espnow.mac_server, server_mac);
-    strcpy(dados_espnow.mac_client, str_mac_formatado.c_str());          
+    strcpy(dados_espnow.mac_client, str_mac_formatado.c_str());    
     
-    // Envia SET_STATE
-    espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+    // Envia SET_STATE aos clientes esp-now   
+    espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));  
+
+    // Atualiza Estado do PIN/LED no Array de Estados MQTT
+    mqttClient.atualizarEstado(str_mac.c_str(), msg);
 
   }
 

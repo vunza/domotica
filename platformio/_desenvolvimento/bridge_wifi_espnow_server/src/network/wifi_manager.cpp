@@ -104,3 +104,4 @@ String WiFiManager::formatarMac(const String& macSemSeparador) {
     
     return String(buffer);
 }
+

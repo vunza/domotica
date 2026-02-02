@@ -123,11 +123,6 @@ void EspNowManager::onRecvInstance(const uint8_t* mac, const uint8_t* data, int 
     EspNowData dados_espnow;
     memcpy(&dados_espnow, data, sizeof(EspNowData));
 
-    /*imprimeln(dados_espnow.mac_server);
-    imprimeln(dados_espnow.mac_client);
-    imprimeln(dados_espnow.msg_type);
-    imprimeln(dados_espnow.state);*/
-
     // Verifica se é uma resposta de canal
     if (strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0) {         
 
@@ -143,7 +138,7 @@ void EspNowManager::onRecvInstance(const uint8_t* mac, const uint8_t* data, int 
         }
 
         imprime("[ESPNOW] Canal descoberto: ");
-        imprimeln(discoveredChannel);                  
+        imprimeln(discoveredChannel);       
     }
 }
 
@@ -264,6 +259,8 @@ uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
 // Realiza o emparelhamento com um dispositivo mestre via ESP-NOW.
 void EspNowManager::emparelharDispositivo(const uint8_t* broadcastMac, uint32_t timeoutMs, boolean wifi_sta_mode){
     
+    EspNowData dados_espnow; 
+
     // Scanea canal Esp-Now
     uint8_t canal = discoverEspNowChannel(timeoutMs);    
 
@@ -277,7 +274,12 @@ void EspNowManager::emparelharDispositivo(const uint8_t* broadcastMac, uint32_t 
         begin(canal, wifi_sta_mode);
         // broadcast (tudo que enviar vai para todos)
         addPeer(broadcastMac, canal); 
-        is_server_alive = true;       
+        is_server_alive = true;  
+        
+        // Solicita estado atual do Dispositivo
+        strcpy(dados_espnow.msg_type, "ASK_STATE");          
+        strcpy(dados_espnow.mac_client, WiFi.macAddress().c_str());             
+        send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
     }            
 }
 

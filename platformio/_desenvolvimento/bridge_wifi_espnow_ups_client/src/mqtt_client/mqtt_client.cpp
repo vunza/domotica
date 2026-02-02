@@ -3,6 +3,10 @@
 MQTTClient::MQTTClient(WiFiClient& client, const char* host, uint16_t port)
   : _mqtt(client), _host(host), _port(port), _clientId("esp-client") {
   _mqtt.setServer(_host, _port);
+
+  for (int i = 0; i < MAX_TOPICOS; i++) {
+    estados[i].valido = false;
+  }
 }
 
 void MQTTClient::setClientId(const char* clientId) {
@@ -187,12 +191,56 @@ void MQTTClient::publishDiscoveryEntity(
     boolean result = mqttClient.publish(discoveryTopic.c_str(), payload.c_str(), true);
     
     if(result){
-      imprime(F("MQTT Discovery publicado: "));
+      /*imprime(F("MQTT Discovery publicado: "));
       imprimeln(discoveryTopic);
-      imprimeln(payload);     
+      imprimeln(payload);*/        
     } 
     else{     
       imprime(F("Erro do MQTT Discovery!"));      
     } 
     
+}
+
+
+
+
+// Adicionar/Atualizar estado
+void MQTTClient::atualizarEstado(const char* mac_without_colon, const char* estado) {
+    int index = -1;
+    
+    // Verificar se já existe
+    for (int i = 0; i < totalEstados; i++) {
+        if (strcmp(estados[i].mac_without_colon, mac_without_colon) == 0) {
+            index = i;
+            break;
+        }
+    }
+    
+    // Se não existe, encontrar slot vazio
+    if (index == -1) {
+        if (totalEstados < MAX_TOPICOS) {
+            index = totalEstados;
+            strcpy(estados[index].mac_without_colon, mac_without_colon);
+            totalEstados++;
+        } else {
+            imprimeln("ERRO: Número máximo de tópicos atingido!");
+            return;
+        }
+    }
+    
+    // Atualizar valores
+    strcpy(estados[index].state, estado);
+    //estados[index].timestamp = millis();
+    estados[index].valido = true;
+}
+
+
+// Buscar estado
+const char* MQTTClient::buscarEstado(const char* mac_without_colon) {
+  for (int i = 0; i < totalEstados; i++) {
+      if (strcmp(estados[i].mac_without_colon, mac_without_colon) == 0 && estados[i].valido) {
+          return estados[i].state;
+      }
+  }
+  return "";
 }

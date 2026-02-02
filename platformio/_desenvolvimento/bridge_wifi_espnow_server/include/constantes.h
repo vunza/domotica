@@ -7,6 +7,7 @@
 #define INA226_I2C_ADDRESS 0x40 
 #define JS_UART_DATA_SIZE 64
 #define MQTT_BUFFER_SIZE 1024
+#define MAX_TOPICOS 10
 #define MQTT_BASE_TOPIC "casa/"
 #define MQTT_DEVICE_DOMAIN "switch"
 #define MQTT_ENTITY_DOMAIN "switch"

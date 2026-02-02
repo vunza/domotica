@@ -53,12 +53,12 @@ module.exports = {
         // Empaquetar varios archivos HTML
         new HtmlWebpackPlugin({
             filename: 'index.html',
-            template: path.resolve(__dirname, 'src/public/index.html'), 
+            template: path.resolve(__dirname, 'src/public/index.html'),             
             minify: true // Optimizar HTML        
         }),
          new HtmlWebpackPlugin({
             filename: 'auxiliar.html',
-            template: path.resolve(__dirname, 'src/public/auxiliar.html'),  
+            template: path.resolve(__dirname, 'src/public/auxiliar.html'),              
             minify: true // Optimizar HTML       
         }),
         // Empaquetar CSS en un archivo separado

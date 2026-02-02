@@ -223,6 +223,7 @@ public:
      */
     String formatarMac(const String& macSemSeparador);
 
+
 private:
     /**
      * @brief Armazena o tempo da última verificação

@@ -183,7 +183,7 @@
 
     <!-- Configuração de Timers -->
       <div class="config-timers-container" id="config-timers-container"  style="display: none;">
-        <!-- Guardar dados do dispositivo a ser renomeado -->
+        <!-- Guardar dados do dispositivo cujo Timer será configurado -->
         <input type="text" id="timer_save_device_id" name="timer_save_device_id"  style="display: none;">
         <div class="config-timers-header">
             <h2>Nome do Dispositivo</h2>
@@ -193,19 +193,19 @@
             <div class="timer-selector-grid">
                 <label class="timer-selector-label" id="lbl1">
                     <input class="timer-selector-input" type="radio" value="1" name="select_timer" checked>
-                    <div class="timer-selector-number">1</div>
+                    <div id="div_timer_1" class="timer-selector-number">1</div>
                 </label>
                 <label class="timer-selector-label" id="lbl2">
                     <input class="timer-selector-input" type="radio" value="2" name="select_timer">
-                    <div class="timer-selector-number">2</div>
+                    <div id="div_timer_2" class="timer-selector-number">2</div>                   
                 </label>
                 <label class="timer-selector-label" id="lbl3">
                     <input class="timer-selector-input" type="radio" value="3" name="select_timer">
-                    <div class="timer-selector-number">3</div>
+                    <div id="div_timer_3" class="timer-selector-number">3</div>
                 </label>
                 <label class="timer-selector-label" id="lbl4">
                     <input class="timer-selector-input" type="radio" value="4" name="select_timer">
-                    <div class="timer-selector-number">4</div>
+                    <div id="div_timer_4" class="timer-selector-number">4</div>
                 </label>
             </div>
         </div>
@@ -213,11 +213,12 @@
         <div class="timer-config-section">
             <form class="config-form">
                 <div class="config-row">
-                    <label id="lbl_activar_temporizador" class="config-label" for="chk_activar">Activar Temporizador: -</label>
+                    <!-- <label id="lbl_activar_temporizador" class="config-label" for="chk_activar">Activar Temporizador: -</label> -->
                     <div class="checkbox-container">
+                        <span><label id="lbl_activar_temporizador" class="config-label" for="">Activar Temporizador: -</label></span>
                         <input type="checkbox" id="chk_activar" name="activar" hidden>
                         <div class="custom-checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
-                        <span>Sim</span>
+                        <!-- <span>Sim</span> -->
                     </div>
                 </div>
 
@@ -225,9 +226,10 @@
                     <label class="config-label" for="select_accao">Acção:</label>
                     <div class="select-container">
                         <select class="custom-select" id="select_accao" name="select_action" required>
-                            <option value="" disabled selected>Indique uma Acção</option>
-                            <option value="opt_off">Desligar</option>
-                            <option value="opt_on">Ligar</option>
+                            <option value="" disabled selected>Indique uma acção</option>
+                            <option class="opcao_accao" value="turn_on">Ligar</option>
+                            <option class="opcao_accao" value="turn_off">Desligar</option>                            
+                            <option class="opcao_accao" value="toggle">Inverter</option>
                         </select>
                         <div class="select-icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -296,11 +298,11 @@
 
             <div class="current-time-date">
                 <div class="current-time">
-                    Hora atual: <span id="hora_actual">00:00:00</span>
+                     <span id="dia_semana_actual">Segunda-feira</span> <span id="hora_actual">00:00:00</span>
                 </div>
-                <div class="current-date">
+                <!-- <div class="current-date">
                     Dia da semana: <span id="dia_semana_actual">Segunda-feira</span>
-                </div>
+                </div> -->
             </div>
         </div>
 

@@ -16,6 +16,7 @@ import {  } from './devices_timers.js';
 import {  } from './menu_contextual.js';
 
 
+
 // Lista das entidades
 let entities_list = [];
 

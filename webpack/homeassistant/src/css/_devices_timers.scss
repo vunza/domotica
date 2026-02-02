@@ -26,7 +26,7 @@
 }
 
 .config-timers-header {
-    padding: 20px;
+    padding: 10px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.2);
@@ -40,7 +40,7 @@
 }
 
 .timer-selector-container {
-    padding: 15px 20px;
+    padding: 5px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.1);
 }
@@ -159,8 +159,8 @@
     padding-left: 44px; /* Espaço para o ícone */
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: rgba(255, 255, 255, 0.1);    
+    color: white;    
     font-size: 1rem;
     transition: var(--transition);
     appearance: none;
@@ -177,8 +177,8 @@
 
 /* Placeholder para select (opção desabilitada) */
 .custom-select option[value=""][disabled] {
-    color: rgba(255, 255, 255, 0.5);
-    font-style: italic;
+    color: rgba(255, 255, 255, 0.5);    
+    font-style: italic;    
 }
 
 /* Estilo para quando não há opção selecionada */
@@ -195,6 +195,15 @@
     color: rgba(255, 255, 255, 0.7);
     pointer-events: none;
 }
+
+.custom-select option {
+    text-align: left;  
+}
+
+.opcao_accao {  
+  color: #333;
+}
+
 
 /* Container para o input de hora */
 .time-input-container {
@@ -272,6 +281,7 @@
     background-color: rgba(65, 189, 245, 0.1);
 }
 
+
 .weekdays-container {
     margin-top: 20px;
 }
@@ -335,7 +345,7 @@
 .current-time-date {
     text-align: center;
     margin-top: 25px;
-    padding: 15px;
+    padding: 10px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -343,7 +353,7 @@
 
 .current-time {
     font-size: 1.1rem;
-    margin-bottom: 8px;
+    margin-bottom: 1px;
 }
 
 #hora_actual {

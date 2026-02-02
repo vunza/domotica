@@ -8,6 +8,7 @@
 #include "ctrl_debug.h"
 #include "constantes.h"
 
+
 /**
  * @class MQTTClient
  * @brief Cliente MQTT simples para ESP8266 e ESP32
@@ -258,12 +259,131 @@ class MQTTClient {
   );
 
 
+  /**
+   * @brief Atualiza o estado de um dispositivo identificado por seu endereço MAC.
+   * 
+   * Esta função gerencia um array de estruturas que armazenam o estado de dispositivos.
+   * Se o dispositivo (identificado por um endereço MAC sem dois pontos) já estiver registrado,
+   * seu estado é atualizado. Caso contrário, um novo registro é criado, desde que haja espaço.
+   * Cada registro inclui um timestamp que marca o momento da última atualização.
+   * 
+   * @param mac_without_colon Endereço MAC do dispositivo, sem dois pontos (ex: "A1B2C3D4E5F6").
+   *                          Deve ser uma string terminada em null.
+   * @param estado String contendo o estado atual do dispositivo (ex: "ON", "OFF").
+   *               Deve ser uma string terminada em null.
+   * 
+   * @note A função utiliza um array estático de estruturas `estados`, com tamanho máximo definido por `MAX_TOPICOS`.
+   *       Se o array estiver cheio e um novo dispositivo tentar ser adicionado, uma mensagem de erro será impressa
+   *       e a função retornará sem fazer alterações.
+   * 
+   * @note O timestamp é obtido através da função `millis()` e representa o momento da atualização em milissegundos
+   *       desde que o sistema começou a rodar.
+   * 
+   * @warning Esta função não é thread-safe. Se usada em um contexto de múltiplas threads ou tarefas,
+   *          deve ser protegida por mecanismos de sincronização.
+   * 
+   * @warning As strings `mac_without_colon` e `estado` devem ter comprimento adequado para caber nos campos
+   *          da estrutura `EstadoTopico`. Não há verificação de comprimento nesta função, portanto, o chamador
+   *          deve garantir que não excedam os limites definidos na estrutura.
+   * 
+   * @see MAX_TOPICOS
+   * @see EstadoTopico
+   * @see millis()
+   * @see imprimeln()
+   * 
+   * @example
+   * // Exemplo de uso:
+   * MQTTClient client;
+   * client.atualizarEstado("A1B2C3D4E5F6", "ON");
+   * client.atualizarEstado("A1B2C3D4E5F6", "OFF"); // Atualiza o mesmo dispositivo
+   * client.atualizarEstado("B2C3D4E5F6A7", "ON");  // Adiciona um novo dispositivo
+   * 
+   * @return void
+   */
+  void atualizarEstado(const char* mac_without_colon, const char* estado);
+
+
+  /**
+   * @brief Busca e retorna o estado atual de um dispositivo na cache local
+   * 
+   * Esta função realiza uma busca linear no array de estados armazenados para encontrar
+   * o estado correspondente a um endereço MAC específico. É utilizada para acessar
+   * rapidamente o último estado conhecido de um dispositivo sem necessidade de consulta
+   * ao broker MQTT ou aguardar novas mensagens.
+   * 
+   * @param mac_without_colon Endereço MAC do dispositivo no formato hexadecimal sem separadores
+   *                         (12 caracteres para MAC-48, ex: "A1B2C3D4E5F6")
+   *                         Deve corresponder exatamente ao formato armazenado.
+   * 
+   * @return const char* Ponteiro para string contendo o estado do dispositivo:
+   *         - String não vazia contendo o estado (ex: "ON", "OFF", "25.5", "CONNECTED")
+   *         - String vazia ("") se o dispositivo não for encontrado ou se o registro for inválido
+   * 
+   * @note O ponteiro retornado aponta para o buffer interno da estrutura EstadoTopico.
+   *       Não modifique ou libere esta memória.
+   * @note A função retorna string vazia em caso de falha, não NULL.
+   * @note A busca é case-sensitive (MAC deve estar em maiúsculas conforme armazenado).
+   * @note Complexidade temporal: O(n) onde n = totalEstados
+   * 
+   * @section algoritmo Algoritmo
+   * 1. Percorre o array `estados` de 0 até `totalEstados - 1`
+   * 2. Para cada elemento:
+   *    a. Compara o MAC usando `strcmp()`
+   *    b. Verifica se o registro está marcado como `valido == true`
+   *    c. Se ambas condições forem verdadeiras, retorna `estados[i].state`
+   * 3. Se nenhum registro atender aos critérios, retorna string vazia ("")
+   * 
+   * @warning A função não valida a idade do estado (timestamp). Estados muito antigos
+   *          ainda serão retornados se `valido == true`. Use `estaEstadoRecente()` para
+   *          verificar a validade temporal.
+   * @warning Thread-unsafe: Acesso não sincronizado ao array compartilhado.
+   * 
+   * @code{.cpp}
+   * // Exemplo de uso básico:
+   * const char* estado = mqttClient.buscarEstado("A1B2C3D4E5F6");
+   * if (estado[0] != '\0') {  // Verifica se não é vazio
+   *     Serial.print("Estado do dispositivo: ");
+   *     Serial.println(estado);
+   * } else {
+   *     Serial.println("Dispositivo não encontrado ou estado inválido");
+   * }
+   * 
+   * // Exemplo com conversão para tipos específicos:
+   * const char* estadoStr = mqttClient.buscarEstado("B2C3D4E5F6A7");
+   * if (estadoStr[0] != '\0') {
+   *     if (strcmp(estadoStr, "ON") == 0) {
+   *         ligarDispositivo();
+   *     } else if (strcmp(estadoStr, "OFF") == 0) {
+   *         desligarDispositivo();
+   *     } else {
+   *         float valor = atof(estadoStr);  // Para valores numéricos
+   *         processarValor(valor);
+   *     }
+   * }
+   * @endcode
+   * 
+   * @see MQTTClient::atualizarEstado()
+   * @see MQTTClient::estaEstadoRecente()
+   * @see MQTTClient::removerEstado()
+   */
+  const char* buscarEstado(const char* mac_without_colon);
+
 
   private:
     PubSubClient _mqtt;
     const char* _host;
     uint16_t _port;
     const char* _clientId;
+
+    struct GuardaEstadoTopico {
+      char mac_without_colon[13];
+      char state[4];    
+      bool valido;
+      //unsigned long timestamp;
+    };
+
+    GuardaEstadoTopico estados[MAX_TOPICOS];
+    uint8_t totalEstados = 0;
 };
 
 #endif

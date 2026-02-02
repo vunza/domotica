@@ -92,12 +92,13 @@ void setup() {
         sum *= 5;
     }
 
+   
     // Pausa necessaris para o emparelhamento com Master Esp-Now
     uint8_t counter = 0;
     while(counter < sum/60){
         counter++;
         delay(1000);        
-        imprime(F("Iniciando..."));
+        imprime(F("Iniciando... "));
         imprimeln(counter);
     }
 
@@ -128,17 +129,19 @@ void setup() {
     espnow.emparelharDispositivo(broadcastMac, 1500, false);
    
 
-    // Callback para recepção de dados esp-now
+    /////////////////////////////////////////////
+    // Callback para recepção de dados esp-now //
+    /////////////////////////////////////////////
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
         // Passa dados recebidos para a estructura
-        memcpy(&dados_espnow, data, sizeof(EspNowData));        
+        memcpy(&dados_espnow, data, sizeof(EspNowData));          
         
         // Obtem MAC do Dispositivo
         char my_mac_addr[18];            
-        WiFi.macAddress().toCharArray(my_mac_addr, 18);       
+        WiFi.macAddress().toCharArray(my_mac_addr, 18);         
 
         // Checa e processa Mensagens Recebidas
-        if( strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0 ) {        
+        if( strcmp(dados_espnow.msg_type, "CHANNEL_RSP") == 0 ) {           
             
             // Veriifca a quem destina-se o comando TODO: rever o codigo
             if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){
@@ -150,15 +153,17 @@ void setup() {
                 strcpy(dados_espnow.msg_type, "CHANNEL_RSP");
                 strcpy(dados_espnow.mac_server, "RTx");
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+                strcpy(dados_espnow.mac_server, "");
             }  
 
-        } else if( strcmp(dados_espnow.msg_type, "REPAIR_MSG") == 0 ) { // Forçar reemparelhamento           
-
+        } else if( strcmp(dados_espnow.msg_type, "REPAIR_MSG") == 0 ) { // Forçar reemparelhamento 
+            
             if(strcmp(dados_espnow.mac_server, "RTx") != 0) {  
                 // Retrasmite os dados (uma vez), para alcançar dispositivos fora do alcance do servidor             
                 strcpy(dados_espnow.msg_type, "REPAIR_MSG");
                 strcpy(dados_espnow.mac_server, "RTx");
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+                strcpy(dados_espnow.mac_server, "");
                 
                 // Scanea canal Esp-Now
                 espnow.emparelharDispositivo(broadcastMac, 1500, false);
@@ -178,14 +183,16 @@ void setup() {
                 strcpy(dados_espnow.msg_type, "ALIVE_MSG");
                 strcpy(dados_espnow.mac_server, "RTx");
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+                strcpy(dados_espnow.mac_server, "");
             }  
             else{
                 espnow.server_alive_counter = 0;
             }
 
-        } else if( strcmp(dados_espnow.msg_type, "SET_STATE") == 0 ) {             
+        } else if( strcmp(dados_espnow.msg_type, "SET_STATE") == 0 ) {  
+                                
             // Veriifca a quem destina-se o comando
-            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){
+            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){                
                 
                 // Ligar/Desligar PIN/LED (Logica invertida)
                 if (strcmp(dados_espnow.state, "ON") == 0) {      
@@ -204,6 +211,7 @@ void setup() {
                 strcpy(dados_espnow.msg_type, "SET_STATE");
                 strcpy(dados_espnow.mac_server, "RTx");
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+                strcpy(dados_espnow.mac_server, "");
             }           
         }
         else if( strcmp(dados_espnow.msg_type, "NORMAL_MODE") == 0 ) { 
@@ -215,6 +223,7 @@ void setup() {
                 strcpy(dados_espnow.msg_type, "NORMAL_MODE");
                 strcpy(dados_espnow.mac_server, "RTx");
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+                strcpy(dados_espnow.mac_server, "");
             }                         
         }
         else if( strcmp(dados_espnow.msg_type, "OTA_MODE") == 0 ) {             
@@ -247,19 +256,18 @@ void setup() {
                 strcpy(dados_espnow.msg_type, "OTA_MODE");
                 strcpy(dados_espnow.mac_server, "RTx");
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+                strcpy(dados_espnow.mac_server, "");
             }                   
-        }
+        }        
 
-        strcpy(dados_espnow.mac_server, "");
-
-    });
+    }); // FIM de espnow.onReceive(...)
 
 
 
     // Callback para envio de dados esp-now
     espnow.onSend([](const uint8_t *mac, bool ok){
         
-    });
+    }); // FIM de espnow.onSend(...)
 
     
     // Inicializar sensor INA226
