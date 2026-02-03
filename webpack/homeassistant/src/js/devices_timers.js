@@ -133,7 +133,7 @@ window.guardarConfigsTimers = async function() {
 
 
 // Obter dados dos Timers da automação no HA, actualiza os elementos do formulário
-async function getAutomationData(token, ip_eporta, timer_index, id_entidade) { 
+async function getAutomationData(token, ip_e_porta, timer_index, id_entidade) { 
     
     resetarElementos();
 
@@ -141,7 +141,7 @@ async function getAutomationData(token, ip_eporta, timer_index, id_entidade) {
     const id_sem_dominio = id_entidade.split('.')[1]; 
     const AUTOMATION_ID = `Timer-${id_sem_dominio}_${timer_index}`;   
 
-    const url = `${ip_eporta}/api/config/automation/config/${AUTOMATION_ID}`;
+    const url = `${ip_e_porta}/api/config/automation/config/${AUTOMATION_ID}`;
 
     fetch(url, {
     method: "GET",
@@ -175,7 +175,19 @@ async function getAutomationData(token, ip_eporta, timer_index, id_entidade) {
 
         if (comando !== "turn_on" && comando !== "turn_off" && comando !== "toggle"  ){
             select.selectedIndex = 0; // Nenhum
-        }        
+        } 
+        
+        // Actualizar estado do checkbox activar/desactivar
+        const automationId = `timer_${id_sem_dominio}_${timer_index}`; ;
+        getAutomationState(ip_e_porta, token, automationId).then(state => {
+            if (state === "on") {
+                chkActivar.checked = true;
+                customCheckbox.setAttribute('aria-checked', 'true');
+            } else {
+                chkActivar.checked = false;
+                customCheckbox.setAttribute('aria-checked', 'false');
+            }
+        });
                
 
         // Actualizar dias da semana
@@ -210,6 +222,34 @@ async function getAutomationData(token, ip_eporta, timer_index, id_entidade) {
         resetarElementos();
         console.error("Erro ao buscar a automação:", error);
     });
+}
+
+
+// Obter estado da automação (on/off/not_created/error)
+async function getAutomationState(ip_e_porta, token, automationId) {
+    const url = `${ip_e_porta}/api/states/automation.${automationId}`;
+
+    try {
+        const res = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        // Não existe ainda
+        if (res.status === 404) {
+            return "not_created";
+        }
+
+        const data = await res.json();
+        return data.state; // "on" | "off"
+
+    } catch (err) {
+        console.error("Erro ao obter estado:", err);
+        return "error";
+    }
 }
 
 
@@ -354,6 +394,10 @@ function resetarElementos(){
     // Resetar input time
     const input = document.getElementById("time_hora");           
     input.value = "";
+
+    // Resetar checkbox activar/desactivar
+    chkActivar.checked = false;
+    customCheckbox.setAttribute('aria-checked', 'false');
 
     // Resetar option select
     document.getElementById('select_accao').selectedIndex = 0;
