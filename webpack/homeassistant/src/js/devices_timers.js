@@ -110,14 +110,20 @@ window.guardarConfigsTimers = async function() {
 
         
         
-        // Configura o temporizador
+        // Configura o temporizador atraves de um script no HA (gerar_automacao_dinamica), 
+        // que lê os valores dos input_datetime, input_text e input_boolean para criar/actualizar a automação correspondente
         executeScriptTimer(token, 'gerar_automacao_dinamica').then((data) => {
-            console.log('Resposta do script:', data);
+            //console.log('Resposta do script:', data);
             //showTooltip('Configurações do Temporizador guardadas com sucesso!', 'success'); 
             //alert('Configurações do Temporizador guardadas com sucesso!');            
 
-            // Actualizar dados dos Timers nas cards
-            actualizarDadosTimers(token, ip_e_porta);   
+            // Obter dados dos Timers atualizados e trabalhar com eles (ex: actualizar a interface, mostrar uma mensagem, etc.)
+            obterDadosTimers(token, ip_e_porta).then(timers => {
+                if (timers) {
+                    // Trabalhar com os dados
+                    console.log('Dados obtidos:', timers);
+                }
+            });
 
         }).catch((error) => {
             console.error('Erro ao executar o script:', error);
@@ -129,6 +135,7 @@ window.guardarConfigsTimers = async function() {
     }
    
 } // Fim guardarConfigsTimers(...)
+
 
 
 
@@ -254,36 +261,54 @@ async function getAutomationState(ip_e_porta, token, automationId) {
 
 
 
-// Actualiza dados dos Timers nas entidades/helpers do HA
-async function actualizarDadosTimers(token, ip_porta) {
-   
-    const url = `${ip_porta}/api/services/shell_command/obter_dados_automacoes`;
+// Função para obter os dados do sensor
+async function obterDadosTimers(token, ip_e_porta) {
 
-    fetch(url, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({}) // se o comando precisar de parâmetros, coloque aqui
-      })
-      .then(response => {
+    const ENTITY_ID = 'sensor.info_dos_timers';
+
+    try {
+        const response = await fetch(
+            `${ip_e_porta}/api/states/${ENTITY_ID}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
         if (!response.ok) {
-          throw new Error(`Erro: ${response.status}`);
+            throw new Error(`Erro HTTP: ${response.status}`);
         }
-        return response.json();
-      })
-      .then(data => {
-        console.log("Comando executado:", data);
-      })
-      .catch(error => {
-        console.error("Erro ao executar shell_command:", error);
-      });      
-
+        
+        const data = await response.json();
+        
+        // O estado principal contém informações básicas
+        console.log('Estado:', data.state);
+        
+        // Os atributos dinâmicos estão em data.attributes.timers
+        const timers = data.attributes.timers;
+        
+        if (timers) {
+            console.log('Timers encontrados:');
+            Object.keys(timers).forEach(entityId => {
+                console.log(`Entity: ${entityId}`, timers[entityId]);
+            });
+            
+            // Exemplo de uso específico
+            return timers;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Erro ao obter dados:', error);
+        return null;
+    }
 }
 
 
 
+// Função para executar um script no HA (ex: gerar_automacao_dinamica)
 async function executeScriptTimer(token, script_name) {
     try {
       const response = await fetch('/api/services/script/' + script_name, {
