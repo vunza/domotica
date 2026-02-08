@@ -101,8 +101,18 @@
 }
 
 .card-content {
+    display: flex;
     color: #555;
     line-height: 1.5;
+}
+
+.div_img_clock {   
+   padding-right: 5px;     
+} 
+
+.div_content {
+    display: flex;
+    align-items: center;    
 }
 
 .menu-trigger {

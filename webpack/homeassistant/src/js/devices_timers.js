@@ -12,6 +12,16 @@ const diasDaSemana = [
     'Quinta-feira', 'Sexta-feira', 'Sábado'
 ];
 
+const mapaDias = {
+    'sun': 'Domingo',
+    'mon': 'Segunda-feira',
+    'tue': 'Terça-feira',
+    'wed': 'Quarta-feira',
+    'thu': 'Quinta-feira',
+    'fri': 'Sexta-feira',
+    'sat': 'Sábado'
+};
+
 import {getToken, ip_e_porta} from './vars_funcs_globais.js';
 
 function atualizarDataHora() {
@@ -115,15 +125,20 @@ window.guardarConfigsTimers = async function() {
         executeScriptTimer(token, 'gerar_automacao_dinamica').then((data) => {
             //console.log('Resposta do script:', data);
             //showTooltip('Configurações do Temporizador guardadas com sucesso!', 'success'); 
-            //alert('Configurações do Temporizador guardadas com sucesso!');            
+            //alert('Configurações do Temporizador guardadas com sucesso!'); 
+            
+            // Após guardar as configurações, obter os próximos timers a serem executados para actualizar a interface ou mostrar uma mensagem.
+            //getNextTimer2Execute(token, ip_e_porta);
 
             // Obter dados dos Timers atualizados e trabalhar com eles (ex: actualizar a interface, mostrar uma mensagem, etc.)
             obterDadosTimers(token, ip_e_porta).then(timers => {
                 if (timers) {
-                    // Trabalhar com os dados
-                    console.log('Dados obtidos:', timers);
+                    Object.keys(timers).forEach(entityId => {                      
+                        document.getElementById(`${entityId}.content`).innerHTML = timers[entityId].weekday + ", " + timers[entityId].execucao + " - " + timers[entityId].action;
+                    });                    
                 }
-            });
+
+            }); // FIM obterDadosTimers(...)
 
         }).catch((error) => {
             console.error('Erro ao executar o script:', error);
@@ -136,6 +151,50 @@ window.guardarConfigsTimers = async function() {
    
 } // Fim guardarConfigsTimers(...)
 
+
+
+// Atualiza dados de Timers a cada 5 segundos, para manter a interface sempre actualizada com os próximos timers a serem executados.
+setInterval(async () => {
+
+    try {
+        // Obter Token de acesso ao HA
+        const api_token = '/local/json_files/token_api.json';
+        const token = await getToken(api_token);
+
+        getNextTimer2Execute(token, ip_e_porta);
+
+        // Obter dados dos Timers e trabalhar com eles (ex: actualizar a interface, mostrar uma mensagem, etc.)
+        obterDadosTimers(token, ip_e_porta).then(timers => {
+            if (timers) {
+                Object.keys(timers).forEach(entityId => {
+
+                    const content = document.getElementById(`${entityId}.content`);
+                    content.innerHTML = mapaDias[timers[entityId].weekday] + ", " + timers[entityId].execucao /*+ " - " + timers[entityId].action*/;
+                
+                    const pai = document.getElementById(`${entityId}.div_img_clock`);
+                    
+                    // Alterar cor do icon do historico
+                    if(timers[entityId].action.includes("turn_on")){
+                        pai.querySelector('.svg_clk').setAttribute("fill", "green");   
+                    }
+                    else if(timers[entityId].action.includes("turn_off")){
+                        pai.querySelector('.svg_clk').setAttribute("fill", "red");   
+                    }
+                    else if(timers[entityId].action.includes("toggle")){
+                        pai.querySelector('.svg_clk').setAttribute("fill", "orange");   
+                    }
+                    else{
+                        pai.querySelector('.svg_clk').setAttribute("fill", "gray"); 
+                    }  
+
+                });// Fim Object.keys(...).forEach(...)
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar os dados dos Timers:', error);
+    }   
+
+}, 5000);
 
 
 
@@ -261,6 +320,36 @@ async function getAutomationState(ip_e_porta, token, automationId) {
 
 
 
+// Executa o script para obter proximos Timers a serem executados, 
+// baseado num "shell_command:" definido no HA, que por sua vez chama um script Python para obter essa informação. 
+async function getNextTimer2Execute(token, ip_e_porta) {
+   
+    const url = `${ip_e_porta}/api/services/shell_command/obter_dados_automacoes`;
+
+    fetch(url, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({}) // se o comando precisar de parâmetros, coloque aqui
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erro: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        //console.log("Comando executado:", data);
+      })
+      .catch(error => {
+        console.error("Erro ao executar shell_command:", error);
+      });      
+
+}
+
+
 // Função para obter os dados do sensor
 async function obterDadosTimers(token, ip_e_porta) {
 
@@ -284,18 +373,17 @@ async function obterDadosTimers(token, ip_e_porta) {
         const data = await response.json();
         
         // O estado principal contém informações básicas
-        console.log('Estado:', data.state);
+        //console.log('Estado:', data.state);
         
         // Os atributos dinâmicos estão em data.attributes.timers
         const timers = data.attributes.timers;
         
         if (timers) {
-            console.log('Timers encontrados:');
+            //console.log('Timers encontrados:');
             Object.keys(timers).forEach(entityId => {
-                console.log(`Entity: ${entityId}`, timers[entityId]);
+                //console.log(`Entity: ${entityId}`, timers[entityId]);
             });
-            
-            // Exemplo de uso específico
+        
             return timers;
         }
         
