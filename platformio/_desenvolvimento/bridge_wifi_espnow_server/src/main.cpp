@@ -350,8 +350,6 @@ void loop() {
         // Envia mensagem "ALIVE_MSG" aos clientes
         strcpy(dados_espnow.msg_type, "ALIVE_MSG");    
         strcpy(dados_espnow.state, cz_channel);
-        
-        // Envia Resposta, CHANNEL_RSP, da petição CHANNEL_REQ
         espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
     }
 

@@ -128,7 +128,7 @@ window.guardarConfigsTimers = async function() {
             //alert('Configurações do Temporizador guardadas com sucesso!'); 
             
             // Após guardar as configurações, obter os próximos timers a serem executados para actualizar a interface ou mostrar uma mensagem.
-            //getNextTimer2Execute(token, ip_e_porta);
+            getNextTimer2Execute(token, ip_e_porta);
 
             // Obter dados dos Timers atualizados e trabalhar com eles (ex: actualizar a interface, mostrar uma mensagem, etc.)
             obterDadosTimers(token, ip_e_porta).then(timers => {
