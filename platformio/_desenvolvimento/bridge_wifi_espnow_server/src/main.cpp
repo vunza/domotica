@@ -275,8 +275,7 @@ void setup() {
     wifiManager.connect(WIFI_SSID, WIFI_PASSWORD);    
 
     // Conectar CLIENTE MQTT   
-    conect2MqttBroker();
-    
+    conect2MqttBroker();    
 
     // INICIALIZA DISPLAY OLED
     static unsigned long contador = 0;
