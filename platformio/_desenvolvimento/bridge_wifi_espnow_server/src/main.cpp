@@ -16,7 +16,7 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 */
 
 
-// TDOD: Guardar/Recuperar dados da WiFi na EEPROM
+// TDOD: Guardar/Recuperar, na EEPROM, dados da WiFi e  do Servidor Broker MQTT, para evitar reconfiguração após reinicio do dispositivo.
 // ========== CONFIGURAÇÕES ==========
 const char* WIFI_SSID = "TPLINK";
 const char* WIFI_PASSWORD = "gregorio@2012";
@@ -59,12 +59,18 @@ WiFiClient wifiClient;
 // TODO: IP do broker dinamico
 MQTTClient mqttClient(wifiClient, MQTT_BROKER);
 
+// Variável para controlar tentativas de reconexão MQTT
+unsigned long lastReconnectAttempt = 0;
+
 
 // DISPLAY OLED
 OLEDDisplay oled;
 
 // CallBack MQTT 
 void mqttCallback(char* topic, byte* payload, unsigned int length);
+
+// Função para conectar ao broker MQTT e publicar a entidade do dispositivo
+void conect2MqttBroker();
 
 uint8_t getWiFiChannelFromAP(const char* ssid) {
 #if defined(ESP8266)
@@ -266,44 +272,10 @@ void setup() {
     
 
     // Rede WiFi
-    wifiManager.connect(WIFI_SSID, WIFI_PASSWORD);
-    
+    wifiManager.connect(WIFI_SSID, WIFI_PASSWORD);    
 
     // Conectar CLIENTE MQTT   
-    #if defined(ESP32)
-        const char* host_name = WiFi.getHostname();
-    #elif defined(ESP8266)  
-        String hostNameStr = WiFi.hostname();
-        const char* host_name = hostNameStr.c_str();
-    #endif  
-    
-    mqttClient.setClientId(host_name);
-    mqttClient.setCallback(mqttCallback);
-    mqttClient.setBufferSize(MQTT_BUFFER_SIZE);
-    mqttClient.connect();         
-
-    // Criar Dispositivo MQTT
-    char node_id[13];  
-    char mac_colon[18]; 
-    char unique_id[64];    
-    const char* component  = MQTT_DEVICE_DOMAIN; 
-    wifiManager.getMacAddress(mac_colon, true);   
-    wifiManager.getMacAddress(node_id, false);    
-    snprintf(unique_id, sizeof(unique_id), "%s%s", mqttClient.entity_id_prefix, node_id);      
-    const char* device_name = node_id;
-    const char* entity_name = "";
-    const char* base_topic = MQTT_BASE_TOPIC;  
-    const char* manufacturer = MQTT_DEVICE_MANUFACTURER;    
-    const char* model = host_name; // (*J*) Deve ser único.
-    const char* extra_config;
-
-    // Guarda node_id do dispositivo principal para ser usado nas entidades dependentes
-    strcpy(mqttClient.main_device_node_id, node_id);
-     
-    mqttClient.publishDiscoveryEntity(
-        mqttClient, "device", component, node_id, entity_name, base_topic, unique_id,       
-        mac_colon, device_name, manufacturer, model, extra_config = nullptr 
-    );    
+    conect2MqttBroker();
     
 
     // INICIALIZA DISPLAY OLED
@@ -326,20 +298,41 @@ void setup() {
 }
 
 
+
+
 ////////////////////
 // loop principal //
 ////////////////////
 void loop() {
-    // NOTA: AsyncElegantOTA não precisa de nada no loop   
-    
-    // CLIENTE MQTT
-    mqttClient.loop();
+    // NOTA: AsyncElegantOTA não precisa de nada no loop     
+       
+    // CLIENTE MQTT       
+    if (!mqttClient.connected()) {
 
+        unsigned long now = millis();
+
+        if (now - lastReconnectAttempt > 5000) {
+
+            imprimeln(F("Tentando reconectar MQTT..."));
+            lastReconnectAttempt = now;              
+            // Conectar CLIENTE MQTT
+            conect2MqttBroker();
+
+            // Envia mensagem "REPAIR_MSG" aos clientes para Forçar reemparelhamento
+            strcpy(dados_espnow.msg_type, "REPAIR_MSG");    
+            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData)); 
+        }
+
+    } 
+    else {
+        mqttClient.loop();  // processa mensagens recebidas
+    }
       
+
     // Envia um "ping", aos clientes esp-now, a cada X segundos
     static unsigned long lastPing = 0;
     if (millis() - lastPing > 5000) {   
-        lastPing = millis(); 
+        lastPing = millis();         
 
         // Converte inteiro a char []
         uint8_t channel = espnow.getCurrentWiFiChannel();;
@@ -451,3 +444,43 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 }// mqttCallback(char* topic, byte* payload, unsigned int length)
 
 
+// Função para conectar ao broker MQTT e publicar a entidade do dispositivo
+void conect2MqttBroker(){
+
+    // Conectar CLIENTE MQTT   
+    #if defined(ESP32)
+        const char* host_name = WiFi.getHostname();
+    #elif defined(ESP8266)  
+        String hostNameStr = WiFi.hostname();
+        const char* host_name = hostNameStr.c_str();
+    #endif  
+    
+    mqttClient.setClientId(host_name);
+    mqttClient.setCallback(mqttCallback);
+    mqttClient.setBufferSize(MQTT_BUFFER_SIZE);
+    mqttClient.connect();     
+
+    // Criar Dispositivo MQTT
+    char node_id[13];  
+    char mac_colon[18]; 
+    char unique_id[64];    
+    const char* component  = MQTT_DEVICE_DOMAIN; 
+    wifiManager.getMacAddress(mac_colon, true);   
+    wifiManager.getMacAddress(node_id, false);    
+    snprintf(unique_id, sizeof(unique_id), "%s%s", mqttClient.entity_id_prefix, node_id);      
+    const char* device_name = node_id;
+    const char* entity_name = "";
+    const char* base_topic = MQTT_BASE_TOPIC;  
+    const char* manufacturer = MQTT_DEVICE_MANUFACTURER;    
+    const char* model = host_name; // (*J*) Deve ser único.
+    const char* extra_config;
+
+    // Guarda node_id do dispositivo principal para ser usado nas entidades dependentes
+    strcpy(mqttClient.main_device_node_id, node_id);
+    
+    mqttClient.publishDiscoveryEntity(
+        mqttClient, "device", component, node_id, entity_name, base_topic, unique_id,       
+        mac_colon, device_name, manufacturer, model, extra_config = nullptr 
+    );    
+
+}

@@ -141,6 +141,7 @@ void MQTTClient::publishDiscoveryEntity(
         json.add("state_on", "ON");
         json.add("state_off", "OFF");
         json.add("retain", "true", false);
+        //json.add("retain", "false", false);
         json.add("qos", 1);
     }
 
@@ -196,7 +197,7 @@ void MQTTClient::publishDiscoveryEntity(
       imprimeln(payload);*/        
     } 
     else{     
-      imprime(F("Erro do MQTT Discovery!"));      
+      imprimeln(F("Erro do MQTT Discovery!"));      
     } 
     
 }
