@@ -140,8 +140,7 @@ void MQTTClient::publishDiscoveryEntity(
         json.add("payload_off", "OFF");
         json.add("state_on", "ON");
         json.add("state_off", "OFF");
-        json.add("retain", "true", false);
-        //json.add("retain", "false", false);
+        json.add("retain", "true", false);        
         json.add("qos", 1);
     }
 

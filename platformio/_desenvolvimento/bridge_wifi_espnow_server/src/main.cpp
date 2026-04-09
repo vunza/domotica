@@ -165,14 +165,14 @@ void setup() {
         uint8_t CLIENT_MAC[6];
         sscanf(str, "%2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx",
                                 &CLIENT_MAC[0], &CLIENT_MAC[1], &CLIENT_MAC[2],
-                                &CLIENT_MAC[3], &CLIENT_MAC[4], &CLIENT_MAC[5]);
+                                &CLIENT_MAC[3], &CLIENT_MAC[4], &CLIENT_MAC[5]);  
 
 
         char client_mac[18]; 
         snprintf(client_mac, 18, "%02X:%02X:%02X:%02X:%02X:%02X", CLIENT_MAC[0], CLIENT_MAC[1], CLIENT_MAC[2], CLIENT_MAC[3], CLIENT_MAC[4], CLIENT_MAC[5]);
         char client_mac_without_colon[13]; 
         snprintf(client_mac_without_colon, 13, "%02x%02x%02x%02x%02x%02x", CLIENT_MAC[0], CLIENT_MAC[1], CLIENT_MAC[2], CLIENT_MAC[3], CLIENT_MAC[4], CLIENT_MAC[5]);
-                        
+             
 
         // Processa Requisição de Canal
         if( strcmp(dados_espnow.msg_type, "CHANNEL_REQ") == 0) {
@@ -186,17 +186,17 @@ void setup() {
             char cz_channel[len + 1];  
             String(channel).toCharArray(cz_channel, sizeof(cz_channel));
            
-            // Criar Entidade MQTT                        
-            char node_id[13];  
-            char mac_colon[18]; 
-            char unique_id[64];    
+            // Criar Entidade MQTT 
+            char node_id[13];            
+            char mac_colon[18];   
+            char unique_id[64];           
             const char* component  = MQTT_ENTITY_DOMAIN;                
             strcpy(mac_colon, client_mac); // wifiManager.getMacAddress(mac_colon, true);
-            strcpy(node_id, client_mac_without_colon); // wifiManager.getMacAddress(node_id, false);    
-            snprintf(unique_id, sizeof(unique_id), "%s%s", mqttClient.entity_id_prefix, node_id);   
+            strcpy(node_id, client_mac_without_colon); // wifiManager.getMacAddress(node_id, false);                 
             const char* device_name = client_mac_without_colon;
-            const char* entity_name = ""; //"Interruptor Sala";
-            const char* base_topic = MQTT_BASE_TOPIC;  
+            const char* entity_name = ""; //"Interruptor Sala"; 
+            const char* base_topic = MQTT_BASE_TOPIC;
+            snprintf(unique_id, sizeof(unique_id), "%s%s", mqttClient.entity_id_prefix, node_id);            
             const char* manufacturer = MQTT_ENTITY_MANUFACTURER;            
             const char* model = client_host_name; // (*J*) Deve ser unico
             const char* extra_config;
@@ -237,26 +237,33 @@ void setup() {
 
         }
         // Checa e processa o tipo de mensagens (Se nao for para retransmissao)
-        else if( strcmp(dados_espnow.msg_type, "DATA") == 0 ) {   
+        else if( strcmp(dados_espnow.msg_type, "TELEMETRY") == 0 ) {   
 
             // Converte em json os dados recebidos dos sensores           
             JsonBuilder json;
-            json.add("server_mac", server_mac);
-            json.add("client_mac", client_mac);
-            json.add("state", dados_espnow.state);
+            //json.add("server_mac", server_mac);
+            //json.add("state", dados_espnow.state);
+            json.add("mac_address", client_mac);
+            json.add("basic_topic", MQTT_BASE_TOPIC);
+            json.add("identificador", client_mac);
             json.add("ups1_current", dados_espnow.u1_current, 2);
             json.add("ups1_voltage", dados_espnow.u1_voltage, 2);
             json.add("ups1_temperature", dados_espnow.u1_temperature, 2);
             json.add("ups1_humidity", dados_espnow.u1_humidity);             
-            String dados = json.build();
+            String dados = json.build();            
 
             // evita enviar JSON quebrado
             if (!dados.startsWith("{") || !dados.endsWith("}")) {
                 return; 
-            }
-            
-            // Evia pela serial os dados processados            
-            //Serial.println(dados.c_str());
+            }           
+
+            // Evia telemetria para o MQTT Broker
+            char attributes_topic[64]; 
+            snprintf(attributes_topic, sizeof(attributes_topic), "%s%s/attributes", MQTT_BASE_TOPIC, client_mac_without_colon);
+            mqttClient.publish(attributes_topic, dados.c_str(), true);
+            //imprimeln(attributes_topic);
+            //imprimeln(dados.c_str());
+
             json.reset();
         }     
 
