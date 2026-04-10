@@ -373,17 +373,7 @@ void loop() {
             strcpy(dados_espnow.mac_client, mac);
             strcpy(dados_espnow.msg_type, "TELEMETRY");
             strcpy(dados_espnow.mac_server, "");
-            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData)); 
-
-            /*imprimeln("Enviando dados: ");
-            imprime("Voltage: ");
-            imprimeln(dados_espnow.u1_voltage);
-            imprime("Current: ");
-            imprimeln(dados_espnow.u1_current);
-            imprime("Temperature: ");
-            imprimeln(dados_espnow.u1_temperature);
-            imprime("Humidity: ");
-            imprimeln(dados_espnow.u1_humidity);*/
+            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));            
         }      
     }
     

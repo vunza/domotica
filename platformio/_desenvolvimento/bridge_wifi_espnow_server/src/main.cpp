@@ -397,21 +397,29 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   if( strcmp(msg, "ON") != 0 && strcmp(msg, "OFF") != 0 ){ // MENSAGEM OTA
 
     char command[32];
-    char mac[18];
+    char mac[18];    
 
     if (mqttClient.parseOtaMessageOptimized(msg, command, mac) && strcmp(server_mac, str_mac.c_str()) == 0 ){
+
+        if( strcmp(command, "OTA_MODE") != 0 ){
+            return; // Se a mensagem recebida não for "OTA_MODE", ignora.
+        }
         
         // Rede WiFi
         //wifiManager.criar_ap(ssid, password);
         // Iniciar servidor web
         webServer.begin();
         // Inicializar OTA elegante
-        ElengantOTA::begin(&servidorHTTP);      
+        ElengantOTA::begin(&servidorHTTP);    
     }
     else if (mqttClient.parseOtaMessageOptimized(msg, command, mac) && strcmp(server_mac, str_mac.c_str()) != 0 ){
         
+        if( strcmp(command, "OTA_MODE") != 0 ){
+            return; // Se a mensagem recebida não for "OTA_MODE", ignora.
+        }
+
         // Envia mensagem "OTA_MODE" aos clientes
-        strcpy(dados_espnow.msg_type, "OTA_MODE");    
+        strcpy(dados_espnow.msg_type, command);    
         strcpy(dados_espnow.mac_client, mac);        
         espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
     }
