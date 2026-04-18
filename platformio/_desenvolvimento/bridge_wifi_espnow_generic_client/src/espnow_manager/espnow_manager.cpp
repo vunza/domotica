@@ -163,7 +163,7 @@ void EspNowManager::staticOnRecv(const uint8_t* mac, const uint8_t* incomingData
 
 
 // Solicita canal WiFi do Master
-uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
+/*uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
 
     EspNowData dados_espnow; 
     uint8_t broadcastMac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}; 
@@ -251,6 +251,121 @@ uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
     // Cancela ESP-NOW (discovery espnow channel)
     esp_now_deinit();
 
+    return discoveredChannel;
+    
+}*/
+
+
+
+// Solicita canal WiFi do Master
+uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {   
+
+    EspNowData dados_espnow; 
+    uint8_t broadcastMac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}; 
+    channelFound = false;
+    is_server_alive = false;
+    
+    strcpy(dados_espnow.msg_type, "CHANNEL_REQ");   
+    strcpy(dados_espnow.state, "");     
+
+    for(int8_t channel = 0; channel <= CHANNEL_SCAN_MAX; channel++){
+        
+        #if defined(ESP8266)
+            esp_now_deinit();
+        #endif    
+        
+
+        #if defined(ESP32)          
+            
+            WiFi.mode(WIFI_AP_STA); 
+            WiFi.disconnect(true);
+            WiFi.softAP(WiFi.getHostname(), "123456789", channel, 1, 0); // para que o esp-now funcione 
+                        
+            vTaskDelay(100);
+
+            // Ajusta o canal de rádio    
+            esp_wifi_set_promiscuous(true);
+            esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+            esp_wifi_set_promiscuous(false);
+
+            if (esp_now_init() != ESP_OK) {
+                imprimeln(F("[ESPNOW] ERRO ao iniciar (ESP32)"));
+                return 0;
+            }
+
+            esp_now_register_recv_cb(staticOnRecv);  
+
+            // Adiciona o peer broadcast usando a interface AP (já ativa)
+            esp_now_peer_info_t peer = {};
+            memcpy(peer.peer_addr, broadcastMac, 6);
+            peer.channel = channel;               // 0 = usar canal atual do Wi-Fi
+            peer.ifidx = WIFI_IF_AP;                 // 1 = interface AP (WIFI_IF_AP)
+            peer.encrypt = false;
+
+            esp_now_add_peer(&peer);
+            
+        #elif defined(ESP8266)
+
+            WiFi.disconnect();
+            WiFi.mode(WIFI_AP_STA);   
+            WiFi.softAP(WiFi.hostname(), "123456789", channel, true); // para que o esp-now funcione
+
+            delay(100);
+
+            if (esp_now_init() != 0) {
+                imprimeln(F("[ESPNOW] ERRO ao iniciar (ESP8266)"));
+                return 0;
+            }
+
+            esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+            esp_now_register_recv_cb(staticOnRecv);            
+
+            // Transformar AP em “fantasma” (desativada, mas canal permanece)
+            softap_config apcfg;
+            wifi_softap_get_config(&apcfg);
+            memset(apcfg.ssid, 0, sizeof(apcfg.ssid));  // Ocultar completamente
+            apcfg.ssid_len = 0;
+            apcfg.ssid_hidden = 1;
+            apcfg.max_connection = 0;                 
+            apcfg.beacon_interval = 1000;    
+            wifi_softap_set_config_current(&apcfg);
+            wifi_softap_dhcps_stop(); // Desliga DHCP
+
+        #endif
+
+        if(channelFound){           
+           break;
+           // Cancela ESP-NOW (discovery espnow channel)
+           esp_now_deinit();
+        }  
+        else{
+
+            #if defined(ESP32)
+                const char* host_name = WiFi.getHostname();
+            #elif defined(ESP8266)  
+                String hostNameStr = WiFi.hostname();
+                const char* host_name = hostNameStr.c_str();
+            #endif  
+
+            strcpy(dados_espnow.mac_server, host_name); // Usar mac_server para levar o nome do ESP
+            strcpy(dados_espnow.msg_type, "CHANNEL_REQ");
+            strcpy(dados_espnow.mac_client, WiFi.macAddress().c_str());
+            esp_now_send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+            imprime(F("Testando o Canal: "));
+            imprimeln(channel);           
+        }       
+
+        #if defined(ESP8266)
+            delay(timeoutMs);
+        #elif defined(ESP32)
+            vTaskDelay(timeoutMs);
+        #endif           
+        
+    }
+
+    // Cancela ESP-NOW (discovery espnow channel)
+    esp_now_deinit();
+    
     return discoveredChannel;
     
 }

@@ -155,6 +155,10 @@ void setup() {
             return;
         }
 
+        imprimeln(dados_espnow.msg_type);
+        imprimeln(dados_espnow.mac_client);
+
+
         // Obter MAC do Servidor
         char server_mac[18]; 
         String macStr = WiFi.macAddress();

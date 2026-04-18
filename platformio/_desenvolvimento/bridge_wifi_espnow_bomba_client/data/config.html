@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+
+<div id="container">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">
+            <svg width="26" height="26" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 6c0-1.1-.9-2-2-2h-2V2h-2v2h-4V2H8v2H6c-1.1 0-2 .9-2 2v2H2v2h2v4H2v2h2v2c0 1.1.9 2 2 2h2v2h2v-2h4v2h2v-2h2c1.1 0 2-.9 2-2v-2h2v-2h-2v-4h2V8h-2zm-5 9H9V9h6z"/>
+            </svg>
+            <h3>Configurações</h3>
+        </div>
+
+        <div class="device-status">
+            <span class="status-dot"></span>
+            <span id="device-name"></span>
+        </div>
+    </header>
+
+    <!-- CARD: Renomear Dispositivo -->
+    <section class="card">
+        <div class="card-header">
+            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 13v3c0 .55.45 1 1 1h3c.27 0 .52-.11.71-.29l9-9a1 1 0 0 0 0-1.41l-3-3a1 1 0 0 0-1.41 0l-9 9A1 1 0 0 0 7 13m8-7.59L18.59 7 17.5 8.09 15.91 6.5z"/>
+            </svg>
+            <h4>Renomear Dispositivo</h4>
+        </div>
+
+        <div class="card-body">
+            <label class="label-with-icon">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M13.71 3.29A1 1 0 0 0 13 3H4a1 1 0 0 0-1 1v9l8 8 9-9z"/></svg>
+                Novo Nome
+            </label>
+
+            <div class="input-wrapper">
+                <input id="device-name-input" />
+                <svg id="svg_renomear_esp" class="icon-right" width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4zM12 19a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm3-10H6V5h9v4z"/></svg>
+            </div>
+
+            <div id="char-counter" class="char-counter">0 / 24 caracteres</div>
+        </div>
+    </section>
+
+    <!-- CARD: OTA -->
+    <section id="section_ota" class="card">
+        <div class="card-header">
+            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6"/>
+                <path d="M19.07 4.93c-1-1-2.1-1.73-3.18-2.14a10.1 10.1 0 0 0-7.79 0C6 3.2 4.9 3.93 3.93 4.93A10 10 0 0 0 2 12h2c0-2 .8-4 2.3-5.5A7.9 7.9 0 0 1 12 4c2 0 4 1 5.5 2.5L16 9h6V3z"/>
+            </svg>
+            <h4>Atualizar Firmware</h4>
+        </div>
+
+        <div class="card-body">
+            <object id="otaFrame" data="/update" type="text/html"></object>
+        </div>
+    </section>
+
+    <!-- BOTÃO SAIR -->
+    <div class="exit-container" onclick="btnRestartDevice();">
+        <svg class="exit-icon" width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="#d00" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+
+        <span class="exit-text">Fechar</span>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
