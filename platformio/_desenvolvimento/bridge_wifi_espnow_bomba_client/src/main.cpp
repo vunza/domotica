@@ -24,7 +24,7 @@ AsyncWebServer servidorHTTP(80);
 WebServer webServer(&servidorHTTP);
 
 
-const uint8_t LED_PIN = 13; // GPIO2 - LED embutido (LOW = ligado)
+const uint8_t LED_PIN = 2; // GPIO2 - LED embutido (LOW = ligado)
 
 
 EspNowManager espnow;
@@ -168,12 +168,22 @@ void setup() {
             // Veriifca a quem destina-se o comando
             if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){                
                 
+            #if defined(ESP32)
+                // Ligar/Desligar PIN/LED (Logica directa)
+                if (strcmp(dados_espnow.state, "OFF") == 0) {      
+                digitalWrite(LED_PIN, LOW);
+                } else if (strcmp(dados_espnow.state, "ON") == 0) {      
+                digitalWrite(LED_PIN, HIGH);
+                }
+            #elif defined(ESP8266)
                 // Ligar/Desligar PIN/LED (Logica invertida)
                 if (strcmp(dados_espnow.state, "ON") == 0) {      
-                    digitalWrite(LED_PIN, LOW);
+                digitalWrite(LED_PIN, LOW);
                 } else if (strcmp(dados_espnow.state, "OFF") == 0) {      
-                    digitalWrite(LED_PIN, HIGH);
+                digitalWrite(LED_PIN, HIGH);
                 }
+            #endif
+
 
                 // Publicar Estado do PIN/LED                
                 strcpy(dados_espnow.msg_type, "STATE_SETED");                

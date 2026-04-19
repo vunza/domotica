@@ -196,7 +196,8 @@ void MQTTClient::publishDiscoveryEntity(
       imprimeln(payload);*/        
     } 
     else{     
-      imprimeln(F("Erro do MQTT Discovery!"));      
+      imprimeln(F("Erro do MQTT Discovery!"));   
+      //imprimeln(discoveryTopic);   
     } 
     
 }

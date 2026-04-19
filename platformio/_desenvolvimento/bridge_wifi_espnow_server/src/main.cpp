@@ -430,12 +430,23 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   } else if ( strcmp(server_mac, str_mac.c_str()) == 0 && strstr(topic, "/set")) { // ON/OFF SERVIDOR ESP-NOW
 
+    
+
+#if defined(ESP32)
+    // Ligar/Desligar PIN/LED (Logica directa)
+    if (strcmp(msg, "OFF") == 0) {      
+      digitalWrite(LED_PIN, LOW);
+    } else if (strcmp(msg, "ON") == 0) {      
+      digitalWrite(LED_PIN, HIGH);
+    }
+#elif defined(ESP8266)
     // Ligar/Desligar PIN/LED (Logica invertida)
     if (strcmp(msg, "ON") == 0) {      
       digitalWrite(LED_PIN, LOW);
     } else if (strcmp(msg, "OFF") == 0) {      
       digitalWrite(LED_PIN, HIGH);
     }
+#endif
 
     // Publicar Estado do PIN/LED
     String str_topico = MQTT_BASE_TOPIC + str_mac + String("/state");

@@ -18,7 +18,7 @@
 #ifdef ESP8266 
   #define CHANNEL_SCAN_MAX 14  // ESP8266 suporta até canal 14
 #else  
-  #define CHANNEL_SCAN_MAX 13  // ESP32 geralmente até canal 13
+  #define CHANNEL_SCAN_MAX 14  // ESP32 geralmente até canal 13
 #endif
 
 
