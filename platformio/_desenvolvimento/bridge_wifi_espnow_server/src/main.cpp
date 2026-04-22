@@ -46,6 +46,7 @@ AsyncWebServer servidorHTTP(80);
 WebServer webServer(&servidorHTTP);
 
 unsigned long lastUpdate = 0;
+//volatile bool newDataReady = false;
 
 EspNowManager espnow;
 EspNowData dados_espnow;
@@ -103,7 +104,12 @@ void setup() {
     
     // TODO: Melhorar este trecho
     pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH); // LED desligado inicialmente(LOGICA INVERTIDA)
+
+    #if defined(ESP32)        
+        digitalWrite(LED_PIN, LOW); // Lógica direta (LOW = ligado)
+    #elif defined(ESP8266)        
+        digitalWrite(LED_PIN, HIGH); // Lógica invertida (HIGH = desligado)
+    #endif 
 
 
     // while (!Serial) {
@@ -145,19 +151,32 @@ void setup() {
     //////////////////////////////////
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
 
-        // Passa dados recebidos para a estructura
-        memcpy(&dados_espnow, data, sizeof(EspNowData));        
+        // Verifica se o pacote tem o tamanho esperado
+        if (len == sizeof(EspNowData)) {
+             // Passa dados recebidos para a estructura              
+            memcpy((void*)&dados_espnow, data, sizeof(EspNowData)); 
+            //newDataReady = true;  // sinaliza para o loop
+        }
+        else{
+            return; // Ignora pacotes de tamanho inesperado
+        }       
 
         // Descarta Mensagens de Retransmissão
         if( strcmp(dados_espnow.mac_server, "RTx") == 0) {
-            imprime("Mensagem de Retransmissão descartada: ");
-            imprimeln(dados_espnow.msg_type);
+            /*imprime(F("Msg RTx descartada: "));
+            imprime(dados_espnow.msg_type);
+            imprime(F(" | MAC Cliente: "));
+            imprimeln(dados_espnow.mac_client);*/
             return;
         }
 
-        imprimeln(dados_espnow.msg_type);
-        imprimeln(dados_espnow.mac_client);
-
+        if( strcmp(dados_espnow.mac_server, "RTx") != 0 && strcmp(dados_espnow.msg_type, "TELEMETRY") != 0 ) {
+            imprime(F("Msg Recebida: "));
+            imprime(dados_espnow.msg_type);
+            imprime(F(" | MAC Cliente: "));
+            imprimeln(dados_espnow.mac_client);
+        }
+        
 
         // Obter MAC do Servidor
         char server_mac[18]; 
@@ -337,6 +356,28 @@ void loop() {
     else {
         mqttClient.loop();  // processa mensagens recebidas
     }
+
+
+    // DISPLAY OLED
+    static unsigned long lastUpdate = 0;
+    static uint8_t bat = 0;
+    if (millis() - lastUpdate > 2000) { 
+        bat = (bat + 5) % 101;
+        oled.clear();
+        oled.printText(0, 0, "Bat.", 2);
+        oled.showBattery(bat);
+        oled.update();
+        lastUpdate = millis();
+    }
+
+
+    // Processa dados recebidos via ESP-NOW (se houver)
+    /*if(newDataReady){
+        newDataReady = false; // reseta o flag para aguardar novos dados
+    }
+    else{
+        return; // Se não há novos dados, sai do loop para economizar recursos
+    }*/
       
 
     // Envia um "ping", aos clientes esp-now, a cada X segundos
@@ -354,20 +395,7 @@ void loop() {
         strcpy(dados_espnow.msg_type, "ALIVE_MSG");    
         strcpy(dados_espnow.state, cz_channel);
         espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
-    }
-
-
-    // DISPLAY OLED
-    static unsigned long lastUpdate = 0;
-    static uint8_t bat = 0;
-    if (millis() - lastUpdate > 2000) { 
-        bat = (bat + 5) % 101;
-        oled.clear();
-        oled.printText(0, 0, "Bat.", 2);
-        oled.showBattery(bat);
-        oled.update();
-        lastUpdate = millis();
-    }
+    }    
 
 }
 

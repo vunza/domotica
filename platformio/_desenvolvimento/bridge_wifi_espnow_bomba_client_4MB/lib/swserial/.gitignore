@@ -1,0 +1,5 @@
+.vscode/ipch/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+pctest/swserial_test

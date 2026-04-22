@@ -59,7 +59,7 @@ float g_humidity = 0.0;
 DeviceData dados_dispositivo;
 
 unsigned long lastUpdate = 0;
- 
+//volatile bool newDataReady = false; 
 
 // Credeciais de acesso a rede WiFi
 const char* ssid = "TPLINK";
@@ -77,7 +77,12 @@ void setup() {
     
     // TODO: Melhorar este trecho
     pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH); // LED desligado inicialmente (LOGICA INVERTIDA)
+    
+     #if defined(ESP32)        
+        digitalWrite(LED_PIN, LOW); // Lógica direta (LOW = ligado)
+    #elif defined(ESP8266)        
+        digitalWrite(LED_PIN, HIGH); // Lógica invertida (HIGH = desligado)
+    #endif 
 
 
     /*
@@ -133,8 +138,17 @@ void setup() {
     // Callback para recepção de dados esp-now //
     /////////////////////////////////////////////
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
-        // Passa dados recebidos para a estructura
-        memcpy(&dados_espnow, data, sizeof(EspNowData));          
+        
+        // Verifica se o pacote tem o tamanho esperado
+        if (len == sizeof(EspNowData)) {
+             // Passa dados recebidos para a estructura              
+            memcpy((void*)&dados_espnow, data, sizeof(EspNowData)); 
+            //newDataReady = true;  // sinaliza para o loop
+        }
+        else{
+            return; // Ignora pacotes de tamanho inesperado
+        }       
+          
         
         // Obtem MAC do Dispositivo
         char my_mac_addr[18];            
@@ -357,19 +371,10 @@ void loop() {
         String(g_humidity).toCharArray(dados_espnow.u1_humidity, sizeof(dados_espnow.u1_humidity));
                
         // Ponto parachecar/ver o tamanho do Array
-        //sizeof(dados);
-
-        // Verifica estado do LED_PIN
-        char etstado_pin[4];
-        if (digitalRead(LED_PIN) == LOW){      
-            strcpy(etstado_pin, "ON");
-        } else {
-            strcpy(etstado_pin, "OFF");
-        }
+        //sizeof(dados);        
 
         // Envia dados, apenas, se forem diferentes de "nan"
-        if (!isnan(g_voltage) && !isnan(g_current) && !isnan(g_temperature)  && !isnan(g_humidity)){  
-            strcpy(dados_espnow.state, etstado_pin); 
+        if (!isnan(g_voltage) && !isnan(g_current) && !isnan(g_temperature)  && !isnan(g_humidity)){               
             strcpy(dados_espnow.mac_client, mac);
             strcpy(dados_espnow.msg_type, "TELEMETRY");
             strcpy(dados_espnow.mac_server, "");

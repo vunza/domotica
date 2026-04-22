@@ -15,7 +15,7 @@ M51C      GPIO23      GPIO0         GPIO19    ESP32   4M
 
 */
 
-
+const uint8_t LED_PIN = 2; // GPIO2 - LED embutido (LOW = ligado)
 
 WiFiManager wifiManager;
 
@@ -24,7 +24,7 @@ AsyncWebServer servidorHTTP(80);
 WebServer webServer(&servidorHTTP);
 
 unsigned long lastUpdate = 0;
-
+//volatile bool newDataReady = false;
 
 EspNowManager espnow;
 EspNowData dados_espnow;
@@ -53,6 +53,15 @@ void setup() {
         ; // Aguarda porta serial iniciar (normal no ESP32 USB)
     }
 
+    // TODO: Melhorar este trecho
+    pinMode(LED_PIN, OUTPUT);
+
+    #if defined(ESP32)        
+        digitalWrite(LED_PIN, LOW); // Lógica direta (LOW = ligado)
+    #elif defined(ESP8266)        
+        digitalWrite(LED_PIN, HIGH); // Lógica invertida (HIGH = desligado)
+    #endif 
+
     imprimeln();
     imprimeln(F("Iniciando..."));   
 
@@ -65,17 +74,28 @@ void setup() {
     imprime(F("Nome do Dispositivo: "));
     imprimeln(dados_dispositivo.device_name);
 
-    // Iniciar ESP-NOW
-    espnow.begin(); // canal = 1 e modo = WIFI_STA por defeito
+    // Obter canal WiFi
+    uint8_t channel = WiFi.channel();
+
+   // Iniciar ESP-NOW    
+    espnow.begin(channel, false); // canal e modo = WIFI_STA por defeito
 
     // broadcast (tudo que enviar vai para todos)
-    espnow.addPeer(broadcastMac); // canal = 1 por defeito
+    espnow.addPeer(broadcastMac, channel);
 
  
     // Callback para recepção de dados esp-now
     espnow.onReceive([](const uint8_t *mac, const uint8_t *data, int len){
-        // Passa dados recebidos para a estructura
-        memcpy(&dados_espnow, data, sizeof(EspNowData));
+        
+        // Verifica se o pacote tem o tamanho esperado
+        if (len == sizeof(EspNowData)) {
+             // Passa dados recebidos para a estructura              
+            memcpy((void*)&dados_espnow, data, sizeof(EspNowData)); 
+            //newDataReady = true;  // sinaliza para o loop
+        }
+        else{
+            return; // Ignora pacotes de tamanho inesperado
+        }     
         
         char my_mac_addr[18];            
         WiFi.macAddress().toCharArray(my_mac_addr, 18);       
