@@ -54,7 +54,7 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
    
     #if defined(ESP32)        
-        digitalWrite(LED_PIN, LOW); // Lógica direta (LOW = ligado)
+        digitalWrite(LED_PIN, LOW); 
     #elif defined(ESP8266)        
         digitalWrite(LED_PIN, HIGH); // Lógica invertida (HIGH = desligado)
     #endif 
@@ -307,7 +307,7 @@ void loop() {
         
         if( espnow.is_server_alive == false){     
             // Scanea canal Esp-Now
-            imprimeln("Servidor ESP-NOW desligado!");
+            imprimeln("Servidor ESP-NOW desligado!");            
             espnow.emparelharDispositivo(broadcastMac, 1500, false);               
         }
 
@@ -317,10 +317,10 @@ void loop() {
  
     
     // Envia Dados cada X segundos
-    if (millis() - lastUpdate > 5000) {
+    /*if (millis() - lastUpdate > 5000) {
         lastUpdate = millis();          
        
-    }
+    }*/
     
 }
 

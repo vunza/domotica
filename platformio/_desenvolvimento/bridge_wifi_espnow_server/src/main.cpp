@@ -106,7 +106,7 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
 
     #if defined(ESP32)        
-        digitalWrite(LED_PIN, LOW); // Lógica direta (LOW = ligado)
+        digitalWrite(LED_PIN, LOW); 
     #elif defined(ESP8266)        
         digitalWrite(LED_PIN, HIGH); // Lógica invertida (HIGH = desligado)
     #endif 
@@ -482,7 +482,12 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     
   } else if ( strcmp(server_mac, str_mac.c_str()) != 0 && strstr(topic, "/set")){ // ON/OFF CLIENTES ESP-NOW 
     
-    // Respode a mensagem "CHANNEL_REQ"
+    imprime(F("Topico: "));
+    imprimeln(topic);
+    imprime(F("Payload: "));
+    imprimeln(msg);
+
+    // Respode a mensagem "SET_STATE"
     String str_mac_formatado = wifiManager.formatarMac(str_mac); // Formata string MAC
     strcpy(dados_espnow.msg_type, "SET_STATE");
     strcpy(dados_espnow.state, msg);  

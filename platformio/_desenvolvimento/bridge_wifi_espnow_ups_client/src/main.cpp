@@ -300,7 +300,7 @@ void loop() {
     // NOTA: AsyncElegantOTA não precisa de nada no loop
 
     // Verificar conexão WiFi
-    #ifdef ESP32
+    /*#ifdef ESP32
         if (WiFi.getMode() == WIFI_MODE_STA || WiFi.getMode() == WIFI_MODE_APSTA){
             wifiManager.checkConnection();
         }
@@ -308,7 +308,7 @@ void loop() {
         if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA){
             wifiManager.checkConnection();
         }        
-    #endif
+    #endif*/
 
 
     // Controla reconexao com o Master Esp-Now
@@ -330,6 +330,7 @@ void loop() {
         
         if( espnow.is_server_alive == false){     
             // Scanea canal Esp-Now
+            imprimeln("Servidor ESP-NOW desligado!");  
             espnow.emparelharDispositivo(broadcastMac, 1500, false);               
         }
 

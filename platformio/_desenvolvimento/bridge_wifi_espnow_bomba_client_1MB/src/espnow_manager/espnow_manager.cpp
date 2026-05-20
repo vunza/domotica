@@ -169,6 +169,7 @@ uint8_t EspNowManager::discoverEspNowChannel(uint32_t timeoutMs) {
     uint8_t broadcastMac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}; 
     channelFound = false;
     is_server_alive = false;
+    discoveredChannel = 0; // Reseta canal descoberto
     
     strcpy(dados_espnow.msg_type, "CHANNEL_REQ");   
     strcpy(dados_espnow.state, "");     
