@@ -301,7 +301,7 @@ public:
     void onSend(SendCallback cb);
 
     uint8_t server_alive_counter;
-    boolean is_server_alive;
+    boolean is_server_alive;    
 
 private:
     /** Callback interno de receção */

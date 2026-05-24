@@ -29,7 +29,7 @@ class MQTTClient {
      * Formato: "esp32_[TIPO]_[ID_UNICO]"
      * Exemplo: "esp32_sensor_001", "esp32_relay_kitchen"
      */
-    char main_device_node_id[13];
+    char main_device_node_id[13];   
 
     /**
      * @brief Prefixo fixo usado para identificação do dispositivo no Home Assistant.

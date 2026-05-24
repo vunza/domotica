@@ -32,6 +32,8 @@ LCDDisplay displayLCD(0x27, 16, 2);
 
 const uint8_t LED_PIN = 2; // GPIO2 - LED embutido (LOW = ligado)
 
+boolean state_confirmed = true; // Variável para confirmar o estado do dispositivo
+
 
 // DHT11 temperature and humidity sensor
 #ifdef ESP32
@@ -206,19 +208,22 @@ void setup() {
         } else if( strcmp(dados_espnow.msg_type, "SET_STATE") == 0 ) {  
                                 
             // Veriifca a quem destina-se o comando
-            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){                
+            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0){ 
+                
+                state_confirmed = false; // Sinaliza que o estado do dispositivo ainda não foi confirmado, para evitar loops de mensagens 
                 
                 // Ligar/Desligar PIN/LED (Logica invertida)
                 if (strcmp(dados_espnow.state, "ON") == 0) {      
                     digitalWrite(LED_PIN, LOW);
                 } else if (strcmp(dados_espnow.state, "OFF") == 0) {      
                     digitalWrite(LED_PIN, HIGH);
-                }
+                }                
 
                 // Publicar Estado do PIN/LED                
                 strcpy(dados_espnow.msg_type, "STATE_SETED");                
                 strcpy(dados_espnow.mac_client, WiFi.macAddress().c_str());
                 esp_now_send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+              
             } 
             else if( strcmp(my_mac_addr, dados_espnow.mac_client) != 0 && strcmp(dados_espnow.mac_server, "RTx") != 0) {  
                 // Retrasmite os dados (uma vez), para alcançar dispositivos fora do alcance do servidor             
@@ -227,6 +232,18 @@ void setup() {
                 espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
                 strcpy(dados_espnow.mac_server, "");
             }           
+        }
+        else if( strcmp(dados_espnow.msg_type, "CONFIRMSTAT") == 0 ) { 
+            // Veriifca a quem destina-se o comando
+            if ( strcmp(my_mac_addr, dados_espnow.mac_client) == 0) {
+               state_confirmed = true; // Confirma o estado do dispositivo, para evitar loops de mensagens               
+            } 
+            else if ( strcmp(my_mac_addr, dados_espnow.mac_client) != 0 && strcmp(dados_espnow.mac_server, "RTx") != 0){ // Retrasmite os dados, para alcançar dispositivos fora do alcance do servidor
+                strcpy(dados_espnow.msg_type, "CONFIRMSTAT");
+                strcpy(dados_espnow.mac_server, "RTx");
+                espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+                strcpy(dados_espnow.mac_server, "");
+            }                         
         }
         else if( strcmp(dados_espnow.msg_type, "NORMAL_MODE") == 0 ) { 
             // Veriifca a quem destina-se o comando
@@ -311,7 +328,7 @@ void loop() {
     #endif*/
 
 
-    // Controla reconexao com o Master Esp-Now
+    // Controla reconexao com o Master Esp-Now e actualização do estado do dispositivo na dashboard.
     static unsigned long lastPingCounter = 0;
     if (millis() - lastPingCounter > 1000) { 
 
@@ -321,9 +338,24 @@ void loop() {
             espnow.is_server_alive = true;
         }
 
+        // Se o estado do dispositivo não foi confirmado, tenta confirmar o estado, para evitar loops de mensagens
+        if(state_confirmed == false){ 
+            
+            char mac[18]; 
+            String macStr = WiFi.macAddress();
+            macStr.toCharArray(mac, 18);
+            
+            strcpy(dados_espnow.msg_type, "ASK_STATE");
+            strcpy(dados_espnow.mac_client, mac);
+             strcpy(dados_espnow.mac_server, "");
+            esp_now_send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+        }
+
         lastPingCounter = millis();
 
     }// FIM if(...)
+
+
 
     static unsigned long lastPing = 0;
     if (millis() - lastPing > 30000) {          

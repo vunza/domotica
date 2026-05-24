@@ -242,13 +242,30 @@ void setup() {
         } else if( strcmp(dados_espnow.msg_type, "STATE_SETED") == 0 ) { 
             // Publicar Estado do PIN/LED
             String str_topico = MQTT_BASE_TOPIC + String(client_mac_without_colon) + String("/state");
-            mqttClient.publish(str_topico.c_str(), dados_espnow.state, true);
+            mqttClient.publish(str_topico.c_str(), dados_espnow.state, true);              
+            
+            
+            // Buscar estado do PIN/LED no Array de Estados MQTT
+            const char* estado = mqttClient.buscarEstado(client_mac_without_colon);                        
+            // Envia confirmação da mudança do estado do dispositivo na interface do home assistant
+            String str_mac_formatado = wifiManager.formatarMac(String(client_mac_without_colon)); // Formata string MAC
+            strcpy(dados_espnow.msg_type, "CONFIRMSTAT");
+            strcpy(dados_espnow.state, estado);  
+            strcpy(dados_espnow.mac_server, server_mac);
+            strcpy(dados_espnow.mac_client, client_mac); 
+            // Envia CONFIRMSTAT aos clientes esp-now   
+            espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));
+
+
+            imprime("Estado atualizado no MQTT: ");
+            imprime(dados_espnow.state);
+            imprimeln(String(" | Cliente: ") + client_mac_without_colon);
 
         } else if( strcmp(dados_espnow.msg_type, "ASK_STATE") == 0 ) {            
             // Buscar estado do PIN/LED no Array de Estados MQTT
             const char* estado = mqttClient.buscarEstado(client_mac_without_colon);
                         
-            // Respode a mensagem "CHANNEL_REQ"
+            // Respode a mensagem "SET_STATE"
             String str_mac_formatado = wifiManager.formatarMac(String(client_mac_without_colon)); // Formata string MAC
             strcpy(dados_espnow.msg_type, "SET_STATE");
             strcpy(dados_espnow.state, estado);  

@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Uso do Web Component</title>
+</head>
+<body>
+
+    <!-- Chamando o Web Component e definindo a temperatura inicial como 22 -->
+    <ac-control-module temperatura="16" id="meuAr"></ac-control-module>
+
+    <script src="ac-control-module.js"></script>
+    <script>
+        // Capturando as mudanças de estado fora do componente
+        const termostato = document.getElementById('meuAr');
+        
+        termostato.addEventListener('change', (e) => {
+            console.log("Alteração detectada fora do componente:", e.detail);
+            // Saída no console: { temperature: 23, mode: "Cool", fanMode: "Auto" }
+        });
+    </script>
+</body>
