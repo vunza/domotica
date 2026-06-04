@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signing Pad Profissional</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Área do Canvas */
+        .canvas-container {
+            width: 100%;
+            background: #fafafa;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            /* Garante proporção 2:1 (largura:altura) */
+            aspect-ratio: 2 / 1; 
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            /* CRUCIAL PARA TÁTIL: Desativa o scroll e gestos nativos do browser sobre o canvas */
+            touch-action: none; 
+            cursor: crosshair;
+        }
+
+        /* Botões */
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-clear {
+            background-color: #e4e6eb;
+            color: #4b4b4b;
+        }
+
+        .btn-clear:hover {
+            background-color: #d8dadf;
+        }
+
+        .btn-save {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Assinatura Digital</h2>
+        <div class="canvas-container">
+            <canvas id="signature-pad"></canvas>
+        </div>
+        <div class="buttons">
+            <button class="btn-clear" id="clear-btn">Limpar</button>
+            <button class="btn-save" id="save-btn">Guardar</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('signature-pad');
+        const ctx = canvas.getContext('2d');
+        const clearBtn = document.getElementById('clear-btn');
+        const saveBtn = document.getElementById('save-btn');
+
+        let isDrawing = false;
+
+        // Configuração inicial do desenho
+        ctx.strokeStyle = '#000000'; // Cor da linha
+        ctx.lineWidth = 3;           // Espessura da linha
+        ctx.lineCap = 'round';       // Pontas arredondadas
+        ctx.lineJoin = 'round';      // Curvas suaves
+
+        // Ajusta a resolução interna do canvas para não pixelizar em ecrãs HDPI/Retina
+        function resizeCanvas() {
+            // Guarda o conteúdo atual se o ecrã rodar ou mudar de tamanho
+            const tempImage = canvas.toDataURL();
+            
+            // Define o tamanho interno igual ao tamanho visual (CSS)
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            // Repõe as configurações após o resize
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Recarrega a assinatura anterior (se existir)
+            const img = new Image();
+            img.src = tempImage;
+            img.onload = () => ctx.drawImage(img, 0, 0);
+        }
+
+        // Executa ao carregar a página e sempre que a janela mudar de tamanho
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('DOMContentLoaded', resizeCanvas);
+
+        // --- FUNÇÕES DE DESENHO (RATO E TOQUE) ---
+
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            
+            // Verifica se é um evento de toque (touch) ou de rato (mouse)
+            if (e.touches && e.touches.length > 0) {
+                return {
+                    x: e.touches[0].clientX - rect.left,
+                    y: e.touches[0].clientY - rect.top
+                };
+            } else {
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const { x, y } = getCoordinates(e);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            // Previne o comportamento padrão (scroll da página no telemóvel)
+            if (e.cancelable) e.preventDefault();
+
+            const { x, y } = getCoordinates(e);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.closePath();
+        }
+
+        // --- EVENTOS DE RATO (COMPUTADOR) ---
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing); // Soltar fora do canvas também para o desenho
+
+        // --- EVENTOS DE TOQUE (TELEMÓVEL / TABLET) ---
+        canvas.addEventListener('touchstart', (e) => {
+            startDrawing(e);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            draw(e);
+        }, { passive: false });
+
+        window.addEventListener('touchend', stopDrawing);
+
+        // --- BOTÕES DE ACÇÃO ---
+
+        // Limpar o Canvas
+        clearBtn.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Guardar a Assinatura em Imagem (Base64 PNG)
+        saveBtn.addEventListener('click', () => {
+            // Verifica se o canvas está vazio (opcional)
+            const dataURL = canvas.toDataURL('image/png');
+            
+            // Exemplo: Faz download da imagem automaticamente
+            const link = document.createElement('a');
+            link.download = 'assinatura.png';
+            link.href = dataURL;
+            link.click();
+            
+            // Pode usar a variável 'dataURL' para enviar para o seu servidor via AJAX/Fetch
+            console.log(dataURL); 
+        });
+    </script>
+
+</body>
+</html>
