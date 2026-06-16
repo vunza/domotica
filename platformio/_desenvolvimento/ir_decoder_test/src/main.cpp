@@ -52,7 +52,7 @@ const char* mqtt_server = "192.168.0.5";
 const char* mqtt_user   = "";      
 const char* mqtt_pass   = "";    
 
-// --- TÓPICOS MQTT (Home Assistant Climate) ---
+// --- TÓPICOS MQTT (Home Assistant Climate) --- (DEVEM SER PASSADO PARA O MOULO ac-card DO HA, no arquivo my_cards/js/globals.js)
 #define MQTT_TOPIC_POWER_STATE "homeassistant/escritorio/ac/power/state"
 #define MQTT_TOPIC_MODE_STATE  "homeassistant/escritorio/ac/mode/state"
 #define MQTT_TOPIC_TEMP_STATE  "homeassistant/escritorio/ac/temp/state"
@@ -73,11 +73,68 @@ BC7215         bc7215Board(bc7215Serial, MOD_PIN, BUSY_PIN);
 BC7215AC       ac(bc7215Board);        
 
 bool paired = false;
+String lastPowerState = "OFF"; // Estado inicial do AC, usado para evitar publicações duplicadas no MQTT
 
 // Estruturas de dados globais para gerenciamento da EEPROM
 bc7215FormatPkt_t  irFormat;
 bc7215DataMaxPkt_t irData;
 const uint32_t     EEPROM_MAGIC_NUMBER = 0xBC7215A0; // Identificador de dados válidos salvos
+
+
+// 1. FUNÇÃO DE CALLBACK (Onde as mensagens chegam)
+void callback_mqtt_rx(char* topic, byte* payload, unsigned int length) {
+  
+  // Converte o payload (array de bytes) em uma String amigável
+  String messageTemp;
+  for (int i = 0; i < length; i++) {
+    messageTemp += (char)payload[i];
+  } 
+ 
+  uint8_t temp = 25; // Valor padrão para temperatura, pode ser atualizado com base no comando recebido
+  String power = "OFF"; // Valor padrão para power, pode ser atualizado com base no comando recebido
+
+  if (String(topic) == MQTT_TOPIC_MODE_STATE) {    
+    imprimeln("Comando MQTT recebido para MODE: " + messageTemp);
+  }
+  else if (String(topic) == MQTT_TOPIC_TEMP_STATE && messageTemp.toInt() >= 16 && messageTemp.toInt() <= 30 && lastPowerState == "ON") {
+    unsigned long startTime = millis();
+    temp = messageTemp.toInt();
+    bc7215Board.setTx();
+    delay(50);   
+    ac.setTo(temp, 5, 4, 4); // Actualiza a temperatura do AC e mantem modo e fan como "Keep" (5 e 4 são os códigos para manter o estado atual)
+    while (ac.isBusy() && (millis() - startTime < 3000)){
+        delay(10);
+    }
+    bc7215Board.setRx();
+  }
+  else if (String(topic) == MQTT_TOPIC_FAN_STATE) {
+    imprimeln("Comando MQTT recebido para FAN: " + messageTemp);
+  } 
+  else if (String(topic) == MQTT_TOPIC_POWER_STATE) {
+    unsigned long startTime = millis();
+    lastPowerState = messageTemp; // Atualiza o estado do power com base no comando recebido
+    if (messageTemp == "ON") {
+        bc7215Board.setTx();
+        delay(50);        
+        ac.setTo(temp, 5, 4, 4); // Liga o AC com a ultima temeratura conhecida e mantem modo e fan como "Keep" (5 e 4 são os códigos para manter o estado atual)
+        while (ac.isBusy() && (millis() - startTime < 3000)){
+            delay(10);
+        }
+        bc7215Board.setRx();
+    }
+    else if (messageTemp == "OFF") {
+        bc7215Board.setTx();
+        delay(50);
+        ac.off();
+        while (ac.isBusy() && (millis() - startTime < 3000)){
+            delay(10);
+        }
+        bc7215Board.setRx();
+    }
+  }
+  
+} // Fim da função de callback MQTT
+
 
 
 // Funções de Inicialização de Rede
@@ -107,8 +164,11 @@ void reconnectMQTT() {
         
         if (mqttClient.connect(clientID.c_str(), mqtt_user, mqtt_pass)) {
             imprimeln(F("Conectado!"));
-            // Se você quiser receber comandos do HA para o ESP, adicione o subscribe aqui:
-            mqttClient.subscribe("homeassistant/escritorio/ac/mode/set");
+            // Se você quiser receber comandos do HA para o ESP, adicione o subscribe aqui:            
+            mqttClient.subscribe(MQTT_TOPIC_POWER_STATE);
+            mqttClient.subscribe(MQTT_TOPIC_MODE_STATE);
+            mqttClient.subscribe(MQTT_TOPIC_TEMP_STATE);
+            mqttClient.subscribe(MQTT_TOPIC_FAN_STATE);
         } else {
             imprime(F("Falha, rc=")); 
             imprime(mqttClient.state());
@@ -132,7 +192,7 @@ void salvarDadosEEPROM() {
     EEPROM.put(endereco, *((bc7215DataMaxPkt_t*)ac.getDataPkt()));
     
     EEPROM.commit(); 
-    Serial.println(">>> Dados de emparelhamento salvos com sucesso na EEPROM!");
+    imprimeln(F(">>> Dados de emparelhamento salvos com sucesso na EEPROM!"));
 }
 
 // Função para ler e inicializar o AC usando dados gravados na EEPROM
@@ -208,6 +268,7 @@ void setup() {
 
     setup_wifi();
     mqttClient.setServer(mqtt_server, 1883);
+    mqttClient.setCallback(callback_mqtt_rx); // Define a função de callback para mensagens MQTT recebidas
 
 #if defined(ESP32)
     bc7215Serial.begin(19200, SERIAL_8N2, 25, 33); // RX=GPIO25, TX=GPIO33
@@ -215,13 +276,10 @@ void setup() {
     bc7215Serial.begin(19200, SERIAL_8N2); 
 #endif
     
-    delay(100);
-    bc7215Board.setRx(); // Acorda a placa BC7215
+    // Configura o BC7215 para modo de recepção e inicializa o AC com a configuração padrão (Celsius)   
+    bc7215Board.setRx(); 
     delay(50);
-    bc7215Board.setTx(); // Define modo de transmissão
-    delay(50);
-
-    ac.setCelsius(); // Configura padrão para Celsius
+    ac.setCelsius(); 
     
     imprimeln(F("\n--- Verificando Memória EEPROM ---"));
     if (carregarDadosEEPROM()) {
@@ -287,25 +345,11 @@ void loop() {
                 for (int i = 0; i < len - 2; i++) {
                     if (irData.data[i] < 0x10) Serial.print("0"); // Alinhamento estético do zero à esquerda
                     Serial.print(irData.data[i], HEX);
-                    Serial.print(' ');
-                    
+                    imprime(' ');                    
                     payloadHex += (irData.data[i] < 0x10 ? "0" : "") + String(irData.data[i], HEX);
                 }
-
                 imprimeln();                
-                imprimeln(F("========================================================\n"));
-
-                /*uint8_t rawPayload[14];
-                int len = payloadHex.length();
-                int byteIdx = 0;
-
-                // Passa de 2 em 2 caracteres
-                for (int i = 0; i < len; i += 2) {
-                    String sub = payloadHex.substring(i, i + 2);
-                    // strtol converte a string da base 16 (HEX) para um número inteiro
-                    rawPayload[byteIdx] = (uint8_t) strtol(sub.c_str(), NULL, 16);
-                    byteIdx++;
-                }*/
+                imprimeln(F("========================================================\n"));                
                
                 ACState estado = decodificarTCL(irData.data); 
                 if(estado.mode != "UNKNOWN" && (estado.temp >= 16 && estado.temp <= 30) ) {
@@ -313,15 +357,16 @@ void loop() {
                    Serial.printf("TEMPERATURA: %d°C\n", estado.temp);
                    Serial.printf("MODO: %s\n", estado.mode.c_str());
 
-                    mqttClient.publish(MQTT_TOPIC_POWER_STATE, estado.power ? "ON" : "OFF");
-                    mqttClient.publish(MQTT_TOPIC_TEMP_STATE, String(estado.temp).c_str());
-                }            
-                
+                    lastPowerState = estado.power ? "ON" : "OFF"; // Atualiza o estado do power com base no sinal físico recebido
+                    mqttClient.publish(MQTT_TOPIC_POWER_STATE, estado.power ? "ON" : "OFF", true);
+                    mqttClient.publish(MQTT_TOPIC_TEMP_STATE, String(estado.temp).c_str(), true);
+                }  
+                                
             }
         }
 
         // --- ENVIO DE COMANDOS VIA MONITOR SERIAL ---
-        if (Serial.available()) {
+        /*if (Serial.available()) {
             String input = Serial.readStringUntil('\n');
             input.trim();
 
@@ -329,13 +374,7 @@ void loop() {
 
             if (input.length() > 0) {
 
-                if(input == "rx"){
-                   bc7215Board.setRx();
-                }
-                else if(input == "tx"){
-                   bc7215Board.setTx();
-                }                
-                else if(input == "-"){
+               if(input == "-"){
                     bc7215Board.setTx();
                     delay(50);
                     ac.setTo(24, 1, 2, 0);
@@ -344,66 +383,10 @@ void loop() {
                     }
                     bc7215Board.setRx();
                 }
-                else if(input == "+"){
-                    bc7215Board.setTx();
-                    delay(50);
-                    ac.setTo(25, 1, 2, 1);
-                    while (ac.isBusy() && (millis() - startTime < 3000)) {
-                        delay(10);
-                    }
-                    bc7215Board.setRx();
-                }
-                else if(input == "on") {                      
-                    bc7215Board.setTx();
-                    delay(50);                    
-                    static int ultimaTemp = 16; // Variável estática para manter o valor entre chamadas
-                    ac.setTo(ultimaTemp++, 1, 2, 4); 
-                    mqttClient.publish(MQTT_TOPIC_TEMP_STATE, String(ultimaTemp - 1).c_str());
-                    while (ac.isBusy() && (millis() - startTime < 3000)) {
-                        delay(10);
-                    }
-                    bc7215Board.setRx();                               
-                }
-                else if(input == "off") {                      
-                    bc7215Board.setTx();
-                    delay(50);
-                    ac.off();   
-                    while (ac.isBusy() && (millis() - startTime < 3000)) {
-                        delay(10);
-                    }
-                    bc7215Board.setRx();                               
-                }
-                else{
-                    /*int t = -1, m = -1, f = -1, k = -1;
-                    sscanf(input.c_str(), "%d,%d,%d,%d", &t, &m, &f, &k);
-
-                    // Ajusta valores padrão (Keep) caso parâmetros fiquem fora do range ou ausentes
-                    if (m < 0 || m > 4) m = 5; 
-                    if (f < 0 || f > 3) f = 4; 
-                    if (k < 0 || k > 3) k = 4; 
-
-                    // Impressão limpa sequencial compatível com ambas arquiteturas
-                    Serial.print("Enviando -> Temp: "); Serial.print(t);
-                    Serial.print(", Modo: ");           Serial.print(m);
-                    Serial.print(", Fan: ");            Serial.print(f);
-                    Serial.print(", Tecla: ");          Serial.println(k);
-                    
-                    unsigned long startTime = millis();
-                    ac.setTo(t, m, f, k);
-
-                    // Aguarda a transmissão terminar de pulsar o LED IR
-                    while (ac.isBusy() && (millis() - startTime < 3000)) {
-                        delay(10);
-                    }
-                    Serial.println("Comando transmitido com sucesso!\n");
-                    
-                    // Pequeno respiro para a placa e reinicialização forçada do modo receptivo
-                    delay(100);
-                    bc7215Board.setRx();*/ 
-                }
+                                                                
                 
             }// if (input.length() > 0)
-        }
+        }*/
     }
     delay(50);
 }
