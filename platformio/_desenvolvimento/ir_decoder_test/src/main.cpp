@@ -1,165 +1,137 @@
- /*
+/*
     ESP8266:
     ========
-    GPIO5 --> BC7215A TX
-    GPIO16 -> BC7215A RX
-    GPIO14 -> BC7215A MOD
-    GPIO4 --> BC7215A BUSY
+    GPIO5 --> BC7215A TX | GPIO16 -> BC7215A RX
+    GPIO14 -> BC7215A MOD | GPIO4 --> BC7215A BUSY
     3.3V ---> BC7215A VCC
-
 
     ESP32:
     ======
-    GPIO25 -> BC7215A TX
-    GPIO33 -> BC7215A RX
-    GPIO27 -> BC7215A MOD
-    GPIO26 -> BC7215A BUSY
+    GPIO25 -> BC7215A TX | GPIO33 -> BC7215A RX
+    GPIO27 -> BC7215A MOD | GPIO26 -> BC7215A BUSY
     3.3V ---> BC7215A VCC
  */
 
 #include <Arduino.h>
-#include <EEPROM.h>
-#include <bc7215.h>
-#include <bc7215ac.h>
-#include "ctrl_debug.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+//#include <bc7215.h>
+//#include <bc7215ac.h>
+#include <eeprom_manager_pro/eeprom_manager_pro.h>
+#include "ctrl_debug.h"
 
+/*
 #if defined(ESP32)
   #include <WiFi.h>     
+  #include <Preferences.h>
 #elif defined(ESP8266)
   #include <ESP8266WiFi.h>
-#endif
-
-#if defined(ESP32)
-  #include <Preferences.h>
-  Preferences prefs;
-#elif defined(ESP8266)
   #include <EEPROM.h>
-  #define EEPROM_TAMANHO sizeof(ConfigDados) 
 #endif
 
-#define FORMAT_PKT_SIZE sizeof(bc7215FormatPkt_t)
-#define DATA_PKT_MAX_SIZE sizeof(bc7215DataMaxPkt_t)
 
+// Definição da estrutura com empacotamento de bytes rígido
 typedef struct {
     char wifiSSID[25]; 
     char wifiPass[25];
     char mqtt_server_ip[16];
     char mqtt_user[25];
-    char mqtt_password[25];
+    char mqtt_password[25];   
+    char device_name[25];     
     bc7215FormatPkt_t formatPkt;    
-    bc7215DataMaxPkt_t dataPkt;    
-    //uint8_t dataPktLength;                
-    bool configurado;   
-    //uint16_t dispositivoID;    
-}ConfigDados;
+    bc7215DataMaxPkt_t dataPkt;  
+    bool configurado;             
+} __attribute__((packed)) ConfigDados;
 
- ConfigDados esp_cfg_data; // (*J*) Nao crie objectos da estructura na funcao loo()
+#if defined(ESP8266)
+  #define EEPROM_TAMANHO sizeof(ConfigDados) 
+#endif
+*/
 
+// Instância global de configuração
+ConfigDados esp_cfg_data;
 
-const char* ssid     = "TPLINK";
-const char* password = "gregorio@2012";
-const char* mqtt_server = "192.168.0.5"; 
-const char* mqtt_user   = "";      
-const char* mqtt_pass   = ""; 
+// Configurações de Rede de Backup (Caso não use os da EEPROM)
+const char* ssid         = "TPLINK";
+const char* password     = "gregorio@2012";
+const char* mqtt_server  = "192.168.0.5"; 
+const char* mqtt_user    = "";      
+const char* mqtt_pass    = ""; 
 
-/*
-    TÓPICOS MQTT (Home Assistant Climate);
-    Devem ser passados aos arquivos: 
-    - /home/wnr/homeassistant/config/configuration.yaml
-    - /home/wnr/homeassistant/config/www/my_cards/js/globals.js e aos arquivos do modulo que os precisem
-    - main.cpp do codigo ESP32
-*/ 
-#define MQTT_TOPIC_POWER_STATE "homeassistant/escritorio/ac/power/state"
-#define MQTT_TOPIC_MODE_STATE  "homeassistant/escritorio/ac/mode/state"
-#define MQTT_TOPIC_TEMP_STATE  "homeassistant/escritorio/ac/temp/state"
-#define MQTT_TOPIC_FAN_STATE   "homeassistant/escritorio/ac/fan/state"
-#define MQTT_TOPIC_AC_STATES  "homeassistant/escritorio/ac/states"
+// Tópicos MQTT
+#define MQTT_TOPIC_POWER_STATE    "homeassistant/escritorio/ac/power/state"
+#define MQTT_TOPIC_MODE_STATE     "homeassistant/escritorio/ac/mode/state"
+#define MQTT_TOPIC_TEMP_STATE     "homeassistant/escritorio/ac/temp/state"
+#define MQTT_TOPIC_FAN_STATE      "homeassistant/escritorio/ac/fan/state"
+#define MQTT_TOPIC_AC_STATES      "homeassistant/escritorio/ac/states"
 #define MQTT_TOPIC_AC_ATTRIBUTES  "homeassistant/escritorio/ac/attributes"
 #define JSON_SIZE 128
 
-
-WiFiClient     espClient;
-PubSubClient   mqttClient(espClient);
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
 
 const uint8_t MOD_PIN  = 27;
 const uint8_t BUSY_PIN = 26;
-const uint8_t LED_PIN = 2; // GPIO2
+const uint8_t LED_PIN  = 2;
 
-
-// Compatibilidade de Hardware Serial para ESP32 e ESP8266
 #if defined(ESP32)
   HardwareSerial bc7215Serial(1);        
 #elif defined(ESP8266)
-  // No ESP8266 a Serial1 é usada por padrão. Ajuste os pinos no seu circuito físico se necessário.
   #define bc7215Serial Serial1 
 #endif
+
 BC7215 bc7215Board(bc7215Serial, MOD_PIN, BUSY_PIN);
 BC7215AC ac(bc7215Board);
 
-const char* MODES[] = {"Auto", "Cool","Heat","Dry","Fan","Keep","N/A"};
-const char* FANSPEED[] = {"Auto","Low","Med","High","Keep","N/A"};
-const char* PWR_STATUS[] = {"OFF","ON","TOGGLE","N/A"};
+const char* MODES[]      = {"Auto", "Cool", "Heat", "Dry", "Fan", "Keep", "N/A"};
+const char* FANSPEED[]   = {"Auto", "Low", "Med", "High", "Keep", "N/A"};
+const char* PWR_STATUS[] = {"OFF", "ON", "TOGGLE", "N/A"};
 bool paired = false;
 
-
+// Protótipos de função
 void emparelharAc();
 void descodificarSinalAc();
 void callback_mqtt_rx(char* topic, byte* payload, unsigned int length);
 void setup_wifi();
 void reconnectMQTT();
 void enviaDadosAc(int temp, int mode_index, int fan_index, int power_index);
-void salvarDadosEEPROM(ConfigDados dados);
-ConfigDados lerDadosEEPROM();
+//void salvarDadosEEPROM(const ConfigDados &dados);
+//void lerDadosEEPROM(ConfigDados &dadosDestino);
 
-///////////
-// setup //
-///////////
-void setup(){
+void setup() {
     Serial.begin(115200);
+    
+#if defined(ESP32)
     bc7215Serial.begin(19200, SERIAL_8N2, 25, 33);
+#elif defined(ESP8266)
+    bc7215Serial.begin(19200, SERIAL_8N2);
+#endif
+
     delay(100);
     bc7215Board.setRx();
     delay(50);
 
     pinMode(LED_PIN, OUTPUT);
-
-    #if defined(ESP32)        
-        digitalWrite(LED_PIN, LOW); 
-    #elif defined(ESP8266)        
-        digitalWrite(LED_PIN, HIGH); // Lógica invertida (HIGH = desligado)
-    #endif 
+#if defined(ESP32)        
+    digitalWrite(LED_PIN, LOW); 
+#elif defined(ESP8266)        
+    digitalWrite(LED_PIN, HIGH);
+#endif 
 
     setup_wifi();
 
-    // Parametros MQTT
     mqttClient.setServer(mqtt_server, 1883);
     mqttClient.setCallback(callback_mqtt_rx); 
 
     imprimeln(F("\n=== PAREAMENTO AC ==="));
-    imprimeln(F("Ligue controlo remoto e coloque-o no Modo COOL e TEPERATURA = 25°C"));    
-    imprimeln(F("Depois pressione FAN no controlo remoto.\n"));
-
-    // Limpar EEPROM
-    /*esp_cfg_data = {0};
-    salvarDadosEEPROM(esp_cfg_data);*/
+    imprimeln(F("Ligue o controlo remoto no Modo COOL a 25°C e pressione FAN.\n"));
    
-    // Ler Dados da EEPROM
-    esp_cfg_data = lerDadosEEPROM(); 
-
+    // Carrega dados evitando cópias desnecessárias na Stack
+    lerDadosEEPROM(esp_cfg_data); 
     ac.startCapture();
+}
 
-} // Fim do setup()
-
-
-
-//////////
-// loop //
-//////////
-void loop(){
-
-    // Garante estabilidade das conexões MQTT e Wi-Fi
+void loop() {
     if (WiFi.status() != WL_CONNECTED) {
         setup_wifi();
     }
@@ -168,126 +140,85 @@ void loop(){
         reconnectMQTT();
     }
 
-    // Processa a pilha MQTT ativa
     mqttClient.loop(); 
        
-    // Processa Emparelhamento do AC
-    if (!paired && esp_cfg_data.configurado == false){    
+    if (!paired && !esp_cfg_data.configurado) {    
         emparelharAc();
         return;
     }
-    else if(!paired && esp_cfg_data.configurado == true){
+    else if (!paired && esp_cfg_data.configurado) {
         if (ac.init(esp_cfg_data.dataPkt, esp_cfg_data.formatPkt)) {
             paired = true;
             imprimeln(F(">>> Sucesso: Configuração restaurada! Pronto para operar."));
-            imprimeln(F("Aguardando comandos ou sinais do controlo remoto físico..."));
             return;
-
         } else {
-            imprimeln(F("Nenhum dado prévio encontrado. Iniciando modo de emparelhamento obrigatório..."));
-            imprimeln(F("Configure o controle remoto do AC para: <Modo Refrigeração (Cool), 25°C>"));
-            imprimeln(F("Aponte para o receptor e pressione o botão <Controlo de Fan (Velocidade)>..."));
-            //ac.startCapture();
+            imprimeln(F("Falha ao inicializar com dados salvos. Forçando novo pareamento..."));
+            esp_cfg_data.configurado = false;
             emparelharAc();
         }
     }
-    else if(paired && esp_cfg_data.configurado == true){
-        // Descoifica codigos de comandos fisicos e os publica no topico MQTT_TOPIC_AC_STATES
+    else if (paired && esp_cfg_data.configurado) {
         descodificarSinalAc();
     }   
 
-
-    // --- ENVIO DE COMANDOS VIA MONITOR SERIAL ---
+    // Monitor Serial Commands
     if (Serial.available()) {
         String input = Serial.readStringUntil('\n');
         input.trim();
 
-        unsigned long startTime = millis();
-
-        if (input.length() > 0) {
-
-            if(input == "d"){                        
-                esp_cfg_data = {0};
-                salvarDadosEEPROM(esp_cfg_data);
-                paired = false;
-                Serial.println("CLEAN");
-            }
-
-        }// if (input.length() > 0)
+        if (input == "d") {        
+            memset(&esp_cfg_data, 0, sizeof(ConfigDados));
+            salvarDadosEEPROM(esp_cfg_data);
+            paired = false;
+            Serial.println(F("CLEAN"));
+        }
     }
-    
+}
 
-}// Fim do loop()
-
-
-
-///////////////////////////////
-// Emparelha AC com o MODULO //
-///////////////////////////////
-void emparelharAc(){
+void emparelharAc() {
     if (ac.signalCaptured()) {
         ac.stopCapture();
-
         imprimeln(F("Sinal recebido."));
 
         if (ac.init()) {
             paired = true;
-
             imprimeln(F("Pareamento OK!"));
-            imprimeln(F("Agora envie comandos do controle."));
-            imprimeln();
 
-            // Guardar configuracoes na EEPROM                
             esp_cfg_data.configurado = true;                       
-
-            // 1. Capturando o FORMAT PACKET (ac.getFormatPkt() retorna um ponteiro bc7215FormatPkt_t*)
-            bc7215FormatPkt_t ptrFormat = *ac.getFormatPkt();          
-            esp_cfg_data.formatPkt = ptrFormat; 
-
-            // 2. Capturando o DATA PACKET (ac.getDataPkt() retorna um ponteiro bc7215DataMaxPkt_t*)
-            bc7215DataMaxPkt_t* ptrData = (bc7215DataMaxPkt_t*)ac.getDataPkt();
-            esp_cfg_data.dataPkt = *ptrData;
+            esp_cfg_data.formatPkt = *ac.getFormatPkt(); 
+            esp_cfg_data.dataPkt = *((bc7215DataMaxPkt_t*)ac.getDataPkt());
             
             salvarDadosEEPROM(esp_cfg_data);
-
+            digitalWrite(LED_PIN, LOW); 
+            ac.startCapture();
+        } else {
+            imprimeln(F("Falha no pareamento. Tente novamente."));
             ac.startCapture();
         }
-        else{
-            imprimeln(F("Falha no pareamento."));
-            imprimeln(F("Tente novamente."));
-            ac.startCapture();
+    } else {
+        static unsigned long ultimoPisca = 0;
+        if (millis() - ultimoPisca > 250) {
+            ultimoPisca = millis();
+            digitalWrite(LED_PIN, !digitalRead(LED_PIN));
         }
     }
-    else{
-        imprimeln(F("Aguardando emparelhamento!"));
-        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-        delay(250);
-    }
+}
 
-}//Fim de emparelharAc()
-
-
-
-/////////////////////////
-// descodificarSinalAc //
-/////////////////////////
-void descodificarSinalAc(){
-
-    if (ac.signalCaptured()){
+void descodificarSinalAc() {
+    if (ac.signalCaptured()) {
         ac.stopCapture();
 
-        int temp  = -1, mode  = -1, fan   = -1, power = -1;
+        int temp = -1, mode = -1, fan = -1, power = -1;
 
-        if (ac.parse(temp, mode, fan, power)){
-            
+        if (ac.parse(temp, mode, fan, power)) {
             StaticJsonDocument<JSON_SIZE> doc;           
 
-            if (power >= 0 && power <= 2){                 
+            if (power >= 0 && power <= 2) {                 
                 doc["power"] = power;
                 mqttClient.publish(MQTT_TOPIC_POWER_STATE, PWR_STATUS[power], true);
             }            
             
-            if(temp >= 16 && temp <= 30){
+            if (temp >= 16 && temp <= 30) {
                 doc["temp"] = temp;
                 mqttClient.publish(MQTT_TOPIC_TEMP_STATE, String(temp).c_str(), true);
             }
@@ -307,75 +238,50 @@ void descodificarSinalAc(){
             char payload[JSON_SIZE];
             serializeJson(doc, payload);
             mqttClient.publish(MQTT_TOPIC_AC_STATES, payload, true); 
-        }
-        else{
+        } else {
             imprimeln(F("Falha ao decodificar sinal."));
         }
-
         ac.startCapture();
     }
+}
 
-}// Fim de descodificarSinalAc()
-
-
-
-
-////////////////////////////////////////////////
-// Guardar a estructura ConfigDados na EEPROM //
-////////////////////////////////////////////////
-void salvarDadosEEPROM(ConfigDados dados){
+/*void salvarDadosEEPROM(const ConfigDados &dados) {
 #if defined(ESP32)
+    Preferences prefs;
     prefs.begin("esp32cfg_mem", false);
-    // Transforma a struct inteira em bytes brutos e salva no NVS
-    prefs.putBytes("esp32cfg", &dados, sizeof(dados));
+    prefs.putBytes("esp32cfg", &dados, sizeof(ConfigDados));
     prefs.end();
-    #if defined(ESP32)        
-        digitalWrite(LED_PIN, LOW); 
-    #elif defined(ESP8266)        
-        digitalWrite(LED_PIN, HIGH); // Lógica invertida (HIGH = desligado)
-    #endif 
-    imprimeln(F("Dados do Emparelhamneto Gravados na EEPROM via Preferences (ESP32)."));
+    digitalWrite(LED_PIN, LOW); 
+    imprimeln(F("Dados Gravados via NVS Preferences (ESP32)."));
 #elif defined(ESP8266)
     EEPROM.begin(EEPROM_TAMANHO);
-    // .put gerencia automaticamente a gravação sequencial dos arrays da struct
     EEPROM.put(0, dados);
     EEPROM.commit();
     EEPROM.end();
-    imprimeln(F("Dados do Emparelhamneto Gravados na EEPROM via EEPROM (ESP8266)."));
+    imprimeln(F("Dados Gravados via Flash EEPROM (ESP8266)."));
 #endif
-}// Fim de salvarDadosEEPROM(ConfigDados dados)
+}
 
-
-
-
-//////////////////////////////////////////////
-// Passar dados da EEPROM para a estructura //
-//////////////////////////////////////////////
-ConfigDados lerDadosEEPROM() { 
-    ConfigDados dadosTemporarios;  // (*J*) Nao crie objectos da estructura na funcao loo()      
+void lerDadosEEPROM(ConfigDados &dadosDestino) { 
+    memset(&dadosDestino, 0, sizeof(ConfigDados));      
 #if defined(ESP32)
+    Preferences prefs;
     prefs.begin("esp32cfg_mem", true);
-    if(prefs.isKey("esp32cfg")) {
-        prefs.getBytes("esp32cfg", &dadosTemporarios, sizeof(dadosTemporarios));
+    if (prefs.isKey("esp32cfg")) {
+        prefs.getBytes("esp32cfg", &dadosDestino, sizeof(ConfigDados));
     }
     prefs.end();
 #elif defined(ESP8266)
     EEPROM.begin(EEPROM_TAMANHO);
-    EEPROM.get(0, dadosTemporarios);
+    EEPROM.get(0, dadosDestino);
     EEPROM.end();
 #endif
-    return dadosTemporarios;
 }
+*/
 
 
-
-///////////////////////////
-// Inicialização de Rede //
-///////////////////////////
 void setup_wifi() {
-
     delay(10);
-    imprimeln();
     imprime(F("Conectando em ")); 
     imprimeln(ssid);
     WiFi.begin(ssid, password);
@@ -384,94 +290,56 @@ void setup_wifi() {
         delay(500);
         imprime(F("."));
     }
+    imprimeln(F("\n[WiFi] Conectado!"));
+}
 
-    imprimeln(F("\n[WiFi] Conectado com sucesso!"));
-    imprime(F("[WiFi] IP obtido: ")); 
-    imprimeln(WiFi.localIP());
-
-}// Fim de setup_wifi()
-
-
-///////////////////////////////
-// Recebe mensagens via MQTT //
-///////////////////////////////
 void callback_mqtt_rx(char* topic, byte* payload, unsigned int length) {
-  
-  // Converte o payload (array de bytes) em uma String amigável
-  String messageTemp;
-  for (int i = 0; i < length; i++) {
-    messageTemp += (char)payload[i];
-  }    
-
-  if (String(topic) == MQTT_TOPIC_AC_STATES) {  
-
-    StaticJsonDocument<JSON_SIZE> doc;
-    DeserializationError error = deserializeJson(doc, payload);
-    if (error){
-        imprimeln("Erro JSON: ");
-        imprimeln(error.c_str());
-        return;
-    }
-    int8_t temp = doc["temp"];
-    int8_t mode_index = doc["mode"];
-    int8_t fan_index = doc["fan"];
-    int8_t power_index = doc["power"];
-    boolean for_tx = doc["for_tx"];
-
-    if(for_tx == true || for_tx == 1){       
-
-        if(power_index == 1){
-            enviaDadosAc(temp, mode_index, fan_index, -1);  
+    if (strcmp(topic, MQTT_TOPIC_AC_STATES) == 0) {  
+        StaticJsonDocument<JSON_SIZE> doc;
+        DeserializationError error = deserializeJson(doc, payload, length);
+        if (error) {
+            imprime(F("Erro JSON: "));
+            imprimeln(error.c_str());
+            return;
         }
-        else if(power_index == 0){
-            unsigned long startTime = millis();            
-            bc7215Board.setTx();
-            delay(50);   
-            ac.off(); 
-            while (ac.isBusy() && (millis() - startTime < 3000)){
-                delay(10);
+
+        int8_t temp = doc["temp"];
+        int8_t mode_index = doc["mode"];
+        int8_t fan_index = doc["fan"];
+        int8_t power_index = doc["power"];
+        bool for_tx = doc["for_tx"];
+
+        if (for_tx) {       
+            if (power_index == 1) {
+                enviaDadosAc(temp, mode_index, fan_index, -1);  
             }
-            bc7215Board.setRx();
-        }
-        
-        //Serial.printf("POWER: %d TEMP: %d MODE: %d FAN: %d FOR_TX: %d\n", power_index, temp, mode_index, fan_index, for_tx);
-    }   
-  }
-  else if (String(topic) == MQTT_TOPIC_MODE_STATE) {          
-    
-  }
-  else if (String(topic) == MQTT_TOPIC_TEMP_STATE) {
+            else if (power_index == 0) {
+                unsigned long startTime = millis();            
+                bc7215Board.setTx();
+                delay(50);   
+                ac.off(); 
+                while (ac.isBusy() && (millis() - startTime < 3000)) {
+                    delay(10);
+                }
+                bc7215Board.setRx();
+            }
+        }   
+    }
+}
 
-  }
-  else if (String(topic) == MQTT_TOPIC_FAN_STATE) {
-
-  } 
-  else if (String(topic) == MQTT_TOPIC_POWER_STATE) {
-    
-  }  
-  
-} // Fim de callback_mqtt_rx()
-
-
-////////////////////////////////////////
-// Reconectar/Conectar ao Broker MQTT //
-////////////////////////////////////////
 void reconnectMQTT() {
     while (!mqttClient.connected()) {
-        imprime(F("[MQTT] Tentando conectar ao Broker..."));
-        // Cria um ID único para o cliente MQTT baseado no endereço MAC
+        imprime(F("[MQTT] Conectando..."));
         String clientID = "ESP32-TCL-AC-" + String(random(0xffff), HEX);
         
         if (mqttClient.connect(clientID.c_str(), mqtt_user, mqtt_pass)) {
             imprimeln(F("Conectado!"));
-            // Se você quiser receber comandos do HA para o ESP, adicione o subscribe aqui:            
             mqttClient.subscribe(MQTT_TOPIC_POWER_STATE);
             mqttClient.subscribe(MQTT_TOPIC_MODE_STATE);
             mqttClient.subscribe(MQTT_TOPIC_TEMP_STATE);
             mqttClient.subscribe(MQTT_TOPIC_FAN_STATE);
             mqttClient.subscribe(MQTT_TOPIC_AC_STATES);           
 
-            // Publicar atrubutos (usados no modulo javascript do homeassistant para activar menu Programar)
             StaticJsonDocument<JSON_SIZE> doc;                         
             doc["mac_address"] = WiFi.macAddress();
             doc["basic_topic"] = "homeassistant/";
@@ -479,30 +347,19 @@ void reconnectMQTT() {
             char payload[JSON_SIZE];
             serializeJson(doc, payload);
             mqttClient.publish(MQTT_TOPIC_AC_ATTRIBUTES, payload, true); 
-
         } else {
-            imprime(F("Falha, rc=")); 
-            imprime(mqttClient.state());
-            imprimeln(F(" Tentando novamente em 5 segundos."));
             delay(5000);
         }
     }
-}// Fim de reconnectMQTT()
+}
 
-
-///////////////////////////////////
-// Envia Dados ao Aparelho de AC //
-///////////////////////////////////
-void enviaDadosAc(int temp, int mode_index, int fan_index, int power_index){
-
+void enviaDadosAc(int temp, int mode_index, int fan_index, int power_index) {
     unsigned long startTime = millis();
-
     bc7215Board.setTx();
     delay(50);
     ac.setTo(temp, mode_index, fan_index, power_index);
-    while (ac.isBusy() && (millis() - startTime < 3000)){
+    while (ac.isBusy() && (millis() - startTime < 3000)) {
         delay(10);
     }
     bc7215Board.setRx();
-
-}// Fim de enviaDadosAc(int temp, int mode_index, int fan_index, int power_index)
+}

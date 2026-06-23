@@ -41,15 +41,7 @@ void WebServer::begin() {
     server->on("/api/restart_device", HTTP_GET, [](AsyncWebServerRequest *request){        
         ESP.restart();
         request->send(200, "text/plain", "OK");     
-    });    
-
-
-    
-     // Rota para reiniciar o ESP
-    server->on("/api/restart_device", HTTP_GET, [](AsyncWebServerRequest *request){        
-        ESP.restart();
-        request->send(200, "text/plain", "OK");     
-    });    
+    });       
     
         
     // Rota para renonmear o ESP, recebe dados atravez da requisicao POST

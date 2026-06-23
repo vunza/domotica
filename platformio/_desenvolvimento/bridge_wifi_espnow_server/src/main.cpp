@@ -340,7 +340,8 @@ void setup() {
     
     // Envia mensagem "REPAIR_MSG" aos clientes para Forçar reemparelhamento
     strcpy(dados_espnow.msg_type, "REPAIR_MSG");    
-    espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));       
+    espnow.send(broadcastMac, (uint8_t*)&dados_espnow, sizeof(EspNowData));     
+    
 }
 
 
