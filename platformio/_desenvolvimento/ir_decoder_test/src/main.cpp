@@ -17,19 +17,18 @@
 #include <ArduinoJson.h>
 //#include <bc7215.h>
 //#include <bc7215ac.h>
+#include <async_elegant_ota/async_elegant_ota.h>
+#include <web_server/web_server.h>
 #include <eeprom_manager_pro/eeprom_manager_pro.h>
 #include "ctrl_debug.h"
 
-/*
 #if defined(ESP32)
   #include <WiFi.h>     
-  #include <Preferences.h>
 #elif defined(ESP8266)
-  #include <ESP8266WiFi.h>
-  #include <EEPROM.h>
+  #include <ESP8266WiFi.h>  
 #endif
 
-
+/*
 // Definição da estrutura com empacotamento de bytes rígido
 typedef struct {
     char wifiSSID[25]; 
@@ -49,7 +48,7 @@ typedef struct {
 */
 
 // Instância global de configuração
-ConfigDados esp_cfg_data;
+//ConfigDados esp_cfg_data;
 
 // Configurações de Rede de Backup (Caso não use os da EEPROM)
 const char* ssid         = "TPLINK";
@@ -57,6 +56,10 @@ const char* password     = "gregorio@2012";
 const char* mqtt_server  = "192.168.0.5"; 
 const char* mqtt_user    = "";      
 const char* mqtt_pass    = ""; 
+
+// Servidor Web
+AsyncWebServer servidorHTTP(80);
+WebServer webServer(&servidorHTTP);
 
 // Tópicos MQTT
 #define MQTT_TOPIC_POWER_STATE    "homeassistant/escritorio/ac/power/state"
@@ -122,16 +125,31 @@ void setup() {
 
     mqttClient.setServer(mqtt_server, 1883);
     mqttClient.setCallback(callback_mqtt_rx); 
-
-    imprimeln(F("\n=== PAREAMENTO AC ==="));
-    imprimeln(F("Ligue o controlo remoto no Modo COOL a 25°C e pressione FAN.\n"));
    
     // Carrega dados evitando cópias desnecessárias na Stack
     lerDadosEEPROM(esp_cfg_data); 
     ac.startCapture();
-}
 
+    // Iniciar servidor web
+    webServer.begin();
+    // Inicializar OTA elegante
+    ElengantOTA::begin(&servidorHTTP); 
+
+    if (!paired && !esp_cfg_data.configurado) {  
+        imprimeln(F("\nPAREAMENTO DO PROTOCOLO DO AC"));
+        imprimeln(F("Ligue o controlo remoto no Modo COOL a 25°C e pressione FAN.\n"));  
+        imprimeln(F("Esperando o sinal para o Pareamento..."));
+    }
+
+}// Fim de setup()
+
+
+
+////////////
+// loop() //
+////////////
 void loop() {
+
     if (WiFi.status() != WL_CONNECTED) {
         setup_wifi();
     }
@@ -142,7 +160,7 @@ void loop() {
 
     mqttClient.loop(); 
        
-    if (!paired && !esp_cfg_data.configurado) {    
+    if (!paired && !esp_cfg_data.configurado) {  
         emparelharAc();
         return;
     }
@@ -169,13 +187,24 @@ void loop() {
         if (input == "d") {        
             memset(&esp_cfg_data, 0, sizeof(ConfigDados));
             salvarDadosEEPROM(esp_cfg_data);
-            paired = false;
-            Serial.println(F("CLEAN"));
+            paired = false;            
+        }
+        if (input == "r") {        
+            static uint8_t contador = 0; 
+            char nome[DEVICE_NAME_SIZE];
+            sprintf(nome, "NOME-%d", ++contador);
+            strncpy(esp_cfg_data.device_name, nome, DEVICE_NAME_SIZE);
+            esp_cfg_data.device_name[DEVICE_NAME_SIZE] = '\0';
+            salvarDadosEEPROM(esp_cfg_data);                      
         }
     }
-}
 
-void emparelharAc() {
+}// Fim de loop()
+
+
+
+void emparelharAc() {   
+
     if (ac.signalCaptured()) {
         ac.stopCapture();
         imprimeln(F("Sinal recebido."));
@@ -189,7 +218,7 @@ void emparelharAc() {
             esp_cfg_data.dataPkt = *((bc7215DataMaxPkt_t*)ac.getDataPkt());
             
             salvarDadosEEPROM(esp_cfg_data);
-            digitalWrite(LED_PIN, LOW); 
+            digitalWrite(LED_PIN, LOW);             
             ac.startCapture();
         } else {
             imprimeln(F("Falha no pareamento. Tente novamente."));
@@ -199,7 +228,7 @@ void emparelharAc() {
         static unsigned long ultimoPisca = 0;
         if (millis() - ultimoPisca > 250) {
             ultimoPisca = millis();
-            digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+            digitalWrite(LED_PIN, !digitalRead(LED_PIN));            
         }
     }
 }
@@ -238,6 +267,9 @@ void descodificarSinalAc() {
             char payload[JSON_SIZE];
             serializeJson(doc, payload);
             mqttClient.publish(MQTT_TOPIC_AC_STATES, payload, true); 
+            
+            imprimef("POWER: %s TEP: %d MODE: %s FAN: %s\n", PWR_STATUS[power],temp,MODES[mode],FANSPEED[fan]);
+
         } else {
             imprimeln(F("Falha ao decodificar sinal."));
         }
@@ -282,7 +314,7 @@ void lerDadosEEPROM(ConfigDados &dadosDestino) {
 
 void setup_wifi() {
     delay(10);
-    imprime(F("Conectando em ")); 
+    imprime(F("\n[WiFi] Conectando-se a rede ")); 
     imprimeln(ssid);
     WiFi.begin(ssid, password);
 
@@ -290,7 +322,13 @@ void setup_wifi() {
         delay(500);
         imprime(F("."));
     }
+
     imprimeln(F("\n[WiFi] Conectado!"));
+    imprime(F("[WiFi] IP: "));
+    imprimeln(WiFi.localIP());
+    imprime(F("[WiFi] MAC: "));
+    imprimeln(WiFi.macAddress());
+    imprimeln();
 }
 
 void callback_mqtt_rx(char* topic, byte* payload, unsigned int length) {
