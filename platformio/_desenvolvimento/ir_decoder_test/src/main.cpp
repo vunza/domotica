@@ -28,27 +28,6 @@
   #include <ESP8266WiFi.h>  
 #endif
 
-/*
-// Definição da estrutura com empacotamento de bytes rígido
-typedef struct {
-    char wifiSSID[25]; 
-    char wifiPass[25];
-    char mqtt_server_ip[16];
-    char mqtt_user[25];
-    char mqtt_password[25];   
-    char device_name[25];     
-    bc7215FormatPkt_t formatPkt;    
-    bc7215DataMaxPkt_t dataPkt;  
-    bool configurado;             
-} __attribute__((packed)) ConfigDados;
-
-#if defined(ESP8266)
-  #define EEPROM_TAMANHO sizeof(ConfigDados) 
-#endif
-*/
-
-// Instância global de configuração
-//ConfigDados esp_cfg_data;
 
 // Configurações de Rede de Backup (Caso não use os da EEPROM)
 const char* ssid         = "TPLINK";
@@ -89,7 +68,7 @@ BC7215AC ac(bc7215Board);
 const char* MODES[]      = {"Auto", "Cool", "Heat", "Dry", "Fan", "Keep", "N/A"};
 const char* FANSPEED[]   = {"Auto", "Low", "Med", "High", "Keep", "N/A"};
 const char* PWR_STATUS[] = {"OFF", "ON", "TOGGLE", "N/A"};
-bool paired = false;
+//bool paired = false;
 
 // Protótipos de função
 void emparelharAc();
@@ -98,8 +77,6 @@ void callback_mqtt_rx(char* topic, byte* payload, unsigned int length);
 void setup_wifi();
 void reconnectMQTT();
 void enviaDadosAc(int temp, int mode_index, int fan_index, int power_index);
-//void salvarDadosEEPROM(const ConfigDados &dados);
-//void lerDadosEEPROM(ConfigDados &dadosDestino);
 
 void setup() {
     Serial.begin(115200);

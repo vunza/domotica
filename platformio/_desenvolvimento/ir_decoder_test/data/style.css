@@ -133,11 +133,10 @@ body {
 
 /* EXIT BUTTON */
 .exit-container {
-    width: fit-content;
-    margin: 1.9rem auto;
+    width: 150px;    
     padding: 12px 20px;
     border-radius: 50px;
-    display: flex;
+    display: inline-flex;
     gap: 10px;
     align-items: center;
     background: white;
@@ -146,8 +145,38 @@ body {
     transition: 0.2s;
 }
 
+.config-container {
+    width: 150px;   
+    padding: 12px 20px;
+    border-radius: 50px;
+    display: inline-flex;
+    margin-right: 10px;
+    gap: 10px;
+    align-items: center;
+    background: white;
+    border: 2px solid #10b981;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#div_wrapper_btns{
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;  
+}
+
+.config-container:hover {
+    background: #c6fcbb;
+}
+
 .exit-container:hover {
     background: #ffecec;
+}
+
+.config-text {
+    color: #10b981;
+    font-weight: bold;
 }
 
 .exit-text {

@@ -2,6 +2,7 @@
 #include "ctrl_debug.h"
 
 ConfigDados esp_cfg_data;
+bool paired = false;
 
 void salvarDadosEEPROM(const ConfigDados &dados) {
 #if defined(ESP32)

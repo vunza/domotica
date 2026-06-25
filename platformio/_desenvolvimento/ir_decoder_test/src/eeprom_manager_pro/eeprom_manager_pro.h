@@ -30,14 +30,14 @@ typedef struct {
 
 // Instância global de configuração
 extern ConfigDados esp_cfg_data;
+//extern boolean pairing_state;
+extern bool paired;
 
 #if defined(ESP8266)
   #define EEPROM_TAMANHO sizeof(ConfigDados) 
 #endif
 
-
 void salvarDadosEEPROM(const ConfigDados &dados);
-
 void lerDadosEEPROM(ConfigDados &dadosDestino);
 
 #endif //EEPROM_MANAGER_PRO_H
