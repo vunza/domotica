@@ -198,6 +198,12 @@ function renomearDispositivo(api_rename_device, novoNome) {
 
 
 
+// Voltar a pagina principal
+function btnConfigurar() {
+    window.location.href = "/configex"; 
+}
+
+
 
 
 //////////////////////////////////////////////

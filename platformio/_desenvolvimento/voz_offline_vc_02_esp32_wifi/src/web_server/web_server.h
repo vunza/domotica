@@ -7,6 +7,8 @@
 #include "ctrl_debug.h"
 #include "json/json_builder.h"
 #include "constantes.h"
+#include <ArduinoJson.h>
+#include <AsyncJson.h>
 //#include "eeprom_manager/eeprom_manager.h"
 #include <eeprom_manager_pro/eeprom_manager_pro.h>
 
