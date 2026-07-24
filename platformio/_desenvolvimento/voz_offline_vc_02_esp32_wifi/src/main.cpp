@@ -147,8 +147,19 @@ void loop() {
         // Combine the two bytes into a single 16-bit value
         receivedValue = (highByte << 8) | lowByte;
 
+        if(receivedValue == 0xAA01) {
+            imprimef("Bomba ligada por comando de voz detectado: 0x%04X\n", receivedValue);  
+            //mqttClient.publish("casa/3c61059a2603/set", "ON", true);       
+            //mqttClient.publish("zigbee2mqtt/0x28dba7fffe1af100/set", "ON", true);   
+        }
+        else if(receivedValue == 0xAA02) {
+            imprimef("Bomba desligada por comando de voz detectado: 0x%04X\n", receivedValue);            
+            //mqttClient.publish("casa/3c61059a2603/set", "OFF", true);  
+            //mqttClient.publish("zigbee2mqtt/0x28dba7fffe1af100/set", "OFF", true);   
+        }
+
         // Print the received value in HEX format
-        imprimef("Received HEX value: 0x%02X\n", receivedValue);
+        //imprimef("Received HEX value: 0x%02X\n", receivedValue);
     }
 
     
