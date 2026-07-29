@@ -1,0 +1,277 @@
+export const renameModalStyles = `
+  .rename-container {
+    position: fixed;
+    top: 65px;
+    left: 50%;
+    transform: translate(-50%, -0%);
+    width: 90%;
+    max-width: 400px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;   
+    z-index: 10000;
+    box-sizing: border-box;
+    //border: 1px solid #ddd;
+    border: 1px solid var(--primary-color);
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #f44336;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 18px;
+    font-weight: 400;
+    z-index: 10;
+  }
+
+  .close-btn:hover {
+    background: #f44336;
+    transform: rotate(90deg);
+  }
+
+  .rename-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-right: 20px;
+  }
+
+  .rename-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #41bdf5 0%, #0288d1 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+  }
+
+  .rename-icon svg {
+    width: 30px;
+    height: 30px;
+    stroke: white;
+  }
+
+  .rename-header h1 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  .rename-header p {
+    color: #666;
+    font-size: 0.95rem;
+  }
+
+  .name-input-wrapper {
+    margin-bottom: 25px;
+  }
+
+  .name-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .name-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: #f9f9f9;
+    color: #333;
+    box-sizing: border-box;
+  }
+
+  .name-input:focus {
+    outline: none;
+    border-color: #41bdf5;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(65, 189, 245, 0.1);
+  }
+
+  .name-input:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .char-counter {
+    text-align: right;
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 6px;
+  }
+
+  .char-counter.warning {
+    color: orange;
+  }
+
+  .char-counter.danger {
+    color: #f44336;
+  }
+
+  .actions-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  @media (min-width: 480px) {
+    .actions-row {
+      flex-direction: row;
+    }
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+  }
+
+  .action-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+  }
+
+  .btn-edit {
+    background: #41bdf5;
+    color: white;
+  }
+
+  .btn-edit:hover {
+    background: #0288d1;
+  }
+
+  .btn-save {
+    background: #39be5a;
+    color: white;
+  }
+
+  .btn-save:hover {
+    background: #2e8b57;
+  }
+
+  .btn-cancel {    
+    background: #e0e0e0;
+    color: #333;
+  }
+
+  .btn-cancel:hover {
+    background: #f0f0f0;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-weight: 500;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+    font-size: 0.95rem;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.success {
+    background: rgba(57, 190, 90, 0.1);
+    color: #39be5a;
+    border: 1px solid rgba(57, 190, 90, 0.3);
+  }
+
+  .message.error {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+  }
+
+  @media (max-width: 480px) {
+    .rename-container {
+      padding: 25px 20px;
+      width: 95%;
+    }
+    
+    .rename-header h1 {
+      font-size: 1.3rem;
+    }
+    
+    .rename-icon {
+      width: 50px;
+      height: 50px;
+    }
+    
+    .rename-icon svg {
+      width: 25px;
+      height: 25px;
+    }
+    
+    .name-input {
+      padding: 12px 14px;
+      font-size: 0.95rem;
+    }
+    
+    .action-btn {
+      padding: 12px 16px;
+      font-size: 0.95rem;
+    }
+    
+    .close-btn {
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 320px) {
+    .rename-container {
+      padding: 20px 15px;
+    }
+    
+    .rename-header h1 {
+      font-size: 1.2rem;
+    }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+`;
