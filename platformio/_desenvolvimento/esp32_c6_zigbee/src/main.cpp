@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #ifndef ZIGBEE_MODE_ED
 #error "Zigbee end device mode is not selected in Tools->Zigbee mode"
@@ -6,71 +5,91 @@
 
 #include "Zigbee.h"
 
-/* Zigbee light bulb configuration */
+/* Configurações da XIAO ESP32-C6 */
 #define ZIGBEE_LIGHT_ENDPOINT 10
-uint8_t led = 15;  // LED Azul Integrado
-uint8_t button = 9;  // Botão de Boot Integrado
+const uint8_t led = 15;     // LED Integrado (Ativo em LOW)
+const uint8_t button = 9;   // Botão BOOT / User (IO9)
 
 ZigbeeLight zbLight = ZigbeeLight(ZIGBEE_LIGHT_ENDPOINT);
+bool initialSyncDone = false;
 
-/********************* RGB LED functions **************************/
-void setLED(bool value) {
-  digitalWrite(led, !value);
+/********************* Callback do LED **************************/
+void aoReceberComandoLuz(bool estado) {
+  Serial.printf("Comando Zigbee/Estado alterado! Novo estado: %s\n", estado ? "LIGADO" : "DESLIGADO");
+  digitalWrite(led, estado ? LOW : HIGH); // Acende em LOW
 }
 
-/********************* Arduino functions **************************/
+/********************* Setup **************************/
 void setup() {
   Serial.begin(115200);
 
-  // Init LED and turn it OFF (if LED_PIN == RGB_BUILTIN, the rgbLedWrite() will be used under the hood)
   pinMode(led, OUTPUT);
-  digitalWrite(led, LOW);
+  aoReceberComandoLuz(false); // Inicia apagado
 
-  // Init button for factory reset
   pinMode(button, INPUT_PULLUP);
 
-  //Optional: set Zigbee device name and model
+  // Usar nome/modelo padrão Espressif para compatibilidade universal
   zbLight.setManufacturerAndModel("Espressif", "ZBLightBulb");
+  zbLight.onLightChange(aoReceberComandoLuz);
 
-  // Set callback function for light change
-  zbLight.onLightChange(setLED);
-
-  //Add endpoint to Zigbee Core
-  Serial.println("Adding ZigbeeLight endpoint to Zigbee Core");
+  Serial.println("A adicionar endpoint Zigbee...");
   Zigbee.addEndpoint(&zbLight);
 
-  // When all EPs are registered, start Zigbee. By default acts as ZIGBEE_END_DEVICE
+  // Inicializa o stack Zigbee
   if (!Zigbee.begin()) {
-    Serial.println("Zigbee failed to start!");
-    Serial.println("Rebooting...");
+    Serial.println("Falha ao iniciar o Zigbee! A reiniciar...");
+    delay(1000);
     ESP.restart();
   }
-  Serial.println("Connecting to network");
-  while (!Zigbee.connected()) {
-    Serial.print(".");
-    delay(100);
-  }
-  Serial.println();
+
+  Serial.println("Zigbee iniciado! A procurar rede para pareamento...");
 }
 
+/********************* Loop **************************/
 void loop() {
-  // Checking button for factory reset
-  if (digitalRead(button) == LOW) {  // Push button pressed
-    // Key debounce handling
-    delay(100);
-    int startTime = millis();
-    while (digitalRead(button) == LOW) {
-      delay(50);
-      if ((millis() - startTime) > 3000) {
-        // If key pressed for more than 3secs, factory reset Zigbee and reboot
-        Serial.println("Resetting Zigbee to factory and rebooting in 1s.");
-        delay(1000);
-        Zigbee.factoryReset();
+  // 1. Sincroniza estado inicial ao conectar à rede
+  if (Zigbee.connected() && !initialSyncDone) {
+    bool savedState = zbLight.getLightState();
+    aoReceberComandoLuz(savedState);
+    Serial.printf("Conectado à rede Zigbee com sucesso! Estado: %s\n", savedState ? "LIGADO" : "DESLIGADO");
+    initialSyncDone = true;
+  }
+
+  // 2. Leitura do Botão
+  if (digitalRead(button) == LOW) {
+    delay(50); // Debounce
+    if (digitalRead(button) == LOW) {
+      unsigned long startTime = millis();
+      bool isLongPress = false;
+
+      while (digitalRead(button) == LOW) {
+        delay(50);
+        // Pressionar por mais de 3s força o Reset de Fábrica e reabre o pareamento
+        if ((millis() - startTime) > 3000) {
+          isLongPress = true;
+          Serial.println("Reset de fábrica acionado! A apagar NVS e reiniciar pareamento...");
+          delay(500);
+          Zigbee.factoryReset();
+          break;
+        }
+      }
+
+      // Clique curto: Alterna estado local e notifica a rede
+      if (!isLongPress) {
+        bool newState = !zbLight.getLightState();
+        
+        // Atualiza a biblioteca Zigbee e envia o pacote para o Home Assistant
+        zbLight.setLight(newState);
+        
+        // Atualiza o pino do LED localmente
+        aoReceberComandoLuz(newState);
+      }
+
+      while (digitalRead(button) == LOW) {
+        delay(10);
       }
     }
-    // Toggle light by pressing the button
-    zbLight.setLight(!zbLight.getLightState());
   }
-  delay(100);
-}
 
+  delay(20);
+}
