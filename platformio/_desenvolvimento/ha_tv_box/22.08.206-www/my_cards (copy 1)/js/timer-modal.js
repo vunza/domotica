@@ -142,8 +142,8 @@ export function initTimerModal(cardInstance, shadow) {
   });
 
   // Botão salvar (placeholder)
-  saveBtn.addEventListener('click', async () => {    
-    guardarConfigsTimers(shadow);   
+  saveBtn.addEventListener('click', async () => {         
+    guardarConfigsTimers(shadow, cardInstance);
     //closeTimerModal();
   });
 
@@ -168,13 +168,16 @@ export function initTimerModal(cardInstance, shadow) {
   };
 }
 
+
+
 /**
  * Guarda as configurações do timer no Home Assistant através de chamadas de API.
  * @async
  * @param {ShadowRoot} shadow - Shadow root do card.
+ * @param {Object} cardInstance - Instância do GenericCard.
  * @returns {Promise<void>}
  */
-async function guardarConfigsTimers(shadow) {    
+async function guardarConfigsTimers(shadow, cardInstance) {    
     const id_entidade = shadow.getElementById('timer_save_device_id').value;
     const chkActivar = shadow.getElementById('chk_activar');
     const selectAccao = shadow.getElementById('select_accao');
@@ -196,22 +199,22 @@ async function guardarConfigsTimers(shadow) {
         }
     });
         
-    // Validação: ação deve ser selecionada
+    // Validação: temporizador deve ser selecionado
     if (!selecionado) {          
-        getCardInstance._showToast('Por favor, selecione um Teporizador!', '#ff6242');      
+        cardInstance._showToast('Por favor, selecione um Temporizador!', '#ff6242');      
         return;
     }
         
     // Validação: ação deve ser selecionada
     if (!accao) {
-        getCardInstance._showToast('Por favor, selecione uma ação!', '#ff6242');  
+        cardInstance._showToast('Por favor, selecione uma ação!', '#ff6242');  
         selectAccao.focus();
         return;
     }
     
     // Validação: hora deve ser preenchida
     if (!hora) {       
-        getCardInstance._showToast('Por favor, defina uma hora!', '#ff6242');
+        cardInstance._showToast('Por favor, defina uma hora!', '#ff6242');
         timeInput.focus();
         return;
     }   
@@ -255,13 +258,16 @@ async function guardarConfigsTimers(shadow) {
         await getNextTimer2Execute(token, ip_e_porta);   
 
         // Exibe uma mensagem de sucesso
-        getCardInstance._showToast('Configurações guardadas com sucesso!', '');       
+        cardInstance._showToast('Configurações guardadas com sucesso!', '');       
     } catch (error) {
         console.error('Erro ao guardar configurações:', error);
         alert(`Falha na atualização: ${error.message}`);
-        getCardInstance._showToast(`Falha na atualização: ${error.message}`, '#ff6242');
+        cardInstance._showToast(`Falha na atualização: ${error.message}`, '#ff6242');
     }
 }
+
+
+
 
 /**
  * Executa um shell_command no Home Assistant para obter dados dos próximos timers.

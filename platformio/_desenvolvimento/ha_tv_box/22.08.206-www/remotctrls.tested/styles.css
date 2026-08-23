@@ -1,0 +1,345 @@
+:root {
+  --clr: #1c1c1c;
+  --largura_ctrl_r: 170px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+  /* Impede Seleccção e Copia */
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+body {  
+  background-color: var(--clr);    
+}
+
+
+.cores{
+    background-color: #2196F3;
+    background-color: #B03A2E;
+    background-color: #39be5a;   
+    background-color: #4a4d4a; 
+    background-color: #1c1c1c;
+    background-color: #2c3e50;
+}
+
+
+/**************************** MENU CONTROLOS REMOTO **********************************/
+.vertical-menu {
+    width: 240px;    
+    background: #4e94ab;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.vertical-menu ul {
+  list-style: none;
+  border-bottom: 1px solid white;
+}
+
+.vertical-menu li a {
+    display: block;
+    padding: 5px;
+    font-size: 24px;
+    font-family: 'console', 'PT Sans';
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: all 0.3s ease;    
+}
+
+.vertical-menu li a:hover {
+  background: #4e94ab;
+}
+
+/* Submenu - inicialmente escondido */
+.submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;       
+    background: #2c3e50;    
+}
+
+.submenu li a {
+    padding-left: 30px;
+    border-top: 1px solid white;
+}
+
+.submenu .submenu li a {
+    padding-left: 45px;
+}
+
+/* Ícone para itens com submenu */
+.has-submenu > a {
+    position: relative;
+}
+
+.has-submenu > a::after {
+    content: "+";   
+    position: absolute;
+    right: 10px;
+    transition: transform 0.3s ease;
+    transform: rotate(0deg);    
+    font-size: 1.2em; /* Aumenta/diminui o tamanho do "»" */
+    line-height: 1;   /* Mantém o alinhamento vertical correto */  
+            
+    /* Estilização do círculo */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;          /* Diâmetro do círculo */
+    height: 30px;         /* Diâmetro do círculo */
+    background: #2c3e50;  /* Cor de fundo do círculo */
+    color: #39be5a;        /* Cor do caractere "»" */
+    border-radius: 50%;   /* Transforma em círculo */
+    font-size: 1.2em;     /* Tamanho do caractere */    
+    transition: all 0.3s ease;
+}
+
+.has-submenu.active > a::after {
+  transform: rotate(45deg); 
+  font-size: 1.2em;
+  color: #B03A2E;
+}
+
+/* Quando o submenu está ativo */
+.has-submenu.active .submenu {
+    max-height: 500px; /* Valor alto o suficiente para conter o submenu */
+    transition: max-height 0.5s ease-in;
+}
+
+.fechar {
+  background-color: #B03A2E;
+}
+
+#a_fechar:hover {
+  background-color: red;
+}
+
+
+/** Menu Ctrl Remoto Header **/
+#header_menu_ctrl_r {
+  display: none;
+  position: relative;
+  width: var(--largura_ctrl_r);
+  border-radius: 5px;
+  list-style-type: none; 
+  background-color: #4e94ab;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  margin-bottom: 5px;
+}
+
+
+#header_menu_ctrl_r li {
+  display: inline-block;
+  border-right: 1px solid #bbb;
+}
+
+#header_menu_ctrl_r li:last-child {
+  border-right: none;
+}
+
+
+.menu-igual {
+  background: #4e94ab; /* Cor de fundo do menu */
+  width: var(--largura_ctrl_r);
+  border-radius: 5px;
+}
+
+.menu-igual ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex; /* Ativa o layout flexível */
+}
+
+.menu-igual li {
+  flex: 1; /* Faz cada item ocupar o mesmo espaço */
+  text-align: center; /* Centraliza o texto */
+}
+
+.menu-igual a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 5px 0;
+  transition: background 0.3s;
+}
+
+.menu-igual a:hover {
+  background: #34495e; /* Cor ao passar o mouse */
+}
+
+
+
+/**************************** CONTROLOS REMOTO **********************************/
+#div_ctrl_r_wrappper {
+  display: none;
+  position: absolute;
+  width: 250px;
+  height: auto;
+  padding: 5px;
+  left: 50%;
+  transform: translate(-50%, -0%);
+  background-color: var(--clr); 
+  border: 1px solid  var(--clr);
+  border: 1px solid #4e94ab;
+  border-radius: 5px;
+}
+
+
+
+#tbl_key_pad_fan{ 
+  display: block;
+  position: relative;
+  padding: 5px; 
+  width: 100%;
+}
+
+#btn_power_fan{
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+#div_power_fan{ 
+  position: relative;  
+  width: 50px;
+  height: 50px;
+  padding: 1px;  
+  align-content: center;
+  border: 4px solid #B03A2E;
+  border-radius: 50%;
+  left: 50%;
+  transform: translate(-50%, 0%); 
+}
+
+
+#td_power_fan{  
+  padding: 0 0 20px 0;
+}
+
+#btn_lamp_fan{
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
+.td_linha_2{
+  text-align: center;
+  padding-top: 20px;
+  font-family: 'Arial';
+  font-size: 14px;
+}
+
+
+.td_linha_3{
+  text-align: center;
+  padding-top: 10px;
+  font-family: 'Arial';
+  font-size: 14px;
+}
+
+
+.eliptic_bnt_fan{
+  width: 40px;
+  height: 40px;  
+  border-radius: 50%; 
+}
+
+.shdow_shape{
+  background: rgb(100, 100, 100) radial-gradient(circle at 50% 0, rgba(100, 100, 100, .65), rgba(0, 0, 0, .35));
+  box-shadow:
+    inset rgba(100, 100, 100, .6) 0 -3px 8px,
+    inset rgba(100, 100, 100, .7) 0 3px 8px,
+    rgba(100, 100, 100, .8) 0 3px 8px -3px;  
+  border: none; 
+}
+
+button > svg{  
+  position: relative;
+  width: 25px;
+  height: 25px;  
+}
+
+
+
+button {
+  cursor: pointer;
+}
+
+
+.ctrl_remoto_fan {  
+  position: relative;
+  width: var(--largura_ctrl_r);
+  font-family: 'console', 'PT Sans';
+  padding: 5px 5px 5px 5px;
+  border-radius: 10px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  justify-content: center;
+  background: rgb(100, 100, 100) radial-gradient(circle at 50% 0, rgba(255, 255, 255, .65), rgba(255, 255, 255, .35));
+  box-shadow:
+    inset rgba(0, 0, 0, .6) 0 -3px 8px,
+    inset rgba(252, 255, 255, .7) 0 3px 8px,
+    rgba(0, 0, 0, .8) 0 3px 8px -3px;             
+}
+
+
+/************************************* MENSAGEM FEEDBACK *****************************************/
+#div-msg-feedback-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  cursor: wait;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 2;
+  display: block;
+}
+
+#div-msg-feedback-wrapper {
+  position: absolute;
+  width: 350px;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(50, 50, 50, 0.9);
+  color: white;
+  border-radius: 5px 5px 5px 5px;
+  border: 2px solid lightgray;
+  text-align: center;
+  padding: 15px 15px 15px 15px;
+  z-index: 2;
+}
+
+#div-msg-feedback-header {
+  width: 100%;
+  border-radius: 5px 5px 0px 0px;
+  padding: 5px;
+  background-color: #3367D6;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  color: white;
+}
+
+#div-msg-feedback-header i {
+  float: left;
+  padding: 3px;
+}
+
+#div-msg-feedback {
+  font-family: arial;
+  padding-top: 10px;
+  font-weight: bold;
+}

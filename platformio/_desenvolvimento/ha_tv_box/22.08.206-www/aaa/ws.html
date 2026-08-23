@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <script>
+
+        const ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmMzQ5OWM3MGU0Njk0MGE4ODcxZDZkNzNjYzVmYTZmMyIsImlhdCI6MTc2MjYxMzg0MCwiZXhwIjoyMDc3OTczODQwfQ.Bz85g2WiikIz6F60epo3cIK4ufyAa4KQgVfSQSTHcpE';
+        
+        const socket = new WebSocket("ws://192.168.0.5:8123/api/websocket");
+
+        socket.onopen = () => {
+            console.log("WebSocket conectado!");
+
+            // Autenticar
+            socket.send(JSON.stringify({
+                type: "auth",
+                access_token: ACCESS_TOKEN
+            }));
+        };
+
+        // Após autenticar, pedir atualização de estado
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "auth_ok") {
+
+                // Inscrever-se no evento de mudança de estado
+                socket.send(JSON.stringify({
+                    id: 1,
+                    type: "subscribe_events",
+                    event_type: "state_changed"
+                }));
+            }
+
+            // Quando qualquer estado mudar
+            if (data.type === "event") {
+                const e = data.event.data;
+                
+                if (e.entity_id === "switch.0x28dba7fffe1af100") {
+                    console.log("Nova temperatura:", e.new_state.state);
+                }
+            }
+        };
+
+    </script>
+    
+</body>
+</html>

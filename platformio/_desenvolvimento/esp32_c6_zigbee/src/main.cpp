@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Preferences.h> // 1. Biblioteca para salvar estados na memória flash NVS
+#include <Preferences.h>
 
 #ifndef ZIGBEE_MODE_ED
 #error "Zigbee end device mode is not selected in Tools->Zigbee mode"
@@ -13,13 +13,12 @@ uint8_t led = 15;     // LED Integrado da XIAO ESP32-C6 (Ativo em LOW)
 uint8_t button = 9;   // Botão BOOT (IO9)
 
 ZigbeeLight zbLight = ZigbeeLight(ZIGBEE_SWITCH_ENDPOINT);
-Preferences prefs;    // Instância para gerenciar a memória NVS
+Preferences prefs;
 
 /********************* Função de Controlo do LED **************************/
 void setLED(bool value) {
   digitalWrite(led, value ? LOW : HIGH);
   
-  // Salva na NVS apenas se o estado mudar (evita desgaste desnecessário da flash)
   if (prefs.getBool("state", false) != value) {
     prefs.putBool("state", value);
   }
@@ -30,20 +29,18 @@ void setLED(bool value) {
 /********************* Setup **************************/
 void setup() {
   Serial.begin(115200);
+  delay(1000);
 
   pinMode(led, OUTPUT);
   pinMode(button, INPUT_PULLUP);
 
-  // 2. Abre o espaço de memória NVS "light"
   prefs.begin("light", false);
-  
-  // 3. Lê o último estado gravado (padrão 'false' se for a primeira vez)
   bool lastState = prefs.getBool("state", false);
-  
-  // Aplica o estado restaurado diretamente ao pino físico
   digitalWrite(led, lastState ? LOW : HIGH);
 
-  zbLight.setManufacturerAndModel("SONOFF", "BASICZBR3");
+  // Use identidades limpas ou da Espressif para evitar regras estritas do Z2M
+  zbLight.setManufacturerAndModel("CustomESP32", "C6_Zigbee_Switch");
+  
   zbLight.onLightChange(setLED);
 
   Serial.println("A adicionar endpoint Zigbee...");
@@ -55,15 +52,28 @@ void setup() {
     ESP.restart();
   }
 
-  // 4. Sincroniza o estado restaurado com o atributo da pilha Zigbee
-  zbLight.setLight(lastState);
+  // CRUCIAL: Aguarda o dispositivo se conectar/parear de fato com a rede Zigbee
+  Serial.println("A aguardar conexão com a rede Zigbee (Zigbee2MQTT)...");
+  unsigned long startAttemptTime = millis();
+  while (!Zigbee.connected()) {
+    Serial.print(".");
+    delay(500);
+    // Se demorar mais de 45 segundos, reinicia para tentar novamente
+    if (millis() - startAttemptTime > 45000) {
+      Serial.println("\nTimeout de conexão. A reiniciar...");
+      ESP.restart();
+    }
+  }
+  Serial.println("\nConectado à rede Zigbee com sucesso!");
 
+  zbLight.setLight(lastState);
   Serial.printf("Zigbee iniciado! Estado restaurado para: %s\n", lastState ? "LIGADO" : "DESLIGADO");
 }
 
+
+
 /********************* Loop **************************/
 void loop() {
-  // Leitura do botão físico
   if (digitalRead(button) == LOW) {  
     delay(50); // Debounce
     if (digitalRead(button) == LOW) {
@@ -72,26 +82,24 @@ void loop() {
 
       while (digitalRead(button) == LOW) {
         delay(50);
-        // Reset de fábrica se pressionado por mais de 3s
         if ((millis() - startTime) > 3000) {
           isLongPress = true;
           Serial.println("Reset de fábrica acionado! A apagar NVS...");
           delay(500);
-          prefs.clear(); // Limpa o estado salvo na memória NVS
+          prefs.clear();
           Zigbee.factoryReset();
           break;
         }
       }
 
-      // Clique curto: Alterna o estado local e envia o pacote de relatório para a rede
       if (!isLongPress) {
+        // Alterna o estado lógico invertendo o estado atual do Zigbee
         bool newState = !zbLight.getLightState();
         
-        // 1. Atualiza a pilha Zigbee
+        // ATENÇÃO: Chamar setLight() aqui altera o atributo Zigbee, 
+        // aciona a função onLightChange (que muda o LED e salva na NVS) 
+        // e dispara o reporte automático para o Zigbee2MQTT!
         zbLight.setLight(newState);
-        
-        // 2. Atualiza o pino físico e grava na NVS
-        setLED(newState);
       }
 
       while (digitalRead(button) == LOW) delay(10);

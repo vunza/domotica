@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controlo Remoto</title>      
+    <link rel="stylesheet" type="text/css" href="all.min.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="styles.css"> -->
+
+    <!-- Cria versão diferente a cada carregamento -->   
+    <script>
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'styles.css?v=' + new Date().getTime();
+        document.head.appendChild(link);
+    </script>
+</head>
+<body>     
+
+    <!-- div-msg-feedback-back --> 
+    <div id="div-msg-feedback-back" style="display: none;">           
+        <div id="div-msg-feedback-wrapper">                
+            <div id="div-msg-feedback-header">                                 
+                <font color='black'><b>INFORMAÇÃO</b></font>
+            </div>
+            <br>
+            <div class="div_msg_feedback" id="div-msg-feedback"></div>
+        </div>
+    </div><!-- div-msg-feedback-back -->
+
+
+    <!-- div_ir_panel -->
+    <div id="div_ir_panel" style="display: none;">
+        <div id="div_tecla_painel_ir"></div>
+        <hr class="hr_remote_ctrl"><!-- SEPARADOR -->
+        <div id="div_btn_panel_ir">
+            <button id="btn_programar" onclick="programarTecla();">Programar</button>
+            <button id="btn_desprogramar" onclick="desprogramarTecla();">Limpar</button>
+            <button id="btn_fechar" onclick="fecharPainelIR();">Fechar</button>
+        </div>
+        <hr class="hr_remote_ctrl"><!-- SEPARADOR -->
+    </div><!-- div_ir_panel -->  
+
+
+
+     <!-- div_ctrl_r_wrappper -->
+    <div id="div_ctrl_r_wrappper" style="display: none;">         
+    
+    
+    <fieldset id="fieldset_div_ctrl_r_wrappper" style="display: none;">
+        <legend id="legenda_fieldset_div_ctrl_r_wrappper"></legend>  
+        
+        <nav id="nav_menu_ctrl_r" style="display: block;" class="vertical-menu">
+            <ul>                
+                <li id="ACN" class="has-submenu">
+                    <a href="#">Ar Condicionado</a>
+                    <ul class="submenu">                        
+                        <li><a href="#" onclick="executar_ctrl_remoto(this);"><font color="green" weight="bold">Executar</font></a></li>  
+                        <li><a href="#" onclick="programar_ctrl_remoto(this);"><font color="red" weight="bold">Programar</font></a></li>                      
+                    </ul>
+                </li>  
+                
+                <li id="DCD" class="has-submenu">
+                    <a href="#">Descodificador</a>
+                    <ul class="submenu">
+                        <li><a href="#" onclick="executar_ctrl_remoto(this);"><font color="green" weight="bold">Executar</font></a></li>  
+                        <li><a href="#" onclick="programar_ctrl_remoto(this);"><font color="red" weight="bold">Programar</font></a></li>                        
+                    </ul>
+                </li> 
+                
+                <li id="SND" class="has-submenu">
+                    <a href="#">Sistema de Som</a>
+                    <ul class="submenu">
+                        <li><a href="#" onclick="executar_ctrl_remoto(this);"><font color="green" weight="bold">Executar</font></a></li>  
+                        <li><a href="#" onclick="programar_ctrl_remoto(this);"><font color="red" weight="bold">Programar</font></a></li>                        
+                    </ul>
+                </li>    
+
+                <li id="TLV" class="has-submenu">
+                    <a href="#">Televisor</a>
+                    <ul class="submenu">
+                        <li><a href="#" onclick="executar_ctrl_remoto(this);"><font color="green" weight="bold">Executar</font></a></li>  
+                        <li><a href="#" onclick="programar_ctrl_remoto(this);"><font color="red" weight="bold">Programar</font></a></li>                        
+                    </ul>
+                </li>    
+
+                <li id="FAN" class="has-submenu">
+                    <a href="#">Ventilador</a>
+                    <ul class="submenu">
+                        <li><a href="#" onclick="executar_ctrl_remoto(this);"><font color="green" weight="bold">Executar</font></a></li>  
+                        <li><a href="#" onclick="programar_ctrl_remoto(this);"><font color="red" weight="bold">Programar</font></a></li>                        
+                    </ul>
+                </li>    
+
+                <li class="fechar"><a id="a_fechar" href="#" onclick="closeBrowserModPopup();">Sair</a></li>   
+            </ul>
+        </nav>
+        <!-- Menu Controlos Remotos -->
+
+    <!-- Controlo Remoto Ventilador -->
+    <div id="controlo_remoto_ventilador" class="remote" style="display: none;">
+        <!-- <div class="brand">VENTILADOR PRO</div> -->
+        
+        <div class="power-section">
+            <button id="btn_off_ventilador" class="power-btn" onclick="ctl_r_btn_click(this);">
+                <i class="fas fa-power-off"></i>
+            </button>
+        </div>
+        
+        <div class="speed-control">
+            <div class="speed-title">VELOCIDADES</div>
+            <div class="speed-levels">
+                <div class="speed-level active">1</div>
+                <div class="speed-level">2</div>
+                <div class="speed-level">3</div>
+                <div class="speed-level">4</div>
+                <div class="speed-level">5</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="btn_timer_ventilador" class="btn" onclick="ctl_r_btn_click(this);">
+                <i class="fas fa-clock"></i>
+                <span>TIMER</span>
+            </button>
+            <button class="btn_reserva">                       
+            </button>
+            <button id="btn_mode_ventilador" class="btn" onclick="ctl_r_btn_click(this);">
+                <i class="fas fa-moon"></i>
+                <span>MODE</span>
+            </button>
+            <button id="btn_swing_ventilador" class="btn" onclick="ctl_r_btn_click(this);">
+                <i class="fas fa-arrows-alt-h"></i>
+                <span>SWING</span>
+            </button>
+            <button id="btn_lamp_ventilador" class="btn" onclick="ctl_r_btn_click(this);">
+                <i class="fas fa-lightbulb" style="color: #FFD700;"></i>
+                <span>LAMP</span>
+            </button>
+            <button id="btn_on_espeed_ventilador" class="btn" onclick="ctl_r_btn_click(this);">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>ON/SPEED</span>
+            </button>
+        </div>
+        
+        <div class="timer-section">
+            <button id="btn_timer_1h" class="timer-btn">
+                <i class="fas fa-clock"></i> 1h
+            </button>
+            <button id="btn_timer_2h" class="timer-btn">
+                <i class="fas fa-clock"></i> 2h
+            </button>
+            <button id="btn_timer_4h" class="timer-btn">
+                <i class="fas fa-clock"></i> 4h
+            </button>
+            <button id="btn_timer_8h" class="timer-btn">
+                <i class="fas fa-clock"></i> 8h
+            </button>
+        </div>
+    </div><!-- Controlo Remoto Ventilador -->
+
+
+
+    <!-- Controlo Remoto TV -->
+    <div id="controlo_remoto_tv" class="remote" style="display: none;">
+        <!-- <div class="brand">SMART TV REMOTE</div> -->
+
+        <!-- <div class="display">CH 05</div> -->
+        
+        <div class="buttons">
+            <button class="btn power"><i class="fas fa-power-off"></i></button>
+            <button class="btn mute"><i class="fas fa-volume-mute"></i></button>     
+
+            <div class="circle-nav">
+                <button class="circle-btn up"><i class="fas fa-chevron-up"></i></button>
+                <button class="circle-btn left"><i class="fas fa-chevron-left"></i></button>
+                <button class="circle-btn ok">MENU</button>
+                <button class="circle-btn right"><i class="fas fa-chevron-right"></i></button>
+                <button class="circle-btn down"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            
+            <div class="number-buttons">
+                <button class="number-btn">1</button>
+                <button class="number-btn">2</button>
+                <button class="number-btn">3</button>
+                <button class="number-btn">4</button>
+                <button class="number-btn">5</button>
+                <button class="number-btn">6</button>
+                <button class="number-btn">7</button>
+                <button class="number-btn">8</button>
+                <button class="number-btn">9</button>
+                <button class="number-btn">*</button>
+                <button class="number-btn">0</button>
+                <button class="number-btn">#</button>
+            </div>
+        </div>
+    </div><!-- Controlo Remoto TV -->
+
+
+    <!-- Controlo Remoto Som -->
+    <div id="controlo_remoto_som" class="remote" style="display: none;">
+        <div class="header">
+            <!-- <div class="brand">MUSIC PRO</div> -->
+            <div class="power-btn">
+                <i class="fas fa-power-off"></i>
+            </div>
+        </div>
+        
+        <div class="display">
+            <div class="song-info">Imagine Dragons - Believer</div>
+            <div class="time-info">2:45 / 3:30</div>
+            <div class="volume-display">
+                <i class="fas fa-volume-down"></i>
+                <div class="volume-bar">
+                    <div class="volume-level"></div>
+                </div>
+                <i class="fas fa-volume-up"></i>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-prev"><i class="fas fa-step-backward"></i></button>
+            <button class="btn btn-play"><i class="fas fa-play"></i></button>
+            <button class="btn btn-next"><i class="fas fa-step-forward"></i></button>
+            <button class="btn btn-shuffle"><i class="fas fa-random"></i></button>
+            <button class="btn btn-eq"><i class="fas fa-sliders-h"></i></button>
+            <button class="btn btn-repeat"><i class="fas fa-redo"></i></button>
+            <button class="btn btn-fav"><i class="fas fa-heart"></i></button>
+        </div>
+        
+        <div class="nav-buttons">
+            <button class="nav-btn left"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn up"><i class="fas fa-chevron-up"></i></button>
+            <button class="nav-btn right"><i class="fas fa-chevron-right"></i></button>
+            <button class="nav-btn ok">OK</button>
+            <button class="nav-btn down"><i class="fas fa-chevron-down"></i></button>
+        </div>
+        
+        <div class="bottom-section">
+            <button class="source-btn active"><i class="fab fa-bluetooth-b"></i> BT</button>
+            <button class="source-btn"><i class="fas fa-wifi"></i> Wi-Fi</button>
+            <button class="source-btn"><i class="fas fa-usb"></i> USB</button>
+            <button class="source-btn"><i class="fas fa-compact-disc"></i> CD</button>
+        </div>
+    </div><!-- Controlo Remoto Som -->
+
+
+
+    <!-- Controlo Remoto Decoder -->
+    <div id="controlo_remoto_decoder" class="remote" style="display: none;">
+        <!-- <div class="header">
+            <div class="brand">TV SAT PRO</div>
+            <div class="brand-logo">SAT</div>
+        </div> -->
+        
+        <!-- <div class="display">
+            <div class="channel-info">RTP 1</div>
+            <div class="channel-number">101</div>
+        </div> -->
+        
+        <div class="main-buttons">
+            <button class="btn btn-power"><i class="fas fa-power-off"></i></button>
+            <button class="btn"><i class="fas fa-tv"></i></button>
+            <button class="btn"><i class="fas fa-bell"></i></button>
+            <button class="btn"><i class="fas fa-info-circle"></i></button>
+            <button class="btn btn-mute"><i class="fas fa-volume-mute"></i></button>
+
+            <div class="circle-nav">
+                <button class="circle-btn up"><i class="fas fa-chevron-up"></i></button>
+                <button class="circle-btn left"><i class="fas fa-chevron-left"></i></button>
+                <button class="circle-btn ok">MENU</button>
+                <button class="circle-btn right"><i class="fas fa-chevron-right"></i></button>
+                <button class="circle-btn down"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            
+            <!-- <div class="nav-buttons">
+                <button class="nav-btn left"><i class="fas fa-chevron-left"></i></button>
+                <button class="nav-btn up"><i class="fas fa-chevron-up"></i></button>
+                <button class="nav-btn right"><i class="fas fa-chevron-right"></i></button>
+                <button class="btn btn-ok">OK</button>
+                <button class="nav-btn down"><i class="fas fa-chevron-down"></i></button>
+            </div> -->
+        </div>
+        
+        <div class="number-buttons">
+            <button class="number-btn">1</button>
+            <button class="number-btn">2</button>
+            <button class="number-btn">3</button>
+            <button class="number-btn">4</button>
+            <button class="number-btn">5</button>
+            <button class="number-btn">6</button>
+            <button class="number-btn">7</button>
+            <button class="number-btn">8</button>
+            <button class="number-btn">9</button>
+            <button class="number-btn"><i class="fas fa-asterisk"></i></button>
+            <button class="number-btn zero">0</button>
+            <button class="number-btn"><i class="fas fa-pound-sign"></i></button>
+        </div>
+        
+        <!-- <div class="function-buttons">
+            <button class="func-btn">
+                <i class="fas fa-list"></i>
+                <span>Guia</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-film"></i>
+                <span>VOD</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-undo"></i>
+                <span>Voltar</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-home"></i>
+                <span>Menu</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-archive"></i>
+                <span>Grav.</span>
+            </button>
+            <button class="func-btn">
+                <i class="fas fa-cog"></i>
+                <span>Config</span>
+            </button>
+        </div> -->
+    </div><!-- Controlo Remoto Decoder -->
+
+
+
+    <!-- Controlo Remoto Ar Condicionado -->
+    <div id="controlo_remoto_ac" class="remote" style="display: none;">
+        <!-- <div class="brand">AR CONDICIONADO</div> -->
+        
+        <div class="display">
+            <div class="temperature">
+                <span id="temp-value">24</span>°C
+            </div>
+            <div class="mode-display" id="mode-display">Modo: Resfriar</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="mode-btn">
+                <i class="fas fa-snowflake"></i>
+                Modo
+            </button>
+            <button class="btn" id="fan-btn">
+                <i class="fas fa-fan"></i>
+                Ventilação
+            </button>
+            <button class="btn" id="swing-btn">
+                <i class="fas fa-arrows-alt-v"></i>
+                Oscilar
+            </button>
+            <button class="btn" id="timer-btn">
+                <i class="fas fa-clock"></i>
+                Timer
+            </button>
+            <button class="btn" id="turbo-btn">
+                <i class="fas fa-bolt"></i>
+                Turbo
+            </button>
+            <button class="btn" id="sleep-btn">
+                <i class="fas fa-moon"></i>
+                Sleep
+            </button>
+        </div>
+        
+        <div class="temp-control">
+            <button class="temp-btn" id="temp-down"><i class="fas fa-minus"></i></button>
+            <div style="flex-grow: 1; text-align: center;">Temperatura</div>
+            <button class="temp-btn" id="temp-up"><i class="fas fa-plus"></i></button>
+        </div>
+        
+        <button class="power-btn" id="power-btn">
+            <i class="fas fa-power-off"></i>
+            Ligar/Desligar
+        </button>
+    </div><!-- Controlo Remoto Ar Condicionado -->
+
+    <!-- Menu Controlos Remotos -->
+    <div id="header_menu_ctrl_r">
+        <nav class="menu-igual">
+            <ul>                    
+                <li><a href="#" onclick="abrir_menu_ctrl_r();"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> Menu</a></li>
+                <li class=""><a href="#" onclick="closeBrowserModPopup();"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Sair</a></li>
+            </ul>
+        </nav>
+    </div> 
+
+    </fieldset>    
+
+</div> <!-- div_ctrl_r_wrappper -->  
+    
+    <script type="text/javascript" src="mqtt.min.js"></script>
+    <script type="text/javascript" src="scripts.js?v=202406499"></script>
+    <!-- Cria versão diferente a cada carregamento -->
+    <!-- <script>
+        const script = document.createElement('script');
+        script.src = 'scripts.js?v=' + new Date().getTime();
+        script.type = 'text/javascript';
+        document.head.appendChild(script);
+    </script>     -->
+
+</body>
+</html>

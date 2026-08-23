@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Menu Contextual Básico</title>
+
+<style>
+/* Área de teste */
+.area {
+    width: 320px;
+    height: 160px;
+    border: 2px dashed #999;
+    margin: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    user-select: none;
+}
+
+/* Menu contextual */
+.context-menu {
+    position: absolute;
+    display: none;
+    min-width: 180px;
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    list-style: none;
+    padding: 6px 0;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    z-index: 1000;
+}
+
+/* Itens */
+.context-menu li {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Hover */
+.context-menu li:hover {
+    background-color: #f0f0f0;
+}
+
+/* Separador */
+.context-menu .divider {
+    height: 1px;
+    background: #ddd;
+    margin: 6px 0;
+    padding: 0;
+    pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="area" id="area">
+    Clique com o botão direito aqui
+</div>
+
+<ul class="context-menu" id="contextMenu">
+    <li onclick="alert('Editar clicado')">Editar</li>
+    <li onclick="alert('Duplicar clicado')">Duplicar</li>
+    <li onclick="alert('Eliminar clicado')">Eliminar</li>
+    <li class="divider"></li>
+    <li onclick="alert('Propriedades clicado')">Propriedades</li>
+</ul>
+
+<script>
+const area = document.getElementById('area');
+const menu = document.getElementById('contextMenu');
+
+/* Abrir menu com clique direito */
+area.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+
+    menu.style.display = 'block';
+    menu.style.left = e.pageX + 'px';
+    menu.style.top = e.pageY + 'px';
+});
+
+/* Fechar menu ao clicar fora */
+document.addEventListener('click', function () {
+    menu.style.display = 'none';
+});
+
+/* Evitar fechar ao clicar no próprio menu */
+menu.addEventListener('click', function (e) {
+    e.stopPropagation();
+});
+</script>
+
+</body>
+</html>

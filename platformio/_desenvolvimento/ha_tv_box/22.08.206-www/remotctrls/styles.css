@@ -1,0 +1,1270 @@
+.cores{
+    background-color: #2196F3;
+    background-color: #B03A2E;
+    background-color: #39be5a;   
+    background-color: #4a4d4a; 
+    background-color: #1c1c1c;
+    background-color: #2c3e50;
+}
+
+/*//////////////////////////////////*/
+/*////// CONFIGURACOES COMUNS //////*/
+/*//////////////////////////////////*/
+:root {
+    --clr: #1c1c1c;
+    --largura_ctrl_r: 170px;
+    --radio_ctrl_r: 10px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    /* Impede Seleccção e Copia */
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--clr);
+ }
+
+.remote {
+    width: auto;
+    background: #333;
+    border-radius: var(--radio_ctrl_r);
+    padding: 10px;
+    background: rgb(100,100,100) radial-gradient(circle at 50% 0, rgba(255,255,255,.65), rgba(255,255,255,.35));
+    box-shadow:
+    0 3px 8px rgba(0,0,0,.8),
+    inset rgba(0,0,0,.6) 0 -3px 8px,
+    inset rgba(252,255,255,.7) 0 3px 8px;
+}
+
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.brand {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+
+.circle-nav {
+    position: absolute;
+    width: 135px;
+    height: 135px;
+    margin: auto;
+    background: #222;
+    border-radius: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.8);
+}
+
+.circle-btn {
+    position: absolute;
+    background: #333; 
+    background: #222;          
+    color: white;                     
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;    
+}
+
+.circle-btn.ok {
+    width: 60px;
+    height: 60px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 2px solid white;
+    background: #111;
+    z-index: 1;
+    border-radius: 50%;
+    border: 2px solid #aaa;  
+}
+
+.circle-btn.up {
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);  
+    border: none;                   
+}
+
+.circle-btn.down {
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%); 
+    border: none;           
+}
+
+.circle-btn.left {
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+}
+
+.circle-btn.right {
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+}
+
+
+/*//////////////////////////////////////*/
+/*////// CONFIGURACOES TELEVISAO ///////*/
+/*//////////////////////////////////////*/
+#controlo_remoto_tv .brand {
+    color: white;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+#controlo_remoto_tv .display {
+    background: #222;
+    color: #0f0;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+#controlo_remoto_tv .btn {
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+#controlo_remoto_tv .btn:active {
+    transform: scale(0.95);
+    background: #666;
+}
+
+#controlo_remoto_tv .number-btn {
+    background: #555;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    height: 50px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+#controlo_remoto_tv .btn.power {
+    background: #f00;
+    grid-column: 1;
+}
+
+#controlo_remoto_tv .btn.mute {
+    background: #ff9800;
+    grid-column: 4;
+}        
+
+#controlo_remoto_tv .number-buttons {
+    grid-column: span 4;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 150px;
+}
+
+#controlo_remoto_tv .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+
+#controlo_remoto_tv .btn:hover {
+    background: #555;
+}
+
+#controlo_remoto_tv{
+    width: 300px;
+}
+
+
+/*//////////////////////////////////////*/
+/*////// CONFIGURACOES VENTILADOR //////*/
+/*//////////////////////////////////////*/
+#controlo_remoto_ventilador .remote::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    transform: rotate(30deg);
+}
+
+#controlo_remoto_ventilador .brand {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    position: relative;
+}
+
+
+#controlo_remoto_ventilador .power-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+#controlo_remoto_ventilador .power-btn {
+    background: #e74c3c;
+    width: 100%;
+    height: 45px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s;
+}
+
+#controlo_remoto_ventilador .power-btn:active {
+    transform: scale(0.95);
+}
+
+#controlo_remoto_ventilador .controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+#controlo_remoto_ventilador .btn {
+    background: #444;
+    border: none;
+    border-radius: 15px;
+    height: 70px;
+    width: 70px; 
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+
+
+#controlo_remoto_ventilador .btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #444;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#controlo_remoto_ventilador .btn:hover::before {
+    opacity: 0.5;
+}
+
+#controlo_remoto_ventilador .btn:active {
+    transform: scale(0.95);
+}
+
+#controlo_remoto_ventilador .btn.active {
+    background: #444;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#controlo_remoto_ventilador .btn i {
+    margin-bottom: 5px;
+}
+
+#controlo_remoto_ventilador .btn span {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+#controlo_remoto_ventilador .speed-control {
+    background: #444;
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+#controlo_remoto_ventilador .speed-title {
+    color: white;
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+#controlo_remoto_ventilador .speed-levels {
+    display: flex;
+    justify-content: space-between;
+}
+
+#controlo_remoto_ventilador .speed-level {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;    
+}
+
+#controlo_remoto_ventilador .speed-level.active {
+    background: #f39c12;
+    transform: scale(1.1);
+}
+
+#controlo_remoto_ventilador .timer-section {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+#controlo_remoto_ventilador .timer-btn {
+    background: #444;
+    border: none;
+    border-radius: 10px;
+    padding: 8px;
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+#controlo_remoto_ventilador .timer-btn i {
+    margin-right: 5px;
+}
+
+#controlo_remoto_ventilador .btn_reserva{        
+    background-color: rgba(100,100,100, 0);
+    border: none; 
+    cursor: none;   
+}
+
+
+
+
+
+
+/*//////////////////////////////////////*/
+/*////// CONFIGURACOES SITEMA SOM //////*/
+/*//////////////////////////////////////*/
+#controlo_remoto_som .brand {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+#controlo_remoto_som .power-btn {
+    background: #e74c3c;
+    /* width: 40px;
+    height: 40px; 
+    border-radius: 50%;*/
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 100%;
+    height: 50px;
+    margin: auto;
+}
+
+#controlo_remoto_som .display {
+    color: white;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 25px;
+    text-align: center;
+    font-family: 'Digital', monospace;
+}
+
+#controlo_remoto_som .song-info {
+    font-size: 1rem;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#controlo_remoto_som .volume-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+#controlo_remoto_som .volume-bar {
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    flex-grow: 1;
+    margin: 0 10px;
+    position: relative;
+}
+
+#controlo_remoto_som .volume-level {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 70%;
+    background: #3498db;
+    border-radius: 5px;
+}
+
+
+#controlo_remoto_som .controls {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+#controlo_remoto_som .btn {
+    background: #444;
+    border: none;
+    border-radius: 10px;
+    height: 50px;
+    color: white;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#controlo_remoto_som .btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#controlo_remoto_som .btn:active {
+    transform: scale(0.95);
+}
+
+#controlo_remoto_som .btn-play {
+    grid-column: 3;
+    background: #3498db;
+}
+
+#controlo_remoto_som .btn-prev {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#controlo_remoto_som .btn-next {
+    grid-column: 5;
+    grid-row: 1;
+}
+
+#controlo_remoto_som .btn-eq {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#controlo_remoto_som .btn-repeat {
+    grid-column: 4;
+    grid-row: 2;
+}
+
+#controlo_remoto_som .btn-shuffle {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#controlo_remoto_som .btn-fav {
+    grid-column: 5;
+    grid-row: 2;
+}
+
+#controlo_remoto_som .nav-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+#controlo_remoto_som .nav-btn {
+    background: #444;
+    border: none;
+    border-radius: 10px;
+    height: 40px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+#controlo_remoto_som .nav-btn.up {
+    grid-column: 2;
+}
+
+#controlo_remoto_som .nav-btn.ok {
+    grid-column: 2;
+    grid-row: 2;
+    background: #444;
+}
+
+#controlo_remoto_som .bottom-section {
+    display: flex;
+    justify-content: space-between;
+}
+
+#controlo_remoto_som .source-btn {
+    width: 65px;
+    background: #444;
+    border: none;
+    border-radius: 10px;
+    padding: 1px;
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+#controlo_remoto_som .source-btn.active {
+    background: #3498db;
+}
+
+#controlo_remoto_som {
+    width: 300px;
+}
+
+
+/*///////////////////////////////////*/
+/*////// CONFIGURACOES DECODER //////*/
+/*///////////////////////////////////*/
+#controlo_remoto_decoder .brand-logo {
+    width: 40px;
+    height: 40px;
+    background-color: #e74c3c;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+#controlo_remoto_decoder .display {
+    background: rgba(0, 100, 0, 0.9);
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 25px;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    justify-content: space-between;
+}
+
+#controlo_remoto_decoder .channel-info {
+    font-size: 1.2rem;
+}
+
+#controlo_remoto_decoder .channel-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #3498db;
+}
+
+#controlo_remoto_decoder .main-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+#controlo_remoto_decoder .btn {
+    background: #444;
+    border: none;
+    border-radius: 10px;
+    height: 50px;
+    color: white;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#controlo_remoto_decoder .btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#controlo_remoto_decoder .btn:active {
+    transform: scale(0.95);
+}
+
+#controlo_remoto_decoder .btn-power {
+    background: #e74c3c;
+    grid-column: 1;
+}
+
+#controlo_remoto_decoder .btn-mute {
+    background: #f39c12;
+    grid-column: 5;
+}
+
+#controlo_remoto_decoder .btn-ok {
+    grid-column: 3;
+    grid-row: 2;
+    background: #3498db;
+    height: 60px;
+    border-radius: 15px;
+}
+
+#controlo_remoto_decoder .nav-buttons {
+    grid-column: span 5;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+#controlo_remoto_decoder .nav-btn {            
+    background: #444;
+    border: none;
+    border-radius: 10px;
+    height: 50px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+#controlo_remoto_decoder .nav-btn.up {
+    grid-column: 2;
+}
+
+#controlo_remoto_decoder .number-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 165px;
+    margin-bottom: 20px;
+}
+
+#controlo_remoto_decoder .number-btn {
+    background: #444;
+    border: none;
+    border-radius: 10px;
+    height: 50px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+}
+
+#controlo_remoto_decoder .number-btn.zero {
+    grid-column: 2;
+}
+
+#controlo_remoto_decoder .function-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+#controlo_remoto_decoder .func-btn {
+    background: #444;
+    border: none;
+    border-radius: 10px;
+    height: 50px;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+}
+
+#controlo_remoto_decoder.func-btn i {
+    margin-bottom: 5px;
+    font-size: 1.2rem;
+}
+
+#controlo_remoto_decoder{
+    width: 320px;
+}
+ 
+
+/*////////////////////////////////////////////*/
+/*////// CONFIGURACOES AR CONDICIONADO //////*/
+/*////////////////////////////////////////////*/
+#controlo_remoto_ac .brand {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#controlo_remoto_ac .display {
+    color: white;
+    background-color: rgba(0,0,0,0.9);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#controlo_remoto_ac .temperature {
+    font-size: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#controlo_remoto_ac .mode-display {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+#controlo_remoto_ac .controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+#controlo_remoto_ac .btn {
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+#controlo_remoto_ac .btn i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+#controlo_remoto_ac .btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+#controlo_remoto_ac .btn:active {
+    transform: scale(0.95);
+}
+
+#controlo_remoto_ac .btn.active {
+    background: #0078d7;
+    box-shadow: 0 0 10px rgba(0,120,215,0.5);
+}
+
+#controlo_remoto_ac .temp-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#controlo_remoto_ac .temp-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #444;
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#controlo_remoto_ac .temp-btn:hover {
+    background: rgba(255,255,255,0.2);           
+}
+
+#controlo_remoto_ac .power-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#controlo_remoto_ac .power-btn:hover {
+    background: #c0392b;
+}
+
+#controlo_remoto_ac .power-btn i {
+    font-size: 1.2rem;
+}
+
+#controlo_remoto_ac{
+    width: 300px;
+}
+
+
+
+/*///////////////////////////////////*/
+/*////// MENU CONTROLOS REMOTO //////*/
+/*///////////////////////////////////*/
+#div_ctrl_r_wrappper {   
+  display: none;
+  position: absolute;
+  top: 10px;
+  width: 265px;
+  height: auto;
+  padding: 5px;
+  left: 50%;
+  transform: translate(-50%, -0%);
+  background-color: var(--clr); 
+  border: 1px solid  var(--clr);
+  border: 0px solid #4e94ab;
+  /* border: 1px solid red; */
+  border-radius: var(--radio_ctrl_r);
+}
+
+#fieldset_div_ctrl_r_wrappper{
+    padding: 5px;
+    border-radius: var(--radio_ctrl_r);
+    border: 2px solid #4e94ab;
+}
+
+
+.vertical-menu {
+    width: 240px;    
+    background: #4e94ab;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.vertical-menu ul {
+  list-style: none;
+  border-bottom: 1px solid white;
+}
+
+.vertical-menu li a {
+    display: block;
+    padding: 5px;
+    font-size: 24px;
+    font-family: 'console', 'PT Sans';
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: all 0.3s ease;    
+}
+
+.vertical-menu li a:hover {
+  background: #4e94ab;
+}
+
+/* Submenu - inicialmente escondido */
+.submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;       
+    background: #2c3e50;    
+}
+
+.submenu li a {
+    padding-left: 30px;
+    border-top: 1px solid white;
+}
+
+.submenu .submenu li a {
+    padding-left: 45px;
+}
+
+/* Ícone para itens com submenu */
+.has-submenu > a {
+    position: relative;
+}
+
+.has-submenu > a::after {
+    content: "+";   
+    position: absolute;
+    right: 10px;
+    transition: transform 0.3s ease;
+    transform: rotate(0deg);    
+    font-size: 1.2em; /* Aumenta/diminui o tamanho do "»" */
+    line-height: 1;   /* Mantém o alinhamento vertical correto */  
+            
+    /* Estilização do círculo */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;          /* Diâmetro do círculo */
+    height: 30px;         /* Diâmetro do círculo */
+    background: #2c3e50;  /* Cor de fundo do círculo */
+    color: #39be5a;        /* Cor do caractere "»" */
+    border-radius: 50%;   /* Transforma em círculo */
+    font-size: 1.2em;     /* Tamanho do caractere */    
+    transition: all 0.3s ease;
+}
+
+.has-submenu.active > a::after {
+  transform: rotate(45deg); 
+  font-size: 1.2em;
+  color: #B03A2E;
+}
+
+/* Quando o submenu está ativo */
+.has-submenu.active .submenu {
+    max-height: 500px; /* Valor alto o suficiente para conter o submenu */
+    transition: max-height 0.5s ease-in;
+}
+
+.fechar {
+  background-color: #B03A2E;
+}
+
+#a_fechar:hover {
+  background-color: red;
+}
+
+
+/** Menu Ctrl Remoto Header **/
+#header_menu_ctrl_r {
+  display: none;
+  position: relative;
+  /* float: right;   */
+  width:fit-content;
+  width: 100%;
+  border-radius: 5px;
+  list-style-type: none; 
+  background-color: #1c1c1c;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  margin-top: 5px; 
+  margin-bottom: 1px; 
+}
+
+
+#header_menu_ctrl_r li {
+  display: inline-block;
+  border-right: 1px solid #bbb;
+}
+
+#header_menu_ctrl_r li:last-child {
+  border-right: none;
+}
+
+
+.menu-igual {
+  background: #4e94ab; /* Cor de fundo do menu */
+  /* width: var(--largura_ctrl_r); */
+  /* width:fit-content; */
+  width: 100%;
+  border-radius: 5px;
+  border: 1px solid #4e94ab;  
+}
+
+.menu-igual ul {
+  list-style: none;
+  margin: 0;
+  padding: 5px;
+  display: flex; /* Ativa o layout flexível */  
+}
+
+
+.menu-igual li { 
+  text-align: center; 
+  justify-items: center;
+  /* min-width: fit-content;  */
+  /* width: 85px; */
+  width: 50%;
+}
+
+
+.menu-igual a {
+  display: inline-flex;       /* Flex para alinhar conteúdo interno */
+  align-items: center;        /* Alinha verticalmente */
+  gap: 5px;                   /* Espaço entre o ícone e o texto */
+  color: white;
+  text-decoration: none;  
+  padding: 1px 10px;          /* Ajusta espaçamento interno */
+  transition: background 0.3s;
+}
+
+.menu-igual li:hover {
+  background: #34495e; /* Cor ao passar o mouse */ 
+}
+
+
+
+
+/*///////////////////////////////*/
+/*////// MENSAGEM FEEDBACK //////*/
+/*///////////////////////////////*/
+#div-msg-feedback-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  cursor: wait;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 2;
+  display: block;
+}
+
+#div-msg-feedback-wrapper {
+  position: absolute;
+  width: 350px;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(50, 50, 50, 0.9);
+  color: white;
+  border-radius: 5px 5px 5px 5px;
+  border: 2px solid lightgray;
+  text-align: center;
+  padding: 15px 15px 15px 15px;
+  z-index: 2;
+}
+
+#div-msg-feedback-header {
+  width: 100%;
+  border-radius: 5px 5px 0px 0px;
+  padding: 5px;
+  background-color: #3367D6;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  color: white;
+}
+
+#div-msg-feedback-header i {
+  float: left;
+  padding: 3px;
+}
+
+#div-msg-feedback {
+  font-family: arial;
+  padding-top: 10px;
+  font-weight: bold;
+}
+
+
+
+/*///////////////////////////////*/
+/*////// PAINEL CTRL REMOTO /////*/
+/*///////////////////////////////*/
+#div_ir_panel {
+  display: none;
+  position: absolute;
+  top: 20px;
+  width: 190px;
+  left: 50%;
+  transform: translate(-50%);
+  text-align: center;
+  font-family: 'console', 'PT Sans';
+  background: rgb(100, 100, 100) radial-gradient(circle at 50% 0, rgba(255, 255, 255, .65), rgba(255, 255, 255, .35));
+  box-shadow:
+    inset rgba(0, 0, 0, .6) 0 -3px 8px,
+    inset rgba(252, 255, 255, .7) 0 3px 8px,
+    rgba(0, 0, 0, .8) 0 3px 8px -3px;
+  padding: 5px 5px 5px 5px;
+  border-radius: 10px;  
+  border: 1px solid red;
+}
+
+
+#div_btn_panel_ir button {
+  width: 85px;  
+  border-radius: 5px;
+  padding: 5px;
+  margin: 5px 0 5px 0;
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+}
+
+#div_tecla_painel_ir {
+ padding: 5px;
+}
+
+
+#btn_desprogramar {
+  background-color: #4a4d4a;
+}
+
+#btn_programar {
+  background-color: #39be5a;
+}
+
+#btn_fechar {
+  background-color: rgb(206, 90, 90);
+}
+
+
+/*///////////////////////////////*/
+/*////// TABELA CFG HUBS IR /////*/
+/*///////////////////////////////*/
+.container { 
+    width: 100%;    
+    /* max-width: 400px;        */
+    margin: 10px auto;
+    background: white;
+    background-color: #7e7f81;        
+    border-radius: 8px;
+    padding: 2px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    border: 1px solid rgba(140, 140, 140, .5);
+    border: 1px solid #7e7f81;
+}
+
+#div_rename_hub_ir{
+    display: flex;
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0%);      
+    width: 285px;    
+    margin: 10px auto;
+    background: white;
+    background-color: #7e7f81;        
+    border-radius: 8px;
+    padding: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    border: 1px solid rgba(140, 140, 140, .5);
+    border: 1px solid #7e7f81;
+}
+
+#div_rename_hub_ir div{
+    display: block;
+}
+
+
+#fieldset_hub_ir{
+    padding: 5px;
+    border-radius: 5px;
+}
+
+
+#txt_nome_dispositivo_aux{
+    font-size: 20px;
+    padding-left: 5px;
+}
+
+
+.tabela_hubs_ir {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    border-collapse: collapse;
+    background-color: #f9f9f9;    
+}
+
+.tabela_hubs_ir th, .tabela_hubs_ir td {
+    padding: 5px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+/* Texto truncado */
+#td_nome_hub_ir {
+    max-width: 120px;
+    white-space: nowrap;  
+    text-overflow: ellipsis;
+    overflow: hidden;
+} 
+
+.tabela_hubs_ir th {
+    background-color: #2196F3;
+    color: white;
+}   
+
+#td_comandos_hub_ir {
+    display: flex;    
+}
+
+#td_comandos_hub_ir a {
+    display: inline-block;    
+    cursor: pointer;    
+}
+
+#td_comandos_hub_ir i {
+    font-size: 1.5em;
+}

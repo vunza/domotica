@@ -9,7 +9,7 @@ ha-card {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    font-family: var(--paper-font-body1_-_font-family), -apple-system, sans-serif;         
+    font-family: var(--paper-font-body1_-_font-family), -apple-system, sans-serif;           
 }
 
 .header-card {
@@ -17,7 +17,7 @@ ha-card {
     justify-content: space-between;
     width: 100%;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .title {
@@ -31,7 +31,11 @@ ha-card {
     position: relative;
     width: 210px;
     height: 210px;
-    margin-top: 10px;
+    margin-top: -4px;  
+}
+
+dial-container > circle {
+    padding-bottom: -10px;     
 }
 
 .dial {
@@ -102,11 +106,21 @@ ha-card {
     font-weight: 400;
 }
 
+/*.controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: -10px 0 24px 0;
+}*/
+
+
 .controls {
     display: flex;
-    gap: 32px;
-    margin: -10px 0 24px 0;
+    gap: 12px;
+    justify-content: center;
+    margin: -20px 0 15px 0; /* Substitui o '-10px 0 24px 0' por margem simétrica */
 }
+
 
 .btn-step {
     width: 46px;
@@ -119,10 +133,60 @@ ha-card {
     align-items: center;
     justify-content: center;
     color: var(--primary-text-color, #2f3542);
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.1s ease, border-color 0.2s;
 }
 
 .btn-step:active {
+    transform: scale(0.94);
+}
+
+/* --- CORES ESPECÍFICAS DOS BOTÕES --- */
+
+/* Botão Power (Vermelho) */
+.btn-power {
+    color: var(--error-color, #ff4757);
+    border-color: rgba(255, 71, 87, 0.4);
+    background: rgba(255, 71, 87, 0.08);
+}
+
+.btn-power:hover {
+    background: rgba(255, 71, 87, 0.18);
+    border-color: var(--error-color, #ff4757);
+}
+
+/* Botão Diminuir Temp (Frio / Azul) */
+#btn-minus {
+    color: var(--info-color, #1e90ff);
+    border-color: rgba(30, 144, 255, 0.4);
+    background: rgba(30, 144, 255, 0.08);
+}
+
+#btn-minus:hover {
+    background: rgba(30, 144, 255, 0.18);
+    border-color: var(--info-color, #1e90ff);
+}
+
+/* Botão Aumentar Temp (Quente / Laranja) */
+#btn-plus {
+    color: var(--warning-color, #ff6b81);
+    border-color: rgba(255, 107, 129, 0.4);
+    background: rgba(255, 107, 129, 0.08);
+}
+
+#btn-plus:hover {
+    background: rgba(255, 107, 129, 0.18);
+    border-color: var(--warning-color, #ff6b81);
+}
+
+/* Botão Ocultar / Visualizar Arco (Neutro / Utilitário) */
+.btn-arc-toggle {
+    color: var(--secondary-text-color, #747d8c);
+    border-color: var(--divider-color, #ced6e0);
+    background: var(--card-background-color, #ffffff);
+}
+
+.btn-arc-toggle:hover {
+    color: var(--primary-text-color, #2f3542);
     background: var(--secondary-background-color, #f1f2f6);
 }
 
@@ -146,13 +210,13 @@ ha-card {
 }
 
 .pill-text {
-display: flex;
-flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .pill-title {
-font-size: 12px;
-color: var(--secondary-text-color, #747d8c);
+    font-size: 12px;
+    color: var(--secondary-text-color, #747d8c);
 }
 
 .pill-value {
@@ -176,67 +240,73 @@ ha-icon {
     flex: 1;
     font-size: 0.9rem;
     color: var(--secondary-text-color);
-  }
+}
 
-
-  .card-header {
+.card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 5px 0px 5px;    
-  }
-  .card-title {
+    padding: 0px 5px 3px 5px;  
+}
+
+.card-title {
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-  .card-icon {
+}
+
+.card-icon {
     display: flex;
     align-items: center;
     transition: color 0.2s ease;
     cursor: pointer;
-  }
-  .card-title-content {
+}
+
+.card-title-content {
     font-size: 1.2rem;
     font-weight: 500;
-  }
-  .menu-container {
+}
+
+.menu-container {
     position: relative;
     display: inline-block;
-  }
-  .menu-trigger {
+}
+
+.menu-trigger {
     background: none;
     border: none;
     padding: 4px;
     cursor: pointer;
     color: var(--secondary-text-color);
     border-radius: 4px;
-  }
-  .menu-trigger:hover {
+}
+
+.menu-trigger:hover {
     background: var(--divider-color, #e0e0e0);
-  }
-  .card-content {
+}
+
+.card-content {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 5px;  
     border-top: 1px solid var(--divider-color, #e0e0e0);
-  }
+}
 
-   /*ENTUDADES EXTRAS*/
-  .extra-entities {
+/* ENTIDADES EXTRAS */
+.extra-entities {
     margin-top: 1px;
     padding-top: 8px;
     border-top: 1px solid var(--divider-color, #e0e0e0);    
-  }
+}
 
-  .extra-grid {
+.extra-grid {
     display: grid;
-    grid-template-columns: 1fr;   /* uma única coluna ocupando toda largura */
+    grid-template-columns: 1fr;
     gap: 8px;
-  }
+}
 
-  .extra-item {
+.extra-item {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
@@ -244,16 +314,16 @@ ha-icon {
     padding: 4px 8px;
     background: var(--card-background-color, white);
     border-radius: 8px;
-  }
+}
 
-  .extra-name {
+.extra-name {
     color: var(--secondary-text-color, #5f6368);
     font-weight: 500;
-  }
+}
 
-  .extra-value {
+.extra-value {
     font-weight: bold;
     color: var(--primary-text-color, #202124);
-  }
-   
+}
+
 `;

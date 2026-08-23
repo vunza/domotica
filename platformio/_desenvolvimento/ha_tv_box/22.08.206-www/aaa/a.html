@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Monitor de Timers HA</title>
+    <style>
+        .timer-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .timer-on {
+            border-left: 4px solid green;
+        }
+        .timer-off {
+            border-left: 4px solid red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Agendamentos Home Assistant</h1>
+    <div id="timers-container"></div>
+    
+    <script>
+        const HA_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmMzQ5OWM3MGU0Njk0MGE4ODcxZDZkNzNjYzVmYTZmMyIsImlhdCI6MTc2MjYxMzg0MCwiZXhwIjoyMDc3OTczODQwfQ.Bz85g2WiikIz6F60epo3cIK4ufyAa4KQgVfSQSTHcpE";
+        const API_URL = 'http://192.168.0.5:8123/api';
+
+         // Para onformar dias da semana em PT
+        const diasemana = {
+            'mon': 'Segunda-feira', 
+            'tue': 'Terça-feira',
+            'wed': 'Quarta-feira',
+            'thu': 'Quinta-feira',
+            'fri': 'Sexta-feira',
+            'sat': 'Sábado',
+            'sun': 'Domingo',
+            'non': 'Sem Automação' 
+        };
+    
+        async function loadTimers() {
+            try {
+                const response = await fetch(
+                    `${API_URL}/states/sensor.info_dos_timers`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${HA_TOKEN}`
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                const timers = data.attributes.timers;
+                
+                displayTimers(timers);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('timers-container').innerHTML = 
+                    '<p>Erro ao carregar dados</p>';
+            }
+        }
+        
+        function displayTimers(timers) {
+            const container = document.getElementById('timers-container');
+            container.innerHTML = '';
+            
+            if (!timers || Object.keys(timers).length === 0) {
+                container.innerHTML = '<p>Nenhum timer encontrado</p>';
+                return;
+            }
+            
+            Object.entries(timers).forEach(([entityId, timer]) => {
+                const card = document.createElement('div');
+
+                if (timer.action === 'turn_on') {
+                    card.className = 'timer-card timer-on';
+                } else if (timer.action === 'turn_off') {
+                    card.className = 'timer-card timer-off';
+                }else if(timer.action === 'toggle') {
+                    card.className = 'timer-card timer-toggle';
+                } else {
+                    card.className = 'timer-card';
+                }
+                
+                card.innerHTML = `
+                    <h3>${entityId}</h3>
+                    <p><strong>Ação:</strong> ${timer.action}</p>
+                    <p><strong>Próxima execução:</strong> ${timer.execucao}</p>
+                    <p><strong>Horário:</strong> ${timer.at}</p>
+                    <p><strong>Estado:</strong> ${timer.estado}</p>
+                    <p><strong>Dia:</strong> ${diasemana[timer.weekday] || timer.weekday}</p>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Carregar inicialmente
+        loadTimers();
+        
+        // Atualizar a cada minuto
+        setInterval(loadTimers, 60000);
+    </script>
+</body>
+</html>

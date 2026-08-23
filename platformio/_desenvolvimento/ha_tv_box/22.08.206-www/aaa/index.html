@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Dispositivos</title>
+    <style>
+        .devices_container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+      
+       
+        #devices {
+            margin: 20px 0;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        #devices th, #devices td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #devices th {
+            background-color: #f2f2f2;
+        } 
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: blue;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+      
+    </style>
+</head>
+<body>
+    <div class="devices_container">
+        
+        <h2>Dispositivos Pareados</h2>
+        <table id="devices">
+            <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Endereço IEEE</th> 
+                  <th>Tipo</th>                     
+                </tr>
+            </thead>
+            <tbody id="devicesList">
+            </tbody>
+        </table>       
+    </div>
+
+    <button onclick="btn_clicked();">Click AAqui</button> 
+
+    <script>
+    
+        const ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmMzQ5OWM3MGU0Njk0MGE4ODcxZDZkNzNjYzVmYTZmMyIsImlhdCI6MTc2MjYxMzg0MCwiZXhwIjoyMDc3OTczODQwfQ.Bz85g2WiikIz6F60epo3cIK4ufyAa4KQgVfSQSTHcpE';
+        //const HA_URL = 'ws://192.168.0.5:8123/api/websocket';
+        const HA_URL = 'http://192.168.0.5:8123';  
+
+
+        const entityId = 'switch.0xa4c138e342bdfb48';
+
+        async function obterEstadoEntidade(token, ip_porta, entityId) {     
+          const url = `${ip_porta}/api/states/${entityId}`;
+          
+          try {
+              const response = await fetch(url, {
+                  method: "GET",
+                  headers: {
+                      "Authorization": "Bearer " + token,
+                      "Content-Type": "application/json"
+                  }
+              });
+              const data = await response.json(); 
+              console.log(data.attributes.device_type);       
+              return data.state; 
+          } catch (error) {
+              console.error("Erro ao obter estado:", error);
+              throw error; // Propaga o erro
+          }
+      }
+
+
+      async function actualizaFriendlyName(token, ip_porta, entityId, friendlyName, entityState, deviceType) {   
+      
+        const url = `${ip_porta}/api/services/shell_command/atualiza_friendly`;
+
+        fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            entity_id: entityId,
+            friendly_name: friendlyName,
+            entity_state: entityState,
+            device_type: deviceType // Ler via: data.attributes.device_type
+        })
+        })
+        .then(response => {
+        if (!response.ok) {
+            throw new Error("Erro na requisição");
+        }
+        return response.json();
+        })
+        .then(data => {
+          console.log("Comando enviado com sucesso!");
+        })
+        .catch(error => {
+          console.log("Erro:", error);
+        });
+
+    }
+
+ 
+    obterEstadoEntidade(ACCESS_TOKEN, HA_URL, entityId).then( (estado) => {
+      console.log("Estado:", estado); 
+      const tipos_dispositivos = ["hub_zb", "lampada", "bomba", "switch", "interruptor"];
+      //actualizaFriendlyName(ACCESS_TOKEN, HA_URL, entityId, 'Corredor', estado, tipos_dispositivos[1]);
+    });
+    
+    // Ler via: data.attributes.device_type
+
+  async function getEntityAttributes(token, baseUrl, entityId) {
+      const response = await fetch(`${baseUrl}/api/states/${entityId}`, {
+          headers: {
+              "Authorization": "Bearer " + token,
+              "Content-Type": "application/json"
+          }
+      });
+
+      const data = await response.json();
+      return data.attributes;  // <- atributos do customize.yaml entram aqui
+  }
+
+
+
+
+    async function sendData2SerialPort(token, ip_porta, mensagem) {   
+      
+        const url = `${ip_porta}/api/services/shell_command/esp32_serial_write`;
+
+        fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            msg: mensagem            
+        })
+        })
+        .then(response => {
+        if (!response.ok) {
+            throw new Error("Erro na requisição");
+        }
+        return response.json();
+        })
+        .then(data => {
+          console.log("Comando enviado com sucesso!");
+        })
+        .catch(error => {
+          console.log("Erro:", error);
+        });
+
+    }
+
+
+    function btn_clicked() {
+      const mensagem = "STATUS?";
+      sendData2SerialPort(ACCESS_TOKEN, HA_URL, mensagem);
+    }
+
+    
+    </script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+
+        const authToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmMzQ5OWM3MGU0Njk0MGE4ODcxZDZkNzNjYzVmYTZmMyIsImlhdCI6MTc2MjYxMzg0MCwiZXhwIjoyMDc3OTczODQwfQ.Bz85g2WiikIz6F60epo3cIK4ufyAa4KQgVfSQSTHcpE';
+        const hassUrl = 'http://192.168.0.5:8123';
+        const targetEntityId = 'switch.0x1000c8c9a338d2e7_esp_4d301f_2';     
+
+
+        /**
+ * Obtém informações disponíveis sobre uma entidade MQTT no Home Assistant
+ *
+ * @param {string} haUrl        Ex: ws://localhost:8123/api/websocket
+ * @param {string} token        Long-Lived Access Token
+ * @param {string} entityId     Ex: switch.esp_38d2e7
+ * @returns {Promise<Object>}   Dados combinados da entidade MQTT
+ */
+function getMqttEntityInfo(haUrl, token, entityId) {
+    return new Promise((resolve, reject) => {
+        const ws = new WebSocket(haUrl);
+        let authenticated = false;
+        let currentId = 1;
+        const pending = new Map();
+        let entityData = null;
+
+        // Timeout geral
+        const globalTimeout = setTimeout(() => {
+            ws.close();
+            reject(new Error("Timeout: conexão excedeu 10 segundos"));
+        }, 10000);
+
+        ws.onopen = () => {
+            console.log("WebSocket conectado. Aguardando auth_required...");
+        };
+
+        ws.onmessage = async (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+
+                // 1️⃣ AUTENTICAÇÃO: sem campo 'id'!
+                if (msg.type === "auth_required") {
+                    console.log("Servidor pede autenticação. Enviando token...");
+                    // CORRETO: sem campo 'id'
+                    ws.send(JSON.stringify({
+                        type: "auth",
+                        access_token: token
+                    }));
+                    return;
+                }
+
+                if (msg.type === "auth_ok") {
+                    console.log("Autenticado com sucesso.");
+                    authenticated = true;
+                    
+                    // Agora podemos fazer requisições normais (com ID)
+                    // 2️⃣ Buscar dados da entidade
+                    const id = currentId++;
+                    ws.send(JSON.stringify({
+                        id: id,
+                        type: "config/entity_registry/get",
+                        entity_id: entityId
+                    }));
+                    
+                    pending.set(id, {
+                        resolve: (result) => {
+                            if (!result.success) {
+                                throw new Error(`Entidade não encontrada: ${entityId}`);
+                            }
+                            entityData = result.result;
+                            buscarEstadoAtual();
+                        },
+                        reject: (error) => {
+                            reject(error);
+                            ws.close();
+                        }
+                    });
+                    return;
+                }
+
+                if (msg.type === "auth_invalid") {
+                    throw new Error("Autenticação falhou: " + (msg.message || "Token inválido"));
+                }
+
+                // 3️⃣ PROCESSAR RESPOSTAS COM ID
+                if (msg.id && pending.has(msg.id)) {
+                    const handler = pending.get(msg.id);
+                    pending.delete(msg.id);
+                    
+                    if (msg.type === "result") {
+                        if (msg.success === false) {
+                            handler.reject(new Error(msg.error?.message || "Erro na requisição"));
+                        } else {
+                            handler.resolve(msg);
+                        }
+                    }
+                }
+
+            } catch (error) {
+                clearTimeout(globalTimeout);
+                ws.close();
+                reject(error);
+            }
+        };
+
+        // Função para buscar estado atual
+        function buscarEstadoAtual() {
+            const id = currentId++;
+            ws.send(JSON.stringify({
+                id: id,
+                type: "get_states"
+            }));
+            
+            pending.set(id, {
+                resolve: (result) => {
+                    processarResultados(result);
+                },
+                reject: (error) => {
+                    reject(error);
+                    ws.close();
+                }
+            });
+        }
+
+        // Processar todos os dados
+        function processarResultados(statesResult) {
+            const currentState = statesResult.result?.find(
+                state => state.entity_id === entityId
+            ) || null;
+
+            // Extrair tópicos dos atributos
+            let mqttTopics = {};
+            if (currentState?.attributes) {
+                const attrs = currentState.attributes;
+                ["state_topic", "command_topic", "availability_topic", 
+                 "json_attributes_topic", "topic"].forEach(topicKey => {
+                    if (attrs[topicKey]) {
+                        mqttTopics[topicKey] = attrs[topicKey];
+                    }
+                });
+            }
+
+            // Montar resposta final
+            const response = {
+                entity_id: entityId,
+                entity_info: {
+                    name: entityData.name || entityData.original_name,
+                    platform: entityData.platform,
+                    unique_id: entityData.unique_id,
+                    device_id: entityData.device_id,
+                    disabled: entityData.disabled_by !== null
+                },
+                current_state: currentState ? {
+                    state: currentState.state,
+                    last_changed: currentState.last_changed,
+                    last_updated: currentState.last_updated,
+                    attributes: currentState.attributes  // Todos os atributos
+                } : null,
+                mqtt_topics: Object.keys(mqttTopics).length > 0 ? mqttTopics : null,
+                note: "O Home Assistant não armazena o payload original de descoberta MQTT."
+            };
+
+            clearTimeout(globalTimeout);
+            ws.close();
+            resolve(response);
+        }
+
+        ws.onerror = (error) => {
+            clearTimeout(globalTimeout);
+            reject(new Error("Erro de conexão WebSocket: " + error.message));
+        };
+
+        ws.onclose = () => {
+            clearTimeout(globalTimeout);
+            pending.clear();
+        };
+    });
+}
+
+// Exemplo de uso CORRETO:
+async function exemploUso() {
+    try {
+        // Use ws:// para HTTP ou wss:// para HTTPS
+        const dados = await getMqttEntityInfo(
+            "ws://192.168.0.5:8123/api/websocket",
+            authToken, // Seu token aqui
+            targetEntityId
+        );
+        
+        console.log("✅ Sucesso!");
+        console.log("Nome:", dados.entity_info.name);
+        console.log("Plataforma:", dados.entity_info.platform);
+        console.log("Unique ID:", dados.entity_info.unique_id);
+        
+        if (dados.mqtt_topics) {
+            console.log("🎯 Tópicos MQTT encontrados:", dados.mqtt_topics);
+        } else {
+            console.log("ℹ️  Nenhum tópico MQTT encontrado nos atributos.");
+            console.log("Todos os atributos:", dados.current_state?.attributes);
+        }
+        
+    } catch (error) {
+        console.error("❌ Erro:", error.message);
+    }
+}
+
+// Execute
+exemploUso();
+
+    </script>
+</body>
+</html>

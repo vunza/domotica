@@ -1,0 +1,13 @@
+
+
+TESTES:
+=======
+- Centarlizar o TOKEN, guardar o emsmo num so lugar/arquivo
+- Editar listar de hubs ir dinamicamente
+- Substituir alert() por Msg feedback
+- Tornar actualizar por codigo o input_select
+
+*** Auntomations ***
+- sensor de presenca ausente
+- sensor de presenca presente
+
