@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração do Módulo AC</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+            --primary: #2196F3;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #f44336;
+            --border-radius: 6px; /* Ligeiramente mais compacto */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 420px; background: var(--card-bg); padding: 15px; border-radius: var(--border-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { text-align: center; margin-bottom: 10px; font-weight: 500; font-size: 20px; }
+        
+        /* Cartão de Status do Pareamento */
+        .status-card { padding: 8px; border-radius: var(--border-radius); margin-bottom: 12px; text-align: center; font-weight: bold; font-size: 13px; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .status-paired { background: rgba(76, 175, 80, 0.15); color: var(--success); border-left-color: var(--success); }
+        .status-unpaired { background: rgba(244, 67, 54, 0.15); color: var(--danger); border-left-color: var(--danger); }
+        .status-progress { background: rgba(255, 193, 7, 0.15); color: var(--warning); border-left-color: var(--warning); animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Formulários Compactos */
+        .form-row { display: flex; gap: 10px; }
+        .form-group { margin-bottom: 10px; flex: 1; }
+        label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+        input { width: 100%; padding: 7px 10px; background: #3d3d3d; border: 1px solid #555; border-radius: var(--border-radius); color: #fff; font-size: 14px; transition: border 0.2s; }
+        input:focus { border-color: var(--primary); outline: none; }
+        
+        /* Botões Otimizados */
+        .btn-group { display: flex; gap: 10px; margin-top: 12px; }
+        button { flex: 1; padding: 10px; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.1s; }
+        button:active { transform: scale(0.98); }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-save:hover { background: #1976D2; }
+        .btn-clear { background: #ec5b5b; color: #fff; }
+        .btn-clear:hover { background: #ec5b30; }
+
+        .btn-back {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+            background: #3a3a3a;
+            color: var(--text-muted);
+            border: 1px solid #444;
+            font-size: 13px;
+        }
+        .btn-back:hover { background: #454545; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Configurações do AC</h2>
+    
+    <div id="statusBox" class="status-card status-unpaired">
+        <span id="statusText">Carregando status...</span>
+    </div>
+
+    <div class="form-group">
+        <label for="device_name">Nome do Dispositivo (Max 24)</label>
+        <input type="text" id="device_name" maxlength="24" placeholder="Ex: AC-ESCRITORIO">
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="wifiSSID">SSID do Wi-Fi</label>
+            <input type="text" id="wifiSSID" maxlength="24">
+        </div>
+        <div class="form-group">
+            <label for="wifiPass">Senha do Wi-Fi</label>
+            <input type="password" id="wifiPass" maxlength="24">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="mqtt_server_ip">IP do Servidor MQTT</label>
+        <input type="text" id="mqtt_server_ip" maxlength="15" placeholder="192.168.x.x">
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="mqtt_user">Usuário MQTT</label>
+            <input type="text" id="mqtt_user" maxlength="24">
+        </div>
+        <div class="form-group">
+            <label for="mqtt_password">Senha MQTT</label>
+            <input type="password" id="mqtt_password" maxlength="24">
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-clear" onclick="limparDados()">Limpar</button>
+        <button class="btn-save" onclick="guardarDados()">Guardar</button>
+    </div>
+
+    <button class="btn-back" onclick="voltarPagina()">⬅ Voltar</button>
+
+</div>
+
+<script>
+    window.onload = function() {
+        atualizarStatus();
+        buscarConfiguracoes();
+        setInterval(atualizarStatus, 3000);
+    };
+
+    function renderizarStatus(estado, configurado) {
+        const statusBox = document.getElementById("statusBox");
+        const statusText = document.getElementById("statusText");
+        if (!statusBox || !statusText) return;
+
+        statusBox.classList.remove("status-paired", "status-unpaired", "status-progress");
+        const isConfigurado = (configurado === true || configurado === "true" || configurado === 1);
+
+        if (estado === "em_curso") {
+            statusBox.classList.add("status-progress");
+            statusText.innerText = "⏳ PAREAMENTO EM CURSO...";
+        } else if (isConfigurado) {
+            statusBox.classList.add("status-paired");
+            statusText.innerText = "✅ EEPROM COM DADOS DE PAREAMENTO";
+        } else {
+            statusBox.classList.add("status-unpaired");
+            statusText.innerText = "❌ REQUER PAREAMENTO FÍSICO";
+        }
+    }
+
+    function atualizarStatus() {
+        fetch('/api/configex/status')
+            .then(response => response.json())
+            .then(data => {
+                renderizarStatus(data.status_pareamento, data.configurado);
+            })
+            .catch(err => console.error("Erro ao ler status: ", err));
+    }
+
+    function buscarConfiguracoes() {
+        fetch('/api/configex/data')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("device_name").value = data.device_name || "";
+                document.getElementById("wifiSSID").value = data.wifiSSID || "";
+                document.getElementById("wifiPass").value = data.wifiPass || "";
+                document.getElementById("mqtt_server_ip").value = data.mqtt_server_ip || "";
+                document.getElementById("mqtt_user").value = data.mqtt_user || "";
+                document.getElementById("mqtt_password").value = data.mqtt_password || "";
+            })
+            .catch(err => console.error("Erro ao ler configurações: ", err));
+    }
+
+    function guardarDados() {
+        const dados = {
+            device_name: document.getElementById("device_name").value,
+            wifiSSID: document.getElementById("wifiSSID").value,
+            wifiPass: document.getElementById("wifiPass").value,
+            mqtt_server_ip: document.getElementById("mqtt_server_ip").value,
+            mqtt_user: document.getElementById("mqtt_user").value,
+            mqtt_password: document.getElementById("mqtt_password").value
+        };
+
+        fetch('/api/configex/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("Configurações guardadas com sucesso!");
+            } else {
+                console.log("Erro ao guardar dados.");
+            }
+        })
+        .catch(err => console.error("Erro na requisição:", err));
+    }
+
+    function limparDados() {
+        if (confirm("Tem certeza que deseja apagar a EEPROM e resetar o pareamento?")) {
+            fetch('/api/configex/clear', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    console.log("EEPROM limpa. O dispositivo irá reiniciar.");
+                    window.location.reload();
+                }
+            });
+        }
+    }
+
+    function voltarPagina() {       
+        window.location.href = "/config"; 
+    }
+</script>
+
+</body>
+</html>

@@ -87,7 +87,7 @@ void setup() {
     Serial.begin(115200);
     
 #if defined(ESP32)
-    bc7215Serial.begin(19200, SERIAL_8N2, 25, 33);
+    bc7215Serial.begin(19200, SERIAL_8N2, 25, 33); // RX: GPIO25, TX: GPIO33
 #elif defined(ESP8266)
     bc7215Serial.begin(19200, SERIAL_8N2);
 #endif

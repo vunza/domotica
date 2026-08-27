@@ -6,27 +6,26 @@
 #endif
 
 #include "Zigbee.h"
+#include "ep/ZigbeeTempSensor.h" 
 
-#define ZIGBEE_SWITCH_ENDPOINT 1
+#define ZIGBEE_LIGHT_ENDPOINT 1
+#define ZIGBEE_TEMP_ENDPOINT  2   
 
-uint8_t led = 15;     // LED Integrado da XIAO ESP32-C6 (Ativo em LOW)
-uint8_t button = 9;   // Botão BOOT (IO9)
+uint8_t led = 15;     
+uint8_t button = 9;   
 
-ZigbeeLight zbLight = ZigbeeLight(ZIGBEE_SWITCH_ENDPOINT);
+ZigbeeLight zbLight = ZigbeeLight(ZIGBEE_LIGHT_ENDPOINT);
+ZigbeeTempSensor zbTemperature = ZigbeeTempSensor(ZIGBEE_TEMP_ENDPOINT);
+
 Preferences prefs;
 
-/********************* Função de Controlo do LED **************************/
 void setLED(bool value) {
   digitalWrite(led, value ? LOW : HIGH);
-  
   if (prefs.getBool("state", false) != value) {
     prefs.putBool("state", value);
   }
-  
-  Serial.printf("Estado do LED alterado: %s\n", value ? "LIGADO" : "DESLIGADO");
 }
 
-/********************* Setup **************************/
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -38,13 +37,16 @@ void setup() {
   bool lastState = prefs.getBool("state", false);
   digitalWrite(led, lastState ? LOW : HIGH);
 
-  // Use identidades limpas ou da Espressif para evitar regras estritas do Z2M
-  zbLight.setManufacturerAndModel("CustomESP32", "C6_Zigbee_Switch");
-  
+  zbLight.setManufacturerAndModel("CustomESP32", "C6_Multi_Sensor");
   zbLight.onLightChange(setLED);
 
-  Serial.println("A adicionar endpoint Zigbee...");
+  // 1. Adiciona a luz ao Endpoint 1
   Zigbee.addEndpoint(&zbLight);
+
+  // 2. Configura e adiciona o Sensor de Temperatura ao Endpoint 2
+  zbTemperature.setMinMaxValue(16.0, 30.0); // Opcional: Define limites
+  zbTemperature.setTemperature(25.0);       // Temperatura inicial de exemplo
+  Zigbee.addEndpoint(&zbTemperature);
 
   if (!Zigbee.begin()) {
     Serial.println("Falha ao iniciar o Zigbee! A reiniciar...");
@@ -52,56 +54,45 @@ void setup() {
     ESP.restart();
   }
 
-  // CRUCIAL: Aguarda o dispositivo se conectar/parear de fato com a rede Zigbee
-  Serial.println("A aguardar conexão com a rede Zigbee (Zigbee2MQTT)...");
-  unsigned long startAttemptTime = millis();
+  Serial.println("A aguardar conexão com a rede Zigbee...");
   while (!Zigbee.connected()) {
-    Serial.print(".");
     delay(500);
-    // Se demorar mais de 45 segundos, reinicia para tentar novamente
-    if (millis() - startAttemptTime > 45000) {
-      Serial.println("\nTimeout de conexão. A reiniciar...");
-      ESP.restart();
-    }
+    Serial.print(".");
   }
-  Serial.println("\nConectado à rede Zigbee com sucesso!");
+  Serial.println("\nConectado com sucesso!");
 
   zbLight.setLight(lastState);
-  Serial.printf("Zigbee iniciado! Estado restaurado para: %s\n", lastState ? "LIGADO" : "DESLIGADO");
 }
 
 
 
 /********************* Loop **************************/
 void loop() {
+  // Exemplo: Atualiza a temperatura a cada 30 segundos
+  static unsigned long lastTempUpdate = 0;
+  static float leituraAtual = 16.0; // Valor inicial de temperatura
+  
+  if (millis() - lastTempUpdate > 30000) {
+    lastTempUpdate = millis();
+    
+    if (leituraAtual < 29.0) {
+      leituraAtual += 1.0;
+    } else {
+      leituraAtual = 16.0; // Reinicia o ciclo de simulação
+    } 
+    
+    Serial.printf("A atualizar temperatura no Zigbee: %.1f °C\n", leituraAtual);
+    
+    // Apenas atualiza o valor do atributo na pilha Zigbee (SEM chamar addEndpoint de novo)
+    zbTemperature.setTemperature(leituraAtual); 
+  }
+
+  // Lógica do botão
   if (digitalRead(button) == LOW) {  
-    delay(50); // Debounce
+    delay(50); 
     if (digitalRead(button) == LOW) {
-      unsigned long startTime = millis();
-      bool isLongPress = false;
-
-      while (digitalRead(button) == LOW) {
-        delay(50);
-        if ((millis() - startTime) > 3000) {
-          isLongPress = true;
-          Serial.println("Reset de fábrica acionado! A apagar NVS...");
-          delay(500);
-          prefs.clear();
-          Zigbee.factoryReset();
-          break;
-        }
-      }
-
-      if (!isLongPress) {
-        // Alterna o estado lógico invertendo o estado atual do Zigbee
-        bool newState = !zbLight.getLightState();
-        
-        // ATENÇÃO: Chamar setLight() aqui altera o atributo Zigbee, 
-        // aciona a função onLightChange (que muda o LED e salva na NVS) 
-        // e dispara o reporte automático para o Zigbee2MQTT!
-        zbLight.setLight(newState);
-      }
-
+      bool newState = !zbLight.getLightState();
+      zbLight.setLight(newState);
       while (digitalRead(button) == LOW) delay(10);
     }
   }
