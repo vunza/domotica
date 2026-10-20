@@ -53,6 +53,7 @@ const uint8_t MOD_PIN  = 1;
 const uint8_t BUSY_PIN = 21;
 const uint8_t TX_PIN   = 16;
 const uint8_t RX_PIN   = 17;
+const uint8_t LED_PIN  = 15;
 
 #if defined(ESP32)
 HardwareSerial bc721Serial(1);
@@ -109,6 +110,9 @@ void setup() {
     Serial.begin(115200);
     delay(1000);
     pinMode(BUTTON_PIN, INPUT_PULLUP);
+    
+    pinMode(LED_PIN, OUTPUT); 
+    digitalWrite(LED_PIN, HIGH); 
 
 #if defined(ESP32)
     bc721Serial.begin(19200, SERIAL_8N2, RX_PIN, TX_PIN);
@@ -225,9 +229,11 @@ void loop() {
     else if (!paired && esp_cfg_data.configurado) {
         if (ac.init(esp_cfg_data.dataPkt, esp_cfg_data.formatPkt)){
             paired = true;
+            imprimeln(F(">>> Sucesso: Configuração restaurada! Pronto para operar."));
             return;
         }
         else {
+            imprimeln(F("Falha ao inicializar com dados salvos. Forçando novo pareamento..."));
             esp_cfg_data.configurado = false;
             emparelharAc();
         }
@@ -258,7 +264,7 @@ void verificarBotaoFactoryReset() {
     }
 }
 
-void emparelharAc(){
+/*void emparelharAc(){
     if (ac.signalCaptured()) {
         ac.stopCapture();
         if (ac.init()){
@@ -273,7 +279,41 @@ void emparelharAc(){
             ac.startCapture();
         }
     }
+}*/
+
+
+void emparelharAc() {   
+
+    if (ac.signalCaptured()) {
+        ac.stopCapture();
+        imprimeln(F("Sinal recebido."));
+
+        if (ac.init()) {
+            paired = true;
+            imprimeln(F("Pareamento OK!"));
+
+            esp_cfg_data.configurado = true;                       
+            esp_cfg_data.formatPkt = *ac.getFormatPkt(); 
+            esp_cfg_data.dataPkt = *((bc7215DataMaxPkt_t*)ac.getDataPkt());
+            
+            salvarDadosEEPROM(esp_cfg_data);
+            digitalWrite(LED_PIN, HIGH);             
+            ac.startCapture();
+        } else {
+            imprimeln(F("Falha no pareamento. Tente novamente."));
+            ac.startCapture();
+        }
+    } else {
+        static unsigned long ultimoPisca = 0;
+        if (millis() - ultimoPisca > 250) {
+            ultimoPisca = millis();
+            digitalWrite(LED_PIN, !digitalRead(LED_PIN));            
+        }
+    }
+
 }
+
+
 
 void descodificarSinalAc(){
     if (ac.signalCaptured()) {
@@ -291,24 +331,25 @@ void descodificarSinalAc(){
 
 
 
-void enviaDadosAc(int temp, int mode_index, int fan_index, int key){
-  unsigned long startTime = millis();
-  
-  ac.init(esp_cfg_data.dataPkt, esp_cfg_data.formatPkt);
-  ac.startCapture();
-  delay(50); 
+void enviaDadosAc(int temp, int mode_index, int fan_index, int key) {
 
-  bc7215Board.setTx();
-  delay(50);
-  ac.setTo(temp, mode_index, fan_index, -1);
-  //imprimef("[SOFTWARE] >> POWER: %s TEP: %d MODE: %s FAN: %s FOR_TX: %d\n", PWR_STATUS[1], temp, mode_index, fan_index, 1);
-  
-  while (ac.isBusy() && (millis() - startTime < 3000)){
-    delay(10);
-  }
-  bc7215Board.setRx();
+    unsigned long startTime = millis();
+    // Para desbloquear o envio, é necessário inicializar a biblioteca com os dados e formato previamente capturados
+    ac.init(esp_cfg_data.dataPkt, esp_cfg_data.formatPkt);
+    ac.startCapture();
+    delay(50); // Pequena pausa para o chip processar a transição
 
-} 
+    // Envia os dados do ar-condicionado via BC7215
+    bc7215Board.setTx();
+    delay(50);     
+    ac.setTo(temp, mode_index, fan_index, -1); 
+    //imprimef("[SOFTWARE] >> POWER: %s TEP: %d MODE: %s FAN: %s FOR_TX: %d\n", PWR_STATUS[1],temp,MODES[mode_index],FANSPEED[fan_index],1);  
+    while (ac.isBusy() && (millis() - startTime < 3000)) {
+        delay(10);
+    }
+    bc7215Board.setRx();
+
+}
 
 
 void processarComandoJson(const String &jsonString) {
@@ -331,18 +372,18 @@ void processarComandoJson(const String &jsonString) {
     // [JSON] Comando recebido: {"temp":27,"mode":1,"fan":2,"power":0}
     // TODO: Enviar comando IR correspondente para o BC7215A
     
-    //enviaDadosAc(temp, mode, fan, 1);
+    if (power == 1) {
+        enviaDadosAc(temp, mode, fan, 0);  
+    }
+    else if (power == 0) {
+        unsigned long startTime = millis();            
+        bc7215Board.setTx();
+        delay(50);   
+        ac.off(); 
+        while (ac.isBusy() && (millis() - startTime < 3000)) {
+            delay(10);
+        }
+        bc7215Board.setRx();
+    }           
 
-    if (power != -1) {
-        imprimef(" -> Power: %d\n", power);        
-    }
-    if (temp != -1) {
-        imprimef(" -> Temperatura: %d\n", temp);
-    }
-    if (mode != -1) {
-        imprimef(" -> Modo: %d\n", mode);
-    }
-    if (fan != -1) {
-        imprimef(" -> Ventilador: %d\n", fan);
-    }
 }
