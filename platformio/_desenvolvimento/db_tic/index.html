@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Meios Informáticos e Contas de Correio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: '#2563eb' } } }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- LOGIN SCREEN OVERLAY -->
+    <div id="loginScreen" class="fixed inset-0 z-50 bg-slate-900/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700 p-8 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-md mx-auto">
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Autenticação Necessária</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Insira as suas credenciais para aceder ao sistema</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Utilizador</label>
+                    <input type="text" id="loginUser" required placeholder="Nome de utilizador" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Palavra-passe</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-all">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="appContainer" class="flex flex-col min-h-screen hidden">
+        <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M4 6H20V8H4V6M4 11H20V13H4V11M4 16H20V18H4V16Z"/></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-bold text-slate-900 dark:text-white leading-tight">Inventário TI & Correio</h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" id="userRoleDisplay">Sessão Ativa</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all" title="Alternar Tema">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.38 5.38 0 0 1-4.4 4.4 5.38 5.38 0 0 1-4.4-4.4A9 9 0 0 1 12 3z"/></svg>
+                    </button>
+                    
+                    <button id="btnNewEquipment" onclick="openEquipmentModal()" class="hidden inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium px-3.5 py-2 rounded-xl shadow-sm transition-all">+ Novo Equipamento</button>
+                    <button id="btnNewEmail" onclick="openEmailModal()" class="hidden inline-flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium px-3.5 py-2 rounded-xl shadow-sm transition-all">+ Nova Conta Email</button>
+                    <button id="btnNewUser" onclick="openUserModal()" class="hidden inline-flex items-center space-x-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs sm:text-sm font-medium px-3.5 py-2 rounded-xl shadow-sm transition-all">+ Novo Utilizador</button>
+                    
+                    <button onclick="openChangePasswordModal()" class="px-3.5 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs sm:text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-all flex items-center space-x-1.5">
+                        <span>Alterar Senha</span>
+                    </button>
+
+                    <button onclick="restartAuthentication()" class="px-3.5 py-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs sm:text-sm font-medium hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all flex items-center space-x-1.5">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"/></svg>
+                        <span>Sair</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+            <div class="flex border-b border-slate-200 dark:border-slate-700 space-x-6 overflow-x-auto">
+                <button onclick="switchTab('equipment')" id="tabEquipmentBtn" class="pb-3 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 flex items-center space-x-2 transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M4 6h16v10H4V6m16 12h2v2H2v-2h2V4h16v14z"/></svg>
+                    <span>Meios Informáticos</span>
+                </button>
+                <button onclick="switchTab('emails')" id="tabEmailsBtn" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-400 flex items-center space-x-2 transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <span>Contas de Correio Eletrónico</span>
+                </button>
+                <button onclick="switchTab('users')" id="tabUsersBtn" class="hidden pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-400 flex items-center space-x-2 transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    <span>Gestão de Utilizadores</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full space-y-6">
+            <!-- EQUIPMENT SECTION -->
+            <div id="equipmentSection" class="space-y-6">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <input type="text" id="searchEquipment" oninput="renderEquipmentTable()" placeholder="Pesquisar por nome, MAC, IP ou localização..." class="w-full md:w-96 px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none">
+                    <select id="filterType" onchange="renderEquipmentTable()" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm px-3 py-2 text-slate-800 dark:text-slate-100">
+                        <option value="">Todos os Tipos</option>
+                        <option value="Computador">Computador</option>
+                        <option value="Telefone VoIP">Telefone VoIP</option>
+                        <option value="Monitor">Monitor</option>
+                        <option value="Projetor">Projetor</option>
+                        <option value="Switch">Switch</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-slate-400 text-xs uppercase tracking-wider font-semibold">
+                                    <th class="py-3.5 px-6">Equipamento / Tipo</th>
+                                    <th class="py-3.5 px-6">Localização</th>
+                                    <th class="py-3.5 px-6">Estado</th>
+                                    <th class="py-3.5 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="equipmentTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EMAILS SECTION -->
+            <div id="emailsSection" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <input type="text" id="searchEmail" oninput="renderEmailTable()" placeholder="Pesquisar por conta ou proprietário..." class="w-full md:w-96 px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                </div>
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-slate-400 text-xs uppercase tracking-wider font-semibold">
+                                    <th class="py-3.5 px-6">Conta de E-mail</th>
+                                    <th class="py-3.5 px-6">Proprietário</th>
+                                    <th class="py-3.5 px-6">Estado</th>
+                                    <th class="py-3.5 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="emailTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USERS SECTION (Admin Only) -->
+            <div id="usersSection" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-slate-400 text-xs uppercase tracking-wider font-semibold">
+                                    <th class="py-3.5 px-6">Utilizador</th>
+                                    <th class="py-3.5 px-6">Perfil / Role</th>
+                                    <th class="py-3.5 px-6">Data de Criação</th>
+                                    <th class="py-3.5 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modais -->
+    <div id="equipmentModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
+                <h3 id="equipmentModalTitle" class="text-base font-bold text-slate-900 dark:text-white">Novo Equipamento</h3>
+                <button onclick="closeEquipmentModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+            </div>
+            <form id="equipmentForm" onsubmit="saveEquipment(event)" class="p-6 space-y-4">
+                <input type="hidden" id="eqId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Nome do Equipamento *</label>
+                    <input type="text" id="eqName" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Tipo</label>
+                        <select id="eqType" onchange="handleEquipmentTypeChange()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                            <option value="Computador">Computador</option>
+                            <option value="Telefone VoIP">Telefone VoIP</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Projetor">Projetor</option>
+                            <option value="Switch">Switch</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Estado</label>
+                        <select id="eqStatus" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Manutenção">Manutenção</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="networkFields" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">MAC</label><input type="text" id="eqMac" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">IP</label><input type="text" id="eqIp" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100"></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Série</label><input type="text" id="eqSerial" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Localização</label><input type="text" id="eqLocation" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100"></div>
+                </div>
+                <div id="switchFields" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
+                    <div><label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Switch</label><input type="text" id="eqSwitch" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Porta</label><input type="text" id="eqPort" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100"></div>
+                </div>
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end space-x-3">
+                    <button type="button" onclick="closeEquipmentModal()" class="px-4 py-2 border rounded-xl text-sm">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="detailsModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div class="px-6 py-4 border-b dark:border-slate-700 flex justify-between bg-slate-50 dark:bg-slate-900"><h3 class="text-base font-bold">Detalhes</h3><button onclick="closeDetailsModal()">&times;</button></div>
+            <div class="p-6 space-y-4 text-sm" id="detailsContent"></div>
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900 border-t dark:border-slate-700 flex justify-end"><button onclick="closeDetailsModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-xl text-sm">Fechar</button></div>
+        </div>
+    </div>
+
+    <div id="emailModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div class="px-6 py-4 border-b dark:border-slate-700 flex justify-between bg-slate-50 dark:bg-slate-900"><h3 id="emailModalTitle" class="text-base font-bold">Nova Conta de E-mail</h3><button onclick="closeEmailModal()">&times;</button></div>
+            <form id="emailForm" onsubmit="saveEmail(event)" class="p-6 space-y-4">
+                <input type="hidden" id="emId">
+                <div><label class="block text-xs font-semibold uppercase mb-1">E-mail *</label><input type="email" id="emAccount" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold uppercase mb-1">Proprietário *</label><input type="text" id="emOwner" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold uppercase mb-1">Estado</label><select id="emStatus" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
+                <div class="pt-4 border-t dark:border-slate-700 flex justify-end space-x-3"><button type="button" onclick="closeEmailModal()" class="px-4 py-2 border rounded-xl text-sm">Cancelar</button><button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-sm">Guardar</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Novo Utilizador -->
+    <div id="userModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div class="px-6 py-4 border-b dark:border-slate-700 flex justify-between bg-slate-50 dark:bg-slate-900">
+                <h3 class="text-base font-bold">Novo Utilizador</h3>
+                <button onclick="closeUserModal()">&times;</button>
+            </div>
+            <form id="userForm" onsubmit="saveUser(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase mb-1">Nome de Utilizador *</label>
+                    <input type="text" id="newUsername" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase mb-1">Palavra-passe *</label>
+                    <input type="password" id="newPasswordUser" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase mb-1">Perfil (Role)</label>
+                    <select id="newRole" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm">
+                        <option value="normal">Normal (Consulta)</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div class="pt-4 border-t dark:border-slate-700 flex justify-end space-x-3">
+                    <button type="button" onclick="closeUserModal()" class="px-4 py-2 border rounded-xl text-sm">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-purple-600 text-white rounded-xl text-sm">Registar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Alterar Senha -->
+    <div id="changePasswordModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div class="px-6 py-4 border-b dark:border-slate-700 flex justify-between bg-slate-50 dark:bg-slate-900">
+                <h3 class="text-base font-bold">Alterar a Minha Senha</h3>
+                <button onclick="closeChangePasswordModal()">&times;</button>
+            </div>
+            <form id="changePasswordForm" onsubmit="changePassword(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase mb-1">Senha Atual *</label>
+                    <input type="password" id="oldPassword" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase mb-1">Nova Senha *</label>
+                    <input type="password" id="newPassword" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm">
+                </div>
+                <div class="pt-4 border-t dark:border-slate-700 flex justify-end space-x-3">
+                    <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 border rounded-xl text-sm">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm">Atualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-sm"></div>
+
+    <!-- Importação do ficheiro JavaScript externo -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+version: '3.3'
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: it_inventory_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: it_inventory
+      MYSQL_USER: it_user
+      MYSQL_PASSWORD: it_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - it_network
+
+  web:
+    build: .
+    container_name: it_inventory_web
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=it_inventory
+      - DB_USER=it_user
+      - DB_PASSWORD=it_password
+      - ADMIN_PASSWORD=admin123
+    depends_on:
+      - db
+    networks:
+      - it_network
+
+volumes:
+  db_data:
+
+networks:
+  it_network:
+    driver: bridge
